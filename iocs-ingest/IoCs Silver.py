@@ -42,7 +42,6 @@ spark.conf.set("spark.databricks.delta.schema.autoMerge.enabled", "true")
 
 # COMMAND ----------
 
-# TODO: instead of dropping duplicates, also add condition on the first/last seen
 def process_single_source(input_df: DataFrame, service: str, transform_func):
   checkpoint = f"{base_dir}/checkpoints/threatintel-silver-{service}/"
   transform_func(input_df).writeStream.format("delta") \
