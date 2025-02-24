@@ -1,0 +1,17 @@
+resources:
+  pipelines:
+    demo_ingest_apache_data:
+      name: 'DLT Cyber Demo: Ingest Apache data'
+      configuration:
+        "conf.gold_catalog_name": ${var.catalog_name}
+        "conf.gold_schema_name": ${var.normalized_schema_name}
+        "conf.apache_web_input": "${var.log_files_path}/logs/apache/"
+        "conf.nginx_input": "${var.log_files_path}/logs/nginx/"
+      libraries:
+        - notebook:
+            path: ../src/ingest_apache_web.py
+      catalog: ${var.catalog_name}
+      schema: ${var.silver_schema_name}
+      channel: CURRENT
+      development: true
+      serverless: true

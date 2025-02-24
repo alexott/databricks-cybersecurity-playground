@@ -1,0 +1,22 @@
+resources:
+  pipelines:
+    demo_detections:
+      name: 'DLT Cyber Demo: Detections'
+      configuration:
+        "conf.azure_tenant_id": ${var.azure_tenant_id}
+        "conf.eh_ns": ${var.eventhub_namespace}
+        "conf.eh_topic": ${var.eventhub_topic}
+        "conf.gold_catalog_name": ${var.catalog_name}
+        "conf.gold_schema_name": ${var.normalized_schema_name}
+        "conf.push_to_eventhubs": ${var.push_to_eventhubs}
+        "conf.secret_scope": ${var.secret_scope_name}
+        "conf.sp_id_key_name": ${var.sp_id_key_name}
+        "conf.sp_secret_key_name": ${var.sp_secret_key_name}
+      libraries:
+        - notebook:
+            path: ../src/detections.py
+      catalog: ${var.catalog_name}
+      schema: ${var.silver_schema_name}
+      channel: CURRENT
+      development: true
+      serverless: true

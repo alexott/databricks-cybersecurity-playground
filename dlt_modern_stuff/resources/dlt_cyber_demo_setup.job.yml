@@ -1,0 +1,13 @@
+resources:
+  jobs:
+    dlt_cyber_demo_setup:
+      name: 'DLT Cyber Demo: Setup'
+      tasks:
+        - task_key: setup
+          notebook_task:
+            base_parameters:
+              catalog_name: ${var.catalog_name}
+              schema_name: ${var.normalized_schema_name}
+              volume_path: ${var.log_files_path}
+            notebook_path: ../src/setup.py
+      max_concurrent_runs: 1

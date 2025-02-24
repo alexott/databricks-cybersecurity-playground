@@ -1,0 +1,19 @@
+resources:
+  pipelines:
+    demo_ingest_zeek_data:
+      name: 'DLT Cyber Demo: Ingest Zeek data'
+      configuration:
+        "conf.gold_catalog_name": ${var.catalog_name}
+        "conf.gold_schema_name": ${var.normalized_schema_name}
+        "conf.zeek_conn_input": "${var.log_files_path}/logs/zeek_conn/"
+        "conf.zeek_http_input": "${var.log_files_path}/logs/zeek_http/"
+      libraries:
+        - notebook:
+            path: ../src/ingest_zeek_conn.py
+        - notebook:
+            path: ../src/ingest_zeek_http.py
+      catalog: ${var.catalog_name}
+      schema: ${var.silver_schema_name}
+      channel: CURRENT
+      development: true
+      serverless: true

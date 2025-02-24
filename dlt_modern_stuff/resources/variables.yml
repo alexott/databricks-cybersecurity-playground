@@ -1,0 +1,31 @@
+variables:
+  catalog_name:
+    description: The name of the default UC Catalog
+  silver_schema_name:
+    description: The name of UC Schema to put processed data of individual log sources
+  normalized_schema_name:
+    description: The name of UC Schema to put tables with normalized data, IoCs and Detections tables.
+  log_files_path:
+    description: The path to UC Volume where raw log data will be stored
+  push_to_eventhubs:
+    description: Set to "true" to push detections to the EventHubs topic
+    default: "false"
+  # The following variables are needed if the `push_to_eventhubs` above is set to "true"
+  secret_scope_name:
+    description: The name of the secret scope with SP's ID and secret
+    default: ""
+  sp_id_key_name:
+    description: The name of a secret inside secret scope that holds SP ID
+    default: ""
+  sp_secret_key_name:
+    description:  The name of a secret inside secret scope that holds SP Secret
+    default: ""
+  azure_tenant_id:
+    description: The ID of Entra ID tenant where SP is registered
+    default: ""
+  eventhub_namespace:
+    description: The name of EventHubs namespace
+    default: ""
+  eventhub_topic:
+    description: The name of a topic inside EventHubs namespace
+    default: ""
