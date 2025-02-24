@@ -1,0 +1,1 @@
+This folder contains Databricks notebooks with source code for the blog post [Ingesting indicators of compromise with Filebeat, Azure Event Hubs & Delta Lake on Databricks](https://alexott.blogspot.com/2022/10/ingesting-indicators-of-compromise-with.html).
