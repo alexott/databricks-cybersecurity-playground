@@ -2,7 +2,21 @@
 
 This directory contains a source code that demonstrates use of latest Delta Live Tables (DLT) features for cybersecurity use cases.  You can find more information in the blog post (WIP).
 
-## Getting started
+In general, this project consists of three DLT pipelines that perform data ingestion, normalization to [Open Cybersecurity Schema Framework (OCSF)](https://schema.ocsf.io/), and doing a rudimentary detections against normalized data as it's shown on the image below:
+
+1. Ingestion of Apache Web and Nginx logs into `apache_web` table and then normalizing it into a table corresponding to OCSF's HTTP activity.
+1. Ingestion of Zeek data:
+  * Zeek HTTP data into `zeek_http` table,  and then normalizing it into an `http` table corresponding to OCSF's HTTP activity.  
+  * Zeek Conn data into `zeek_conn` table,  and then normalizing it into a `network` table corresponding to OCSF's Network activity.
+1. Detection pipeline that does the following:
+  * Matches network connections data from `network` table against `iocs` table.
+  * Checks HTTP logs from `http` table for admin pages scans from external parties.
+  * All matches are stored in the `detections` table, and optionally pushed to EventHubs.
+
+![Implemented pipelines](images/cyber-pipeline-impl.png)
+
+
+## Setting up & running
 
 1. Install the latest version of [Databricks CLI](https://docs.databricks.com/dev-tools/cli/databricks-cli.html).
 
@@ -15,9 +29,9 @@ databricks configure
 3. Set workspace URL and configure necessary variables in the `dev` profile of `databricks.yml` file.  You need to specify the following:
 
  - `catalog_name` - the name of the default UC Catalog used in configuration.
- - `silver_schema_name` - the name of UC Schema to put processed data of individual log sources.
- - `normalized_schema_name` - the name of UC Schema to put tables with normalized data, IoCs and Detections tables.
- - `log_files_path` - the path to UC Volume where raw log data will be stored.
+ - `silver_schema_name` - the name of an existing UC Schema to put processed data of individual log sources.
+ - `normalized_schema_name` - the name of an existing UC Schema to put tables with normalized data, IoCs and Detections tables.
+ - `log_files_path` - the path to an existing UC Volume where raw log data will be stored.
 
 4. To deploy a development copy of this project, type:
 
