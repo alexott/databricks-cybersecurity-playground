@@ -18,6 +18,9 @@ In general, this project consists of three DLT pipelines that perform data inges
 
 ## Setting up & running
 
+> [!IMPORTANT]
+This bundle uses Serverless compute, so make sure that it's enabled for your workspace. If it's not, then you need to adjust parameters of the job and DLT pipelines!
+
 1. Install the latest version of [Databricks CLI](https://docs.databricks.com/dev-tools/cli/databricks-cli.html).
 
 2. Authenticate to your Databricks workspace, if you have not done so already:

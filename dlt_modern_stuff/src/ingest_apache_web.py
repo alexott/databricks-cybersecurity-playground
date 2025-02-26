@@ -9,7 +9,7 @@ from typing import Optional
 
 # COMMAND ----------
 
-from helpers import HTTP_TABLE_NAME, get_qualified_table_name, create_normalized_sink
+from helpers import HTTP_TABLE_NAME, get_qualified_table_name, create_normalized_sink, sanitize_string_for_flow_name
 
 # COMMAND ----------
 
