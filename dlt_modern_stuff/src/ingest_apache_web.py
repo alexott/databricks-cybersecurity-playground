@@ -9,7 +9,7 @@ from typing import Optional
 
 # COMMAND ----------
 
-from helpers import *
+from helpers import HTTP_TABLE_NAME, get_qualified_table_name, create_normalized_sink
 
 # COMMAND ----------
 
@@ -21,8 +21,8 @@ from helpers import *
 
 apache_web_table_name = get_qualified_table_name("silver", "apache_web", spark)
 dlt.create_streaming_table(
-    name = apache_web_table_name,
-    comment = "Table for data parsed from Apache HTTP server-compatible logs"
+    name=apache_web_table_name,
+    comment="Table for data parsed from Apache HTTP server-compatible logs"
 )
 
 # COMMAND ----------
@@ -84,7 +84,10 @@ create_apache_web_flow(nginx_input)
 
 sink_name = create_normalized_sink(HTTP_TABLE_NAME, spark=spark)
 
-@dlt.append_flow(name="apache_web_normalized", target=sink_name)
+@dlt.append_flow(
+    name="apache_web_normalized", 
+    target=sink_name
+)
 def write_normalized():
     df = dlt.read_stream(apache_web_table_name)
     # This could be incomplete mapping, but we can improve later

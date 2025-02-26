@@ -5,17 +5,16 @@ import dlt
 
 import pyspark.sql.functions as F
 
-from typing import Optional
-
 # COMMAND ----------
 
-from helpers import *
+from helpers import get_normalized_table_name, NETWORK_TABLE_NAME, HTTP_TABLE_NAME, get_qualified_table_name
 
 # COMMAND ----------
 
 detections_table_name = get_qualified_table_name("gold", "detections", spark)
 dlt.create_streaming_table(
-    name = detections_table_name,
+    name=detections_table_name,
+    comment="Streaming table for detections"
 )
 
 # COMMAND ----------

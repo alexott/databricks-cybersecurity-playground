@@ -9,7 +9,7 @@ from typing import Optional
 
 # COMMAND ----------
 
-from helpers import *
+from helpers import get_qualified_table_name, NETWORK_TABLE_NAME, create_normalized_sink, sanitize_string_for_flow_name
 
 # COMMAND ----------
 
@@ -21,7 +21,7 @@ from helpers import *
 
 zeek_conn_table_name = get_qualified_table_name("silver", "zeek_conn", spark)
 dlt.create_streaming_table(
-    name = zeek_conn_table_name,
+    name=zeek_conn_table_name,
 )
 
 # COMMAND ----------
@@ -47,8 +47,8 @@ zeek_conn_renames = {
 
 def create_zeek_conn_flow(input: str, add_opts: Optional[dict] = None):
     @dlt.append_flow(name=f"zeek_conn_{sanitize_string_for_flow_name(input)}", 
-                 target = zeek_conn_table_name,
-                 comment = f"Ingesting from {input}")
+                 target=zeek_conn_table_name,
+                 comment=f"Ingesting from {input}")
     def flow():
         autoloader_opts = {
             "cloudFiles.format": "json",
