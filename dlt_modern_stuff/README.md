@@ -5,10 +5,10 @@ This directory contains a source code that demonstrates use of latest Delta Live
 In general, this project consists of three DLT pipelines that perform data ingestion, normalization to [Open Cybersecurity Schema Framework (OCSF)](https://schema.ocsf.io/), and doing a rudimentary detections against normalized data as it's shown on the image below:
 
 1. Ingestion of Apache Web and Nginx logs into `apache_web` table and then normalizing it into a table corresponding to OCSF's HTTP activity.
-1. Ingestion of Zeek data:
+2. Ingestion of Zeek data:
   * Zeek HTTP data into `zeek_http` table,  and then normalizing it into an `http` table corresponding to OCSF's HTTP activity.  
   * Zeek Conn data into `zeek_conn` table,  and then normalizing it into a `network` table corresponding to OCSF's Network activity.
-1. Detection pipeline that does the following:
+3. Detection pipeline that does the following:
   * Matches network connections data from `network` table against `iocs` table.
   * Checks HTTP logs from `http` table for admin pages scans from external parties.
   * All matches are stored in the `detections` table, and optionally pushed to EventHubs.
