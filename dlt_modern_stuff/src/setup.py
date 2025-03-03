@@ -21,6 +21,7 @@ if not catalog_name or not schema_name or not volume_path:
 
 # COMMAND ----------
 
+spark.sql(f"CREATE SCHEMA IF NOT EXISTS {catalog_name}.{schema_name}")
 for name in [HTTP_TABLE_NAME, NETWORK_TABLE_NAME]:
     table_name = get_normalized_table_name(name, catalog_name, schema_name)
     print(f"Creating table {table_name}")
