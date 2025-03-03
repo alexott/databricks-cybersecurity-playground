@@ -1,4 +1,8 @@
 # Databricks notebook source
+# MAGIC %pip install -U https://github.com/alexott/cyber-spark-data-connectors/releases/download/v0.0.3/cyber_spark_data_connectors-0.0.3-py3-none-any.whl
+
+# COMMAND ----------
+
 import dlt
 
 # COMMAND ----------
@@ -102,3 +106,24 @@ if push_to_eventhub:
     def flowFunc():
         df = dlt.read_stream(detections_table_name)
         return df.select(F.to_json(F.struct("*")).alias("value"))
+
+# COMMAND ----------
+
+push_to_splunk = spark.conf.get("conf.push_to_splunk", "false") == "true"
+if push_to_splunk:
+    from cyber_connectors import *
+    spark.dataSource.register(SplunkDataSource)
+
+    splunk_opts = {
+        "url": spark.conf.get("conf.splunk_url") ,
+        "token": spark.conf.get("conf.splunk_hec_token"),
+        "time_column": "detection_time",
+        "source": "dlt",
+    }
+    dlt.create_sink("splunk", "splunk", splunk_opts)
+
+    @dlt.append_flow(name = "write_to_splunk", target = "splunk")
+    def flowFunc():
+        df = dlt.read_stream(detections_table_name)
+        df = df.withColumn("details", F.from_json("details", "map<string, string>"))
+        return df

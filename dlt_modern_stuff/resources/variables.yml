@@ -29,3 +29,12 @@ variables:
   eventhub_topic:
     description: The name of a topic inside EventHubs namespace
     default: ""
+  push_to_splunk:
+    description: Set to "true" to push detections to a Splunk instance (right now, only on non-serverless)
+    default: "false"
+  splunk_url:
+    description: the URL of Splunk HTTP Event Collector
+    default: ""
+  splunk_hec_token:
+    description: Token that will be used to authenticate to Splunk HTTP Event Collector
+    default: ""

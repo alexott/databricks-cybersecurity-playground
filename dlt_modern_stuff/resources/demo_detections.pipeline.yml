@@ -12,6 +12,9 @@ resources:
         "conf.secret_scope": ${var.secret_scope_name}
         "conf.sp_id_key_name": ${var.sp_id_key_name}
         "conf.sp_secret_key_name": ${var.sp_secret_key_name}
+        "conf.push_to_splunk": ${var.push_to_splunk}
+        "conf.splunk_url": ${var.splunk_url}
+        "conf.splunk_hec_token": ${var.splunk_hec_token}
       libraries:
         - notebook:
             path: ../src/detections.py

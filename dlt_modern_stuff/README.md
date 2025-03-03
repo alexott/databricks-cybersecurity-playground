@@ -1,6 +1,6 @@
 # dlt_modern_stuff
 
-This directory contains a source code that demonstrates use of latest Delta Live Tables (DLT) features for cybersecurity use cases.  You can find more information in the blog post (WIP).
+This directory contains a source code that demonstrates use of latest Delta Live Tables (DLT) features for cybersecurity use cases.  You can find more information in the [blog post](https://alexott.blogspot.com/2025/03/effective-use-of-latest-dlt-features.html).
 
 In general, this project consists of three DLT pipelines that perform data ingestion, normalization to [Open Cybersecurity Schema Framework (OCSF)](https://schema.ocsf.io/), and doing a rudimentary detections against normalized data as it's shown on the image below:
 
@@ -11,7 +11,7 @@ In general, this project consists of three DLT pipelines that perform data inges
 3. Detection pipeline that does the following:
   * Matches network connections data from `network` table against `iocs` table.
   * Checks HTTP logs from `http` table for admin pages scans from external parties.
-  * All matches are stored in the `detections` table, and optionally pushed to EventHubs.
+  * All matches are stored in the `detections` table, and optionally pushed to EventHubs and/or Splunk.
 
 ![Implemented pipelines](images/cyber-pipeline-impl.png)
 
