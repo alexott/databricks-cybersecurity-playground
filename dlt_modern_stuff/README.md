@@ -29,7 +29,7 @@ This bundle uses Serverless compute, so make sure that it's enabled for your wor
 databricks configure
 ```
 
-3. Set workspace URL and configure necessary variables in the `dev` profile of `databricks.yml` file.  You need to specify the following:
+3. Set environment variable `DATABRICKS_CONFIG_PROFILE` to the name of Databricks CLI profile you configured, and configure necessary variables in the `dev` profile of `databricks.yml` file.  You need to specify the following:
 
  - `catalog_name` - the name of the default UC Catalog used in configuration.
  - `silver_schema_name` - the name of an existing UC Schema to put processed data of individual log sources.

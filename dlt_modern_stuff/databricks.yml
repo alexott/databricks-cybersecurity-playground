@@ -19,11 +19,18 @@ targets:
     # See also https://docs.databricks.com/dev-tools/bundles/deployment-modes.html.
     mode: development
     default: true
-    workspace:
-      host: https://adb-....azuredatabricks.net
     variables:
       catalog_name: cybersecurity
-      normalized_schema_name: demo_normalized
+      normalized_schema_name: normalized
       log_files_path: /Volumes/cybersecurity/logs/logs/demo
-      silver_schema_name: demo_silver
-      push_to_eventhubs: "false"
+      silver_schema_name: silver
+      push_to_eventhubs: "true"
+      azure_tenant_id: "9f37a392-f0ae-4280-9796-f1864a10effc"
+      eventhub_namespace: "aott-cyber-ns"
+      eventhub_topic: "alerts"
+      secret_scope_name: "aott-kv"
+      sp_id_key_name: "alexott-sp-id"
+      sp_secret_key_name: "alexott-sp-secret"
+      push_to_splunk: "true"
+      splunk_url: "http://10.1.0.6:8088/services/collector/event"
+      splunk_hec_token: "4ca5a97b-358e-47fa-9f98-079d1be7cb35"
