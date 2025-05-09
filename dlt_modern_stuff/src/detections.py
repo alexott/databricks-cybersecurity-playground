@@ -1,5 +1,5 @@
 # Databricks notebook source
-# MAGIC %pip install -U https://github.com/alexott/cyber-spark-data-connectors/releases/download/v0.0.3/cyber_spark_data_connectors-0.0.3-py3-none-any.whl
+# MAGIC %pip install -U https://github.com/alexott/cyber-spark-data-connectors/releases/download/v0.0.4/cyber_spark_data_connectors-0.0.4-py3-none-any.whl
 
 # COMMAND ----------
 
