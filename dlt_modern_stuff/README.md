@@ -19,7 +19,7 @@ In general, this project consists of three DLT pipelines that perform data inges
 ## Setting up & running
 
 > [!IMPORTANT]
-This bundle uses Serverless compute, so make sure that it's enabled for your workspace (works on Databricks Free Edition as well). If it's not, then you need to adjust parameters of the job and DLT pipelines!
+This bundle uses Serverless compute, so make sure that it's enabled for your workspace (works on [Databricks Free Edition](https://www.databricks.com/blog/introducing-databricks-free-edition) as well). If it's not, then you need to adjust parameters of the job and DLT pipelines!
 
 You can install the project two ways:
 
