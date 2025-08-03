@@ -17,7 +17,8 @@ targets:
     # - Deployed resources get prefixed with '[dev my_user_name]'
     # - Any job schedules and triggers are paused by default.
     # See also https://docs.databricks.com/dev-tools/bundles/deployment-modes.html.
-    mode: development
+    # Uncomment this if you run outside of Free Edition
+    # mode: development
     default: true
     variables:
       catalog_name: cybersecurity

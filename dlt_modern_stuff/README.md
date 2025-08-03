@@ -19,7 +19,37 @@ In general, this project consists of three DLT pipelines that perform data inges
 ## Setting up & running
 
 > [!IMPORTANT]
-This bundle uses Serverless compute, so make sure that it's enabled for your workspace. If it's not, then you need to adjust parameters of the job and DLT pipelines!
+This bundle uses Serverless compute, so make sure that it's enabled for your workspace (works on Databricks Free Edition as well). If it's not, then you need to adjust parameters of the job and DLT pipelines!
+
+You can install the project two ways:
+
+1. Using Databricks Assset Bundles (DABs) inside the Databricks Workspace (recommended):
+1. Using DABs from the command line of your computer
+
+### Setting it up using DABs in workspace
+
+1. Create a [Git Folder](https://docs.databricks.com/aws/en/repos/) inside your Databricks workspace by cloning this repository.
+
+2. Open the `dlt_modern_stuff/databricks.yaml` inside create Git Folder.
+
+3. Adjust the following parameters inside the `databricks.yaml` (create necessary objects before use):
+
+ - `catalog_name` - the name of the existing UC Catalog used in configuration.
+ - `silver_schema_name` - the name of an existing UC Schema to put processed data of individual log sources.
+ - `normalized_schema_name` - the name of an existing UC Schema to put tables with normalized data, IoCs and Detections tables.
+ - `log_files_path` - the path to an existing UC Volume where raw log data will be stored.
+
+4. Click **Deploy** button in the **Deployments** tab on the left - this will create necessary jobs and pipelines
+
+5. Click **Run** button next to the `DLT Cyber Demo: Setup` job.
+
+6. Click **Start pipeline** for DLT pipelines to process data and run detections (in the following order):
+
+ - `DLT Cyber Demo: Ingest Zeek data`
+ - `DLT Cyber Demo: Ingest Apache data`
+ - `DLT Cyber Demo: Detections`
+
+### Setting it up using DABs locally
 
 1. Install the latest version of [Databricks CLI](https://docs.databricks.com/dev-tools/cli/databricks-cli.html).
 
@@ -29,9 +59,9 @@ This bundle uses Serverless compute, so make sure that it's enabled for your wor
 databricks configure
 ```
 
-3. Set environment variable `DATABRICKS_CONFIG_PROFILE` to the name of Databricks CLI profile you configured, and configure necessary variables in the `dev` profile of `databricks.yml` file.  You need to specify the following:
+3. Set environment variable `DATABRICKS_CONFIG_PROFILE` to the name of Databricks CLI profile you configured, and configure necessary variables in the `dev` profile of `databricks.yml` file.  You need to specify the following (create necessary objects before use):
 
- - `catalog_name` - the name of the default UC Catalog used in configuration.
+ - `catalog_name` - the name of the existing UC Catalog used in configuration.
  - `silver_schema_name` - the name of an existing UC Schema to put processed data of individual log sources.
  - `normalized_schema_name` - the name of an existing UC Schema to put tables with normalized data, IoCs and Detections tables.
  - `log_files_path` - the path to an existing UC Volume where raw log data will be stored.
