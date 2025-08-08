@@ -36,7 +36,7 @@ for name in [HTTP_TABLE_NAME, NETWORK_TABLE_NAME]:
 # COMMAND ----------
 
 base_path = os.path.join(volume_path, "logs")
-for i in ["apache", "nginx", "zeek_conn", "zeek_http"]:
+for i in ["apache", "nginx", "zeek_conn", "zeek_http", "aws_cloudtrail"]:
     p = os.path.join(base_path, i)
     os.makedirs(p, exist_ok=True)
 
@@ -64,6 +64,10 @@ urllib.request.urlretrieve("https://raw.githubusercontent.com/lipyeow-lim/securi
                            os.path.join(base_path, "zeek_conn", "log2.gz"))
 urllib.request.urlretrieve("https://raw.githubusercontent.com/lipyeow-lim/security-datasets01/refs/heads/main/maccdc-2012/03/conn.log.gz", 
                            os.path.join(base_path, "zeek_conn", "log3.gz"))
+# AWS Cloudtrail logs
+urllib.request.urlretrieve("https://gist.githubusercontent.com/alexott/8ccd963811969d2446d2239e031a7b78/raw/2bae06ade977277dce4f580f214a0ed129f38810/data.jsonl", 
+                           os.path.join(base_path, "aws_cloudtrail", "data.json"))
+
 
 # COMMAND ----------
 
