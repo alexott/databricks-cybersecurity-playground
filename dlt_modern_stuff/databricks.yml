@@ -25,13 +25,13 @@ targets:
       normalized_schema_name: normalized
       log_files_path: /Volumes/cybersecurity/logs/logs/demo
       silver_schema_name: silver
-      push_to_eventhubs: "true"
-      azure_tenant_id: "9f37a392-f0ae-4280-9796-f1864a10effc"
-      eventhub_namespace: "aott-cyber-ns"
+      push_to_eventhubs: "false"
+      azure_tenant_id: "aaaa"
+      eventhub_namespace: "aaa"
       eventhub_topic: "alerts"
-      secret_scope_name: "aott-kv"
-      sp_id_key_name: "alexott-sp-id"
-      sp_secret_key_name: "alexott-sp-secret"
-      push_to_splunk: "true"
+      secret_scope_name: "aaaa"
+      sp_id_key_name: "aaa"
+      sp_secret_key_name: "aaa"
+      push_to_splunk: "false"
       splunk_url: "http://10.1.0.6:8088/services/collector/event"
-      splunk_hec_token: "4ca5a97b-358e-47fa-9f98-079d1be7cb35"
+      splunk_hec_token: "aaaa"
