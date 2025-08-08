@@ -1,6 +1,6 @@
 resources:
   pipelines:
-    demo_ingest_apache_data:
+    demo_ingest_aws_cloudtrail_data:
       name: 'DLT Cyber Demo: Ingest AWS Cloudtrail data'
       configuration:
         "conf.gold_catalog_name": ${var.catalog_name}

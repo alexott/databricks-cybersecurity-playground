@@ -8,6 +8,9 @@ from pyspark.sql import DataFrame
 
 from typing import Optional
 
+import random
+import datetime
+
 # COMMAND ----------
 
 from helpers import get_qualified_table_name, NETWORK_TABLE_NAME, create_normalized_sink, sanitize_string_for_flow_name
@@ -34,7 +37,13 @@ def normalize_aws_cloudtrail(df: DataFrame, raw_column_name: str = "_raw") -> Da
     df = df.selectExpr(f"{raw_column_name}:Records::array<variant> as _records")
     df = df.select(F.explode("_records").alias("_record"))
     df = df.selectExpr("*", "_record:resources::variant as resources")
-    df = spark.sql("""SELECT
+
+    view_name = f"cloudtrail_{int(datetime.datetime.now().timestamp())}_{random.randint(0, 1000)}"
+    df.createOrReplaceTempView(view_name)
+
+    # TODO: rewrite to PySpark when we get support for `variant_explode_outer` in DLT
+    # https://spark.apache.org/docs/latest/api/python/reference/pyspark.sql/api/pyspark.sql.tvf.TableValuedFunction.variant_explode_outer.html
+    df = spark.sql(f"""SELECT
 _record:awsRegion::string as aws_region,
 _record:eventID::string as event_id,
 _record:eventName::string as event_name,
@@ -76,7 +85,7 @@ _record:serviceEventDetails::string as service_event_details,
 _record:sharedEventId::string as shared_event_id,
 _record:vpcEndpointId::string as vpc_endpoint_id,
 _record, resource.value as resource
-FROM {source_df}, LATERAL variant_explode_outer(resources) as resource""", source_df=df)
+FROM {view_name}, LATERAL variant_explode_outer(resources) as resource""")
 
     return df
 
@@ -94,7 +103,8 @@ def read_aws_cloudtrail(input: str, add_opts: Optional[dict] = None) -> DataFram
 
 # COMMAND ----------
 
-# sdf = read_aws_cloudtrail("/Volumes/cybersecurity/logs/logs/aws-cloudtrail/")
+# #sdf = read_aws_cloudtrail("/Volumes/cybersecurity/logs/logs/aws-cloudtrail/")
+# sdf = read_aws_cloudtrail("/Volumes/cybersecurity/logs/logs/demo/logs/aws_cloudtrail/")
 # display(sdf)
 
 # COMMAND ----------
