@@ -22,6 +22,7 @@ from helpers import get_qualified_table_name, NETWORK_TABLE_NAME, create_normali
 zeek_conn_table_name = get_qualified_table_name("silver", "zeek_conn", spark)
 dlt.create_streaming_table(
     name=zeek_conn_table_name,
+    cluster_by = ["timestamp"],
 )
 
 # COMMAND ----------
@@ -53,6 +54,7 @@ def create_zeek_conn_flow(input: str, add_opts: Optional[dict] = None):
         autoloader_opts = {
             "cloudFiles.format": "json",
             "cloudFiles.schemaHints": zeek_conn_schema_hints,
+            #"cloudFiles.useManagedFileEvents": "true",
         } | (add_opts or {})
         df = spark.readStream.format("cloudFiles").options(**autoloader_opts).load(input)
         df = df.withColumnsRenamed(zeek_conn_renames)
@@ -61,13 +63,6 @@ def create_zeek_conn_flow(input: str, add_opts: Optional[dict] = None):
             "ingest_time": F.current_timestamp(),
         })
         return df
-
-# COMMAND ----------
-
-# zeek_checkpoint_loc = "/tmp/zeek_conn_checkpoint"
-# #dbutils.fs.rm(zeek_checkpoint_loc, True)
-# df = read_zeek_conn("/Volumes/cybersecurity/logs/logs/zeek/conn_2023-03-15-*.json.gz", {"cloudFiles.schemaLocation": zeek_checkpoint_loc})
-# display(df)
 
 # COMMAND ----------
 

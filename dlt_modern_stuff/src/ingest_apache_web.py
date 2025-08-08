@@ -22,7 +22,8 @@ from helpers import HTTP_TABLE_NAME, get_qualified_table_name, create_normalized
 apache_web_table_name = get_qualified_table_name("silver", "apache_web", spark)
 dlt.create_streaming_table(
     name=apache_web_table_name,
-    comment="Table for data parsed from Apache HTTP server-compatible logs"
+    comment="Table for data parsed from Apache HTTP server-compatible logs",
+    cluster_by = ["timestamp"],
 )
 
 # COMMAND ----------
@@ -35,6 +36,7 @@ apache_web_regex = (
 def read_apache_web(input: str, add_opts: Optional[dict] = None):
     autoloader_opts = {
         "cloudFiles.format": "text",
+        #"cloudFiles.useManagedFileEvents": "true",
     } | (add_opts or {})
     df = spark.readStream.format("cloudFiles").options(**autoloader_opts).load(input)
     df = df.withColumns(
