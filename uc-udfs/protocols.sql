@@ -1,159 +1,162 @@
 -- Databricks notebook source
+-- MAGIC %md
+-- MAGIC
+-- MAGIC ## User-defined functions to work with network protocols 
+-- MAGIC
+-- MAGIC Mapping is as defined by [IANA](https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml)
 
--- User-defined functions to work with network protocols as defined in
--- https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml
+-- COMMAND ----------
 
-CREATE OR REPLACE FUNCTION proto_name_to_code(name STRING) 
-RETURNS INT 
-COMMENT 'Maps network protocol name into a numeric code as per IANA' 
-RETURN 
-    CASE lower(name)
-        WHEN 'hopopt' THEN 0
-        WHEN 'icmp' THEN 1
-        WHEN 'igmp' THEN 2
-        WHEN 'ggp' THEN 3
-        WHEN 'ipv4' THEN 4
-        WHEN 'st' THEN 5
-        WHEN 'tcp' THEN 6
-        WHEN 'cbt' THEN 7
-        WHEN 'egp' THEN 8
-        WHEN 'igp' THEN 9
-        WHEN 'bbn-rcc-mon' THEN 10
-        WHEN 'nvp-ii' THEN 11
-        WHEN 'pup' THEN 12
-        WHEN 'argus' THEN 13
-        WHEN 'emcon' THEN 14
-        WHEN 'xnet' THEN 15
-        WHEN 'chaos' THEN 16
-        WHEN 'udp' THEN 17
-        WHEN 'mux' THEN 18
-        WHEN 'dcn-meas' THEN 19
-        WHEN 'hmp' THEN 20
-        WHEN 'prm' THEN 21
-        WHEN 'xns-idp' THEN 22
-        WHEN 'trunk-1' THEN 23
-        WHEN 'trunk-2' THEN 24
-        WHEN 'leaf-1' THEN 25
-        WHEN 'leaf-2' THEN 26
-        WHEN 'rdp' THEN 27
-        WHEN 'irtp' THEN 28
-        WHEN 'iso-tp4' THEN 29
-        WHEN 'netblt' THEN 30
-        WHEN 'mfe-nsp' THEN 31
-        WHEN 'merit-inp' THEN 32
-        WHEN 'dccp' THEN 33
-        WHEN '3pc' THEN 34
-        WHEN 'idpr' THEN 35
-        WHEN 'xtp' THEN 36
-        WHEN 'ddp' THEN 37
-        WHEN 'idpr-cmtp' THEN 38
-        WHEN 'tp++' THEN 39
-        WHEN 'il' THEN 40
-        WHEN 'ipv6' THEN 41
-        WHEN 'sdrp' THEN 42
-        WHEN 'ipv6-route' THEN 43
-        WHEN 'ipv6-frag' THEN 44
-        WHEN 'idrp' THEN 45
-        WHEN 'rsvp' THEN 46
-        WHEN 'gre' THEN 47
-        WHEN 'dsr' THEN 48
-        WHEN 'bna' THEN 49
-        WHEN 'esp' THEN 50
-        WHEN 'ah' THEN 51
-        WHEN 'i-nlsp' THEN 52
-        WHEN 'swipe' THEN 53
-        WHEN 'narp' THEN 54
-        WHEN 'min-ipv4' THEN 55
-        WHEN 'tlsp' THEN 56
-        WHEN 'skip' THEN 57
-        WHEN 'ipv6-icmp' THEN 58
-        WHEN 'ipv6-nonxt' THEN 59
-        WHEN 'ipv6-opts' THEN 60
-        WHEN 'cftp' THEN 62
-        WHEN 'sat-expak' THEN 64
-        WHEN 'kryptolan' THEN 65
-        WHEN 'rvd' THEN 66
-        WHEN 'ippc' THEN 67
-        WHEN 'sat-mon' THEN 69
-        WHEN 'visa' THEN 70
-        WHEN 'ipcv' THEN 71
-        WHEN 'cpnx' THEN 72
-        WHEN 'cphb' THEN 73
-        WHEN 'wsn' THEN 74
-        WHEN 'pvp' THEN 75
-        WHEN 'br-sat-mon' THEN 76
-        WHEN 'sun-nd' THEN 77
-        WHEN 'wb-mon' THEN 78
-        WHEN 'wb-expak' THEN 79
-        WHEN 'iso-ip' THEN 80
-        WHEN 'vmtp' THEN 81
-        WHEN 'secure-vmtp' THEN 82
-        WHEN 'vines' THEN 83
-        WHEN 'iptm' THEN 84
-        WHEN 'nsfnet-igp' THEN 85
-        WHEN 'dgp' THEN 86
-        WHEN 'tcf' THEN 87
-        WHEN 'eigrp' THEN 88
-        WHEN 'ospfigp' THEN 89
-        WHEN 'sprite-rpc' THEN 90
-        WHEN 'larp' THEN 91
-        WHEN 'mtp' THEN 92
-        WHEN 'ax.25' THEN 93
-        WHEN 'ipip' THEN 94
-        WHEN 'micp' THEN 95
-        WHEN 'scc-sp' THEN 96
-        WHEN 'etherip' THEN 97
-        WHEN 'encap' THEN 98
-        WHEN 'gmtp' THEN 100
-        WHEN 'ifmp' THEN 101
-        WHEN 'pnni' THEN 102
-        WHEN 'pim' THEN 103
-        WHEN 'aris' THEN 104
-        WHEN 'scps' THEN 105
-        WHEN 'qnx' THEN 106
-        WHEN 'a/n' THEN 107
-        WHEN 'ipcomp' THEN 108
-        WHEN 'snp' THEN 109
-        WHEN 'compaq-peer' THEN 110
-        WHEN 'ipx-in-ip' THEN 111
-        WHEN 'vrrp' THEN 112
-        WHEN 'pgm' THEN 113
-        WHEN 'l2tp' THEN 115
-        WHEN 'ddx' THEN 116
-        WHEN 'iatp' THEN 117
-        WHEN 'stp' THEN 118
-        WHEN 'srp' THEN 119
-        WHEN 'uti' THEN 120
-        WHEN 'smp' THEN 121
-        WHEN 'sm' THEN 122
-        WHEN 'ptp' THEN 123
-        WHEN 'isis over ipv4' THEN 124
-        WHEN 'fire' THEN 125
-        WHEN 'crtp' THEN 126
-        WHEN 'crudp' THEN 127
-        WHEN 'sscopmce' THEN 128
-        WHEN 'iplt' THEN 129
-        WHEN 'sps' THEN 130
-        WHEN 'pipe' THEN 131
-        WHEN 'sctp' THEN 132
-        WHEN 'fc' THEN 133
-        WHEN 'rsvp-e2e-ignore' THEN 134
-        WHEN 'mobility header' THEN 135
-        WHEN 'udplite' THEN 136
-        WHEN 'mpls-in-ip' THEN 137
-        WHEN 'manet' THEN 138
-        WHEN 'hip' THEN 139
-        WHEN 'shim6' THEN 140
-        WHEN 'wesp' THEN 141
-        WHEN 'rohc' THEN 142
-        WHEN 'ethernet' THEN 143
-        WHEN 'aggfrag' THEN 144
-        WHEN 'nsh' THEN 145
-        WHEN 'homa' THEN 146
-        WHEN 'bit-emu' THEN 147
-        WHEN 'reserved' THEN 255
-        ELSE NULL
-    END;
+CREATE OR REPLACE FUNCTION proto_name_to_code(name STRING)
+  RETURNS INT
+  COMMENT 'Maps network protocol name into a numeric code as per IANA'
+  RETURN CASE lower(name)
+    WHEN 'hopopt' THEN 0
+    WHEN 'icmp' THEN 1
+    WHEN 'igmp' THEN 2
+    WHEN 'ggp' THEN 3
+    WHEN 'ipv4' THEN 4
+    WHEN 'st' THEN 5
+    WHEN 'tcp' THEN 6
+    WHEN 'cbt' THEN 7
+    WHEN 'egp' THEN 8
+    WHEN 'igp' THEN 9
+    WHEN 'bbn-rcc-mon' THEN 10
+    WHEN 'nvp-ii' THEN 11
+    WHEN 'pup' THEN 12
+    WHEN 'argus' THEN 13
+    WHEN 'emcon' THEN 14
+    WHEN 'xnet' THEN 15
+    WHEN 'chaos' THEN 16
+    WHEN 'udp' THEN 17
+    WHEN 'mux' THEN 18
+    WHEN 'dcn-meas' THEN 19
+    WHEN 'hmp' THEN 20
+    WHEN 'prm' THEN 21
+    WHEN 'xns-idp' THEN 22
+    WHEN 'trunk-1' THEN 23
+    WHEN 'trunk-2' THEN 24
+    WHEN 'leaf-1' THEN 25
+    WHEN 'leaf-2' THEN 26
+    WHEN 'rdp' THEN 27
+    WHEN 'irtp' THEN 28
+    WHEN 'iso-tp4' THEN 29
+    WHEN 'netblt' THEN 30
+    WHEN 'mfe-nsp' THEN 31
+    WHEN 'merit-inp' THEN 32
+    WHEN 'dccp' THEN 33
+    WHEN '3pc' THEN 34
+    WHEN 'idpr' THEN 35
+    WHEN 'xtp' THEN 36
+    WHEN 'ddp' THEN 37
+    WHEN 'idpr-cmtp' THEN 38
+    WHEN 'tp++' THEN 39
+    WHEN 'il' THEN 40
+    WHEN 'ipv6' THEN 41
+    WHEN 'sdrp' THEN 42
+    WHEN 'ipv6-route' THEN 43
+    WHEN 'ipv6-frag' THEN 44
+    WHEN 'idrp' THEN 45
+    WHEN 'rsvp' THEN 46
+    WHEN 'gre' THEN 47
+    WHEN 'dsr' THEN 48
+    WHEN 'bna' THEN 49
+    WHEN 'esp' THEN 50
+    WHEN 'ah' THEN 51
+    WHEN 'i-nlsp' THEN 52
+    WHEN 'swipe' THEN 53
+    WHEN 'narp' THEN 54
+    WHEN 'min-ipv4' THEN 55
+    WHEN 'tlsp' THEN 56
+    WHEN 'skip' THEN 57
+    WHEN 'ipv6-icmp' THEN 58
+    WHEN 'ipv6-nonxt' THEN 59
+    WHEN 'ipv6-opts' THEN 60
+    WHEN 'cftp' THEN 62
+    WHEN 'sat-expak' THEN 64
+    WHEN 'kryptolan' THEN 65
+    WHEN 'rvd' THEN 66
+    WHEN 'ippc' THEN 67
+    WHEN 'sat-mon' THEN 69
+    WHEN 'visa' THEN 70
+    WHEN 'ipcv' THEN 71
+    WHEN 'cpnx' THEN 72
+    WHEN 'cphb' THEN 73
+    WHEN 'wsn' THEN 74
+    WHEN 'pvp' THEN 75
+    WHEN 'br-sat-mon' THEN 76
+    WHEN 'sun-nd' THEN 77
+    WHEN 'wb-mon' THEN 78
+    WHEN 'wb-expak' THEN 79
+    WHEN 'iso-ip' THEN 80
+    WHEN 'vmtp' THEN 81
+    WHEN 'secure-vmtp' THEN 82
+    WHEN 'vines' THEN 83
+    WHEN 'iptm' THEN 84
+    WHEN 'nsfnet-igp' THEN 85
+    WHEN 'dgp' THEN 86
+    WHEN 'tcf' THEN 87
+    WHEN 'eigrp' THEN 88
+    WHEN 'ospfigp' THEN 89
+    WHEN 'sprite-rpc' THEN 90
+    WHEN 'larp' THEN 91
+    WHEN 'mtp' THEN 92
+    WHEN 'ax.25' THEN 93
+    WHEN 'ipip' THEN 94
+    WHEN 'micp' THEN 95
+    WHEN 'scc-sp' THEN 96
+    WHEN 'etherip' THEN 97
+    WHEN 'encap' THEN 98
+    WHEN 'gmtp' THEN 100
+    WHEN 'ifmp' THEN 101
+    WHEN 'pnni' THEN 102
+    WHEN 'pim' THEN 103
+    WHEN 'aris' THEN 104
+    WHEN 'scps' THEN 105
+    WHEN 'qnx' THEN 106
+    WHEN 'a/n' THEN 107
+    WHEN 'ipcomp' THEN 108
+    WHEN 'snp' THEN 109
+    WHEN 'compaq-peer' THEN 110
+    WHEN 'ipx-in-ip' THEN 111
+    WHEN 'vrrp' THEN 112
+    WHEN 'pgm' THEN 113
+    WHEN 'l2tp' THEN 115
+    WHEN 'ddx' THEN 116
+    WHEN 'iatp' THEN 117
+    WHEN 'stp' THEN 118
+    WHEN 'srp' THEN 119
+    WHEN 'uti' THEN 120
+    WHEN 'smp' THEN 121
+    WHEN 'sm' THEN 122
+    WHEN 'ptp' THEN 123
+    WHEN 'isis over ipv4' THEN 124
+    WHEN 'fire' THEN 125
+    WHEN 'crtp' THEN 126
+    WHEN 'crudp' THEN 127
+    WHEN 'sscopmce' THEN 128
+    WHEN 'iplt' THEN 129
+    WHEN 'sps' THEN 130
+    WHEN 'pipe' THEN 131
+    WHEN 'sctp' THEN 132
+    WHEN 'fc' THEN 133
+    WHEN 'rsvp-e2e-ignore' THEN 134
+    WHEN 'mobility header' THEN 135
+    WHEN 'udplite' THEN 136
+    WHEN 'mpls-in-ip' THEN 137
+    WHEN 'manet' THEN 138
+    WHEN 'hip' THEN 139
+    WHEN 'shim6' THEN 140
+    WHEN 'wesp' THEN 141
+    WHEN 'rohc' THEN 142
+    WHEN 'ethernet' THEN 143
+    WHEN 'aggfrag' THEN 144
+    WHEN 'nsh' THEN 145
+    WHEN 'homa' THEN 146
+    WHEN 'bit-emu' THEN 147
+    WHEN 'reserved' THEN 255
+    ELSE NULL
+  END;
 
 -- COMMAND ----------
 
