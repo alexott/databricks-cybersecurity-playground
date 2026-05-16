@@ -1,2 +1,0 @@
-command: ["uvicorn", "dbx_cyber_mcp.app:app"]
-# command: ["uv", "run", "custom-server"]
