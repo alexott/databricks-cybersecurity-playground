@@ -1,6 +1,6 @@
 # Threat analyst agent built with the Databricks Agent Bricks
 
-This folder contains an example of cybersecurity agent built on top of Databricks Agent Bricks.  The code is a companion to the [blog post](link here).
+This folder contains an example of cybersecurity agent built on top of Databricks Agent Bricks.  The code is a companion to the [blog post](https://alexott.blogspot.com/2026/07/building-agentic-cybersecurity.html).
 
 This example contains materials obtained from different external sources:
 
@@ -16,4 +16,4 @@ This example contains materials obtained from different external sources:
 
 ### Setting up IoCs and CVEs tables
 
-The [auxiliary](auxiliary/) directory contains SQL with tables definitions - adjust the catalog and schema names to match your setup.
+The [auxiliary](auxiliary/) directory contains SQL with tables definitions - adjust the catalog and schema names to match your setup.  After tables are created, import sample data from the CSV files in the same directory.
