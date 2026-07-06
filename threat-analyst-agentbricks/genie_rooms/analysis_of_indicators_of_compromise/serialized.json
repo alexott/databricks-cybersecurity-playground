@@ -1,0 +1,436 @@
+{
+  "version": 2,
+  "config": {
+    "sample_questions": [
+      {
+        "id": "01f17485611d1dc0a7f1e8bac2b97f87",
+        "question": [
+          "How many IoCs are in the dataset, broken down by type?"
+        ]
+      },
+      {
+        "id": "01f1748561401c5aa011a025b7125f03",
+        "question": [
+          "What are the top 10 countries hosting malicious IP indicators?"
+        ]
+      },
+      {
+        "id": "01f174856164175eaeab695aa735a338",
+        "question": [
+          "Which datasets contributed the most IoCs in the last 7 days?"
+        ]
+      },
+      {
+        "id": "01f17485618314aa86b600a9b3d291d9",
+        "question": [
+          "What are the most recent malicious URLs?"
+        ]
+      },
+      {
+        "id": "01f1748561aa1de5a2c1fb2f7b0a16b2",
+        "question": [
+          "Show me all file hash IoCs associated with ransomware."
+        ]
+      },
+      {
+        "id": "01f1748561ca16af916bfefe9fbad3d9",
+        "question": [
+          "Which ASNs host the highest volume of malicious IP indicators?"
+        ]
+      }
+    ]
+  },
+  "data_sources": {
+    "tables": [
+      {
+        "identifier": "fe_lakewatch_catalog.lakewatch_field.oss_iocs",
+        "description": [
+          "Threat-intelligence Indicators of Compromise (IoCs) aggregated from multiple OSS feeds (OpenThreat Exchange, AbuseURL, Malware Bazaar, AbuseMalware). Each row is one IoC sighting with the source feed (`dataset`), the indicator value (`ioc`), its type (`ioc_type`: URL, hostname, IPv4, IPv6, hash), and first/last-seen timestamps. Use for: IoC enrichment (look up if an IP/domain/URL/hash is known), threat-actor and campaign tracking via `ioc_title` and source-specific structs (`abuseurl`, `malwarebazaar`, `abusemalware`), geographic and ASN context for IP IoCs (`geoip`, `asn`), and recency-based filtering."
+        ],
+        "column_configs": [
+          {
+            "column_name": "abusemalware",
+            "description": [
+              "Enrichment from the AbuseMalware feed. Contains malware-family attribution, tags, and reporter metadata. Populated for malware-related IoC entries."
+            ]
+          },
+          {
+            "column_name": "abuseurl"
+          },
+          {
+            "column_name": "asn",
+            "description": [
+              "Autonomous System (AS) context for IP IoCs. Sub-fields: `as_number` (ASN integer, e.g. 15169) and `as_org` (organization name, e.g. \"GOOGLE\"). Populated only when `ioc_type` is `IPv4` or `IPv6`."
+            ]
+          },
+          {
+            "column_name": "dataset",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "file_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "file_size",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "file_type",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "file_type_mime",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "first_seen",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "geoip",
+            "description": [
+              "Geographic context for IP IoCs. Sub-fields: `country` (country name), `city`, `latitude`, `longitude`. Populated only when `ioc_type` is `IPv4` or `IPv6`."
+            ]
+          },
+          {
+            "column_name": "id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "ioc",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "ioc_content",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "ioc_description",
+            "description": [
+              "Human-readable description of the threat context for this IoC. Free-text from the source feed; may contain malware family name, campaign name, or abuse context. Can be empty for feeds that do not provide narrative descriptions."
+            ],
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "ioc_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "ioc_title",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "ioc_type",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "last_seen",
+            "description": [
+              "Timestamp of the most recent sighting of this IoC across all source feeds. Use this column (not `timestamp`) for recency-based filtering and ranking (e.g. \"active in the last 30 days\"). Prefer this over `first_seen` unless the question explicitly asks about first appearance."
+            ],
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "malwarebazaar",
+            "description": [
+              "Enrichment from MalwareBazaar (abuse.ch) for file-hash IoCs. Sub-fields include `sha256_hash`, `file_type`, `tags`, `signature` (malware family name), `reporter`, `first_seen`. Populated only for file-hash IoC types."
+            ]
+          },
+          {
+            "column_name": "msg_hash",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "psl",
+            "description": [
+              "Public Suffix List (PSL) decomposition for domain/hostname IoCs. Sub-fields: `registered_domain` (e.g. \"example.com\"), `public_suffix` (e.g. \"com\"), `subdomain`. Use `psl.registered_domain` to group IoCs by parent domain. Populated when `ioc_type` is `hostname` or `domain`."
+            ]
+          },
+          {
+            "column_name": "timestamp",
+            "enable_format_assistance": true
+          }
+        ]
+      }
+    ]
+  },
+  "instructions": {
+    "text_instructions": [
+      {
+        "id": "01f1398eb5d018688054b73adce7cb41",
+        "content": [
+          "This room contains threat-intelligence Indicators of Compromise (IoCs) aggregated from multiple OSS feeds: OpenThreat Exchange, AbuseURL, Malware Bazaar, AbuseMalware.\n",
+          "\n",
+          "## Querying patterns\n",
+          "* Filter by `ioc_type` to scope IPs (`IPv4` / `IPv6`), domains (`hostname` or `domain`), URLs (`URL`), or file hashes — use `ioc_type LIKE 'FileHash-%'` to match any hash type (`FileHash-SHA256`, `FileHash-MD5`, `FileHash-SHA1`, `FileHash-TLSH`, `FileHash-ImpHash`, etc.).\n",
+          "* The IoC value itself is in the `ioc` column.\n",
+          "* Use `first_seen` / `last_seen` for temporal filtering. Prefer `last_seen` for recency-aware ranking (\"most-recently-seen\").\n",
+          "* For IP IoCs, `geoip` and `asn` provide geographic and network-owner context.\n",
+          "* For domain IoCs, `psl` provides registered-domain and public-suffix decomposition (useful for grouping by parent domain).\n",
+          "* Source-specific enrichment lives in struct columns named after the feed: `abuseurl`, `malwarebazaar`, `abusemalware`.\n",
+          "\n",
+          "## Temporal column disambiguation\n",
+          "When filtering by recency or answering questions about \"active\", \"recent\", or \"new\" threats without further qualification, always use `last_seen`. Use `first_seen` only when the question is specifically about when the IoC was first observed. Use `timestamp` only when the question explicitly asks about data collection or ingestion time.\n",
+          "\n",
+          "## Best practices\n",
+          "* When listing IoCs, always include `dataset` so analysts can trace the source.\n",
+          "* When users ask about \"malicious IPs\" / \"malicious hostnames\" without a time range, ask them to specify a recency window — `last_seen` filters of 7 / 30 days are typical for triage."
+        ]
+      }
+    ],
+    "example_question_sqls": [
+      {
+        "id": "1bacd2667f174ca99737df7aa3f7f869",
+        "question": [
+          "Show the 25 most-recently-seen malicious hostnames."
+        ],
+        "sql": [
+          "SELECT\n",
+          "  ioc AS hostname,\n",
+          "  last_seen,\n",
+          "  dataset,\n",
+          "  ioc_title\n",
+          "FROM fe_lakewatch_catalog.lakewatch_field.oss_iocs\n",
+          "WHERE ioc_type = 'hostname'\n",
+          "ORDER BY last_seen DESC\n",
+          "LIMIT 25"
+        ]
+      },
+      {
+        "id": "22f1c12e2f4a4d02a5483a20e65cc472",
+        "question": [
+          "How many IoCs do we have, broken down by type?"
+        ],
+        "sql": [
+          "SELECT\n",
+          "  ioc_type,\n",
+          "  COUNT(*) AS ioc_count\n",
+          "FROM fe_lakewatch_catalog.lakewatch_field.oss_iocs\n",
+          "GROUP BY ioc_type\n",
+          "ORDER BY ioc_count DESC"
+        ]
+      },
+      {
+        "id": "522fb7f10ef54b5f8a9a47fcc98cb248",
+        "question": [
+          "Top 25 ASNs hosting malicious IP indicators in the last 30 days."
+        ],
+        "sql": [
+          "SELECT\n",
+          "  asn.as_org AS as_organization,\n",
+          "  asn.as_number AS asn_number,\n",
+          "  COUNT(*) AS ip_ioc_count\n",
+          "FROM fe_lakewatch_catalog.lakewatch_field.oss_iocs\n",
+          "WHERE ioc_type IN ('IPv4', 'IPv6')\n",
+          "  AND last_seen >= current_timestamp() - INTERVAL 30 DAYS\n",
+          "  AND asn.as_org IS NOT NULL\n",
+          "GROUP BY asn.as_org, asn.as_number\n",
+          "ORDER BY ip_ioc_count DESC\n",
+          "LIMIT 25"
+        ]
+      },
+      {
+        "id": "6445e6bceabf4fe0aa13536b3dfe1481",
+        "question": [
+          "Which datasets contributed new IoCs in the last 7 days?"
+        ],
+        "sql": [
+          "SELECT\n",
+          "  dataset,\n",
+          "  COUNT(*) AS new_iocs\n",
+          "FROM fe_lakewatch_catalog.lakewatch_field.oss_iocs\n",
+          "WHERE first_seen >= current_timestamp() - INTERVAL 7 DAYS\n",
+          "GROUP BY dataset\n",
+          "ORDER BY new_iocs DESC"
+        ]
+      },
+      {
+        "id": "824e948498f24b9a9b42fb9e345d8bb0",
+        "question": [
+          "Search for an IoC by exact value across all types."
+        ],
+        "sql": [
+          "-- Replace '<indicator_value>' with the actual IoC to look up (e.g. an IP address, domain, URL, or file hash)\n",
+          "SELECT\n",
+          "  ioc,\n",
+          "  ioc_type,\n",
+          "  dataset,\n",
+          "  first_seen,\n",
+          "  last_seen,\n",
+          "  ioc_title\n",
+          "FROM fe_lakewatch_catalog.lakewatch_field.oss_iocs\n",
+          "WHERE ioc = '<indicator_value>'\n",
+          "ORDER BY last_seen DESC"
+        ]
+      },
+      {
+        "id": "869c7674984b4f23a3f2098f13dc9b9b",
+        "question": [
+          "Geographic distribution of malicious IP indicators by country."
+        ],
+        "sql": [
+          "SELECT\n",
+          "  geoip.country AS country,\n",
+          "  COUNT(*) AS ip_ioc_count\n",
+          "FROM fe_lakewatch_catalog.lakewatch_field.oss_iocs\n",
+          "WHERE ioc_type IN ('IPv4', 'IPv6')\n",
+          "  AND geoip.country IS NOT NULL\n",
+          "GROUP BY geoip.country\n",
+          "ORDER BY ip_ioc_count DESC"
+        ]
+      }
+    ],
+    "sql_snippets": {
+      "filters": [
+        {
+          "id": "01f1748583e118a8a68c9bb3ca92986c",
+          "sql": [
+            "oss_iocs.ioc_type IN ('IPv4', 'IPv6')"
+          ],
+          "display_name": "IP IoCs only"
+        },
+        {
+          "id": "01f17485890e1086a16d7661194c67ee",
+          "sql": [
+            "oss_iocs.ioc_type = 'URL'"
+          ],
+          "display_name": "URL IoCs only"
+        },
+        {
+          "id": "01f17485890e13f7893c2b9a625a4ec1",
+          "sql": [
+            "oss_iocs.ioc_type IN ('hostname', 'domain')"
+          ],
+          "display_name": "Hostname or domain IoCs only"
+        },
+        {
+          "id": "01f17485890e1707a23fef7571738038",
+          "sql": [
+            "oss_iocs.ioc_type LIKE 'FileHash-%'"
+          ],
+          "display_name": "File hash IoCs only"
+        },
+        {
+          "id": "01f174858e801b729382f14acd77d7af",
+          "sql": [
+            "oss_iocs.last_seen >= current_timestamp() - INTERVAL 7 DAYS"
+          ],
+          "display_name": "Recent IoCs (last 7 days)"
+        },
+        {
+          "id": "01f174858e801e979116ae1a0de3bb44",
+          "sql": [
+            "oss_iocs.last_seen >= current_timestamp() - INTERVAL 30 DAYS"
+          ],
+          "display_name": "Recent IoCs (last 30 days)"
+        }
+      ],
+      "measures": [
+        {
+          "id": "01f174858e81116e991e9f881daa22d8",
+          "sql": [
+            "COUNT(*)"
+          ],
+          "display_name": "Total IoC count"
+        },
+        {
+          "id": "01f174858e811436944a3906571544db",
+          "sql": [
+            "COUNT(DISTINCT oss_iocs.ioc)"
+          ],
+          "display_name": "Distinct IoC values"
+        }
+      ]
+    }
+  },
+  "benchmarks": {
+    "questions": [
+      {
+        "id": "bd04ccb9e328485a8badbfc283a7d97c",
+        "question": [
+          "List the top 10 countries hosting malicious IP indicators."
+        ],
+        "answer": [
+          {
+            "format": "SQL",
+            "content": [
+              "SELECT\n",
+              "  geoip.country AS country,\n",
+              "  COUNT(*) AS ip_iocs\n",
+              "FROM fe_lakewatch_catalog.lakewatch_field.oss_iocs\n",
+              "WHERE ioc_type IN ('IPv4', 'IPv6')\n",
+              "  AND geoip.country IS NOT NULL\n",
+              "GROUP BY geoip.country\n",
+              "ORDER BY ip_iocs DESC\n",
+              "LIMIT 10"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "aade221260154d35a35c667433046bb8",
+        "question": [
+          "How many IoCs are in the threat-intel data set?"
+        ],
+        "answer": [
+          {
+            "format": "SQL",
+            "content": [
+              "SELECT COUNT(*) AS total_iocs FROM fe_lakewatch_catalog.lakewatch_field.oss_iocs"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "816612bd15994a5ea781b30b3f15022f",
+        "question": [
+          "Show the 10 most-recently-seen malicious URLs."
+        ],
+        "answer": [
+          {
+            "format": "SQL",
+            "content": [
+              "SELECT\n",
+              "  ioc AS url,\n",
+              "  last_seen,\n",
+              "  dataset\n",
+              "FROM fe_lakewatch_catalog.lakewatch_field.oss_iocs\n",
+              "WHERE ioc_type = 'URL'\n",
+              "ORDER BY last_seen DESC\n",
+              "LIMIT 10"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "1142aa371d9948a98b5292ddfbbe066b",
+        "question": [
+          "Which dataset source contributes the most IoCs overall?"
+        ],
+        "answer": [
+          {
+            "format": "SQL",
+            "content": [
+              "SELECT\n",
+              "  dataset,\n",
+              "  COUNT(*) AS ioc_count\n",
+              "FROM fe_lakewatch_catalog.lakewatch_field.oss_iocs\n",
+              "GROUP BY dataset\n",
+              "ORDER BY ioc_count DESC\n",
+              "LIMIT 1"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

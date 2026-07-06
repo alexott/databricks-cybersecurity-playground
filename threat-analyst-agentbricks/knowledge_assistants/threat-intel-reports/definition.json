@@ -1,0 +1,57 @@
+{
+  "display_name": "threat-intel-reports",
+  "description": "Cybersecurity threat intelligence and detection engineering documents",
+  "instructions": "You're a cybersecurity analyst concentrating on the analysis of new threats, threat actors, attacks, and related information. Your goal is to ensure that information on emerging threats and attacks is extracted, analyzed, and made available to threat hunters and detection engineers who will use it to protect the company.",
+  "knowledge_sources": [
+    {
+      "display_name": "threat-intel-reports",
+      "description": "Threat intelligence reports from multiple companies",
+      "source_type": "files",
+      "files": {
+        "path": "/Volumes/fe_lakewatch_catalog/threatintel/docs/threat-intel-reports/ti-reports"
+      },
+      "local_dir": "files/ti-reports"
+    }
+  ],
+  "examples": [
+    {
+      "question": "Summarize the major cybersecurity incidents reported in the past month.",
+      "guidelines": [
+        "Aggregate from the most recent Threat Intelligence News reports",
+        "Group by sector and threat type",
+        "Cite source report dates for each incident"
+      ]
+    },
+    {
+      "question": "What are the most common attack vectors targeting <industry> this quarter?",
+      "guidelines": [
+        "Aggregate from threat intel reports for the requested industry",
+        "Cite report dates",
+        "Prioritize by frequency"
+      ]
+    },
+    {
+      "question": "What do we know about threat actor <name> \u2014 TTPs, targets, and recent campaigns?",
+      "guidelines": [
+        "Search the Threat Intelligence News reports",
+        "Summarize known TTPs, targeted sectors and regions, and recent campaign IoCs",
+        "Link to source reports"
+      ]
+    },
+    {
+      "question": "What's the latest intel on malware family <name>?",
+      "guidelines": [
+        "Search reports for the family",
+        "Summarize capabilities, delivery vectors, observed IoCs, and recent campaigns"
+      ]
+    },
+    {
+      "question": "What's the latest intelligence on CVE-<id>?",
+      "guidelines": [
+        "Search reports for the CVE",
+        "Report active-exploitation indicators, affected products, and mitigations cited",
+        "State explicitly if no intel is available"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,4339 @@
+{
+  "version": 2,
+  "config": {
+    "sample_questions": [
+      {
+        "id": "01f1748365f01d5ea6741654df79698f",
+        "question": [
+          "What were the top sources of failed logins in the last 24 hours?"
+        ]
+      },
+      {
+        "id": "01f17483660f108fb7bdae42fd640fcf",
+        "question": [
+          "Show open high-severity detection findings from the last 7 days."
+        ]
+      },
+      {
+        "id": "01f17483662c1f61ba78026586261cf0",
+        "question": [
+          "Which users had account changes in the last 24 hours?"
+        ]
+      },
+      {
+        "id": "01f17483664c16b5ac9e7aba05b0e45d",
+        "question": [
+          "What is the daily authentication failure rate over the past 30 days?"
+        ]
+      },
+      {
+        "id": "01f17483666c12b687a5243d2f491858",
+        "question": [
+          "Are there any DNS anomalies indicating potential tunneling this week?"
+        ]
+      }
+    ]
+  },
+  "data_sources": {
+    "tables": [
+      {
+        "identifier": "fe_lakewatch_catalog.gold.account_change",
+        "description": [
+          "OCSF Account Change events: account-lifecycle and identity-management actions — creation, deletion, lockout, password reset, MFA enrollment, permissions changes. Use for: privilege-abuse and insider-threat detection (especially against high-severity events), identity-governance auditing, and detecting account-takeover indicators (sudden MFA disable, password reset followed by privilege grant). Common joins: `authentication` on `actor.user.uid` to correlate change with subsequent login behavior; `user_access` for the resulting entitlement state."
+        ],
+        "column_configs": [
+          {
+            "column_name": "action",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "action_id",
+            "exclude": true
+          },
+          {
+            "column_name": "activity",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "activity_id",
+            "exclude": true
+          },
+          {
+            "column_name": "activity_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "actor",
+            "description": [
+              "OCSF struct for the principal who performed the account change. Use `actor.user.name` or `actor.user.uid` to identify who made the change."
+            ]
+          },
+          {
+            "column_name": "api"
+          },
+          {
+            "column_name": "category_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "category_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "class_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "class_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "cloud"
+          },
+          {
+            "column_name": "disposition",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "disposition_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "enrichments"
+          },
+          {
+            "column_name": "message",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "metadata"
+          },
+          {
+            "column_name": "observables"
+          },
+          {
+            "column_name": "policies"
+          },
+          {
+            "column_name": "raw_data",
+            "exclude": true
+          },
+          {
+            "column_name": "severity",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "severity_id",
+            "description": [
+              "OCSF severity code for the account change event. Use `severity_id >= 4` to focus on high and critical account changes."
+            ],
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "src_endpoint"
+          },
+          {
+            "column_name": "status",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_code",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_detail",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_id",
+            "description": [
+              "OCSF numeric status code describing whether the account change succeeded or failed."
+            ],
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "time",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "timezone_offset",
+            "exclude": true
+          },
+          {
+            "column_name": "type_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "type_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "unmapped",
+            "exclude": true
+          },
+          {
+            "column_name": "user",
+            "description": [
+              "OCSF struct for the target user account affected by the change, such as the account created, modified, disabled, or granted access."
+            ]
+          },
+          {
+            "column_name": "user_result"
+          }
+        ]
+      },
+      {
+        "identifier": "fe_lakewatch_catalog.gold.api_activity",
+        "description": [
+          "OCSF API Activity events: generic API calls and management-plane operations (cloud control plane, SaaS APIs, REST endpoints). Use for: detecting suspicious cloud-provider operations (disabling logging, creating users), anomaly detection on call volume per actor, and audit-trail reconstruction. Common joins: `account_change` for management-plane identity operations; `network_activity` to enrich with source-IP context; `user_access` for the actor's privileges at the time of the call."
+        ],
+        "column_configs": [
+          {
+            "column_name": "action",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "action_id",
+            "exclude": true
+          },
+          {
+            "column_name": "activity_id",
+            "exclude": true
+          },
+          {
+            "column_name": "activity_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "actor"
+          },
+          {
+            "column_name": "api"
+          },
+          {
+            "column_name": "category_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "category_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "class_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "class_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "cloud"
+          },
+          {
+            "column_name": "disposition",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "disposition_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "dst_endpoint"
+          },
+          {
+            "column_name": "enrichments"
+          },
+          {
+            "column_name": "http_request"
+          },
+          {
+            "column_name": "http_response"
+          },
+          {
+            "column_name": "message",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "metadata"
+          },
+          {
+            "column_name": "observables"
+          },
+          {
+            "column_name": "raw_data",
+            "exclude": true
+          },
+          {
+            "column_name": "resources"
+          },
+          {
+            "column_name": "severity",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "severity_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "src_endpoint"
+          },
+          {
+            "column_name": "start_time",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "status",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_code",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_detail",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "time",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "timezone_offset",
+            "exclude": true
+          },
+          {
+            "column_name": "type_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "type_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "unmapped",
+            "exclude": true
+          }
+        ]
+      },
+      {
+        "identifier": "fe_lakewatch_catalog.gold.authentication",
+        "description": [
+          "OCSF Authentication events: login attempts, MFA challenges, logoff, and credential validation across all identity providers. Use for: brute-force / credential-stuffing detection (failure-rate thresholds), MFA-coverage analysis, geo-anomaly and impossible-travel investigations, account-takeover triage. Common joins: `account_change` on `actor.user.uid` to correlate suspicious logins with concurrent account modifications; `user_access` for the post-login entitlement context."
+        ],
+        "column_configs": [
+          {
+            "column_name": "action",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "action_id",
+            "exclude": true
+          },
+          {
+            "column_name": "activity",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "activity_id",
+            "exclude": true
+          },
+          {
+            "column_name": "activity_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "actor",
+            "description": [
+              "OCSF struct for the acting principal. Use `actor.user.name` for the username on successful authentication events and `actor.user.uid` for cross-table correlation."
+            ]
+          },
+          {
+            "column_name": "auth_factors"
+          },
+          {
+            "column_name": "auth_protocol",
+            "description": [
+              "Human-readable authentication protocol used by the event, such as Kerberos, NTLM, SAML, or OAuth."
+            ],
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "auth_protocol_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "category_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "category_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "class_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "class_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "cloud"
+          },
+          {
+            "column_name": "disposition",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "disposition_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "dst_endpoint"
+          },
+          {
+            "column_name": "enrichments"
+          },
+          {
+            "column_name": "is_mfa",
+            "description": [
+              "Boolean flag indicating whether multi-factor authentication was used for this authentication event."
+            ],
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "is_remote",
+            "description": [
+              "Boolean flag indicating whether the authentication originated from a remote source."
+            ],
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "logon_type",
+            "description": [
+              "Human-readable logon method or session type for the authentication event."
+            ],
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "logon_type_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "message",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "metadata"
+          },
+          {
+            "column_name": "observables"
+          },
+          {
+            "column_name": "raw_data",
+            "exclude": true
+          },
+          {
+            "column_name": "service"
+          },
+          {
+            "column_name": "session"
+          },
+          {
+            "column_name": "severity",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "severity_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "src_endpoint"
+          },
+          {
+            "column_name": "status",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_code",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_detail",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_id",
+            "description": [
+              "OCSF numeric status code. Use `status_id = 2` to identify failed authentication events."
+            ],
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "time",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "timezone_offset",
+            "exclude": true
+          },
+          {
+            "column_name": "type_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "type_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "unmapped",
+            "exclude": true
+          },
+          {
+            "column_name": "user",
+            "description": [
+              "OCSF struct for the target or attempted user. On failed authentication events, `user.name` holds the attempted username when `actor.user.name` is not populated."
+            ]
+          }
+        ]
+      },
+      {
+        "identifier": "fe_lakewatch_catalog.gold.data_security_finding",
+        "description": [
+          "OCSF Data Security Findings: DLP-style alerts on sensitive-data movement — classification matches, policy violations, unauthorized transfers. Use for: data-exfiltration triage, DLP policy effectiveness (blocked vs. allowed ratio), data-classification coverage. Important: low blocked-violation rates may indicate DLP policies are in monitoring-only mode rather than enforcement. Common joins: `email_activity` for exfil-via-email investigations; `http_activity` / `file_hosting_activity` for upload-based exfil."
+        ],
+        "column_configs": [
+          {
+            "column_name": "action",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "action_id",
+            "exclude": true
+          },
+          {
+            "column_name": "activity_id",
+            "exclude": true
+          },
+          {
+            "column_name": "activity_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "actor"
+          },
+          {
+            "column_name": "api"
+          },
+          {
+            "column_name": "category_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "category_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "class_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "class_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "cloud"
+          },
+          {
+            "column_name": "confidence",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "confidence_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "confidence_score",
+            "description": [
+              "Numeric confidence score for the DLP or data security finding."
+            ],
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "database"
+          },
+          {
+            "column_name": "databucket"
+          },
+          {
+            "column_name": "device"
+          },
+          {
+            "column_name": "disposition",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "disposition_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "dst_endpoint"
+          },
+          {
+            "column_name": "end_time",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "enrichments"
+          },
+          {
+            "column_name": "file"
+          },
+          {
+            "column_name": "finding_info",
+            "description": [
+              "OCSF struct containing core metadata about the finding instance, such as its identifier, title, and descriptive attributes."
+            ]
+          },
+          {
+            "column_name": "impact",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "impact_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "impact_score",
+            "description": [
+              "Numeric impact score representing the potential impact of the data security finding."
+            ],
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "is_alert",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "message",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "metadata"
+          },
+          {
+            "column_name": "observables"
+          },
+          {
+            "column_name": "raw_data",
+            "exclude": true
+          },
+          {
+            "column_name": "risk_details",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "risk_level",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "risk_level_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "risk_score",
+            "description": [
+              "Numeric risk score summarizing the overall risk associated with the finding."
+            ],
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "severity",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "severity_id",
+            "description": [
+              "OCSF severity code for the data security finding. Use `severity_id >= 4` to focus on high and critical findings."
+            ],
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "src_endpoint"
+          },
+          {
+            "column_name": "status",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_code",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_detail",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "table"
+          },
+          {
+            "column_name": "time",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "timezone_offset",
+            "exclude": true
+          },
+          {
+            "column_name": "type_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "unmapped",
+            "exclude": true
+          }
+        ]
+      },
+      {
+        "identifier": "fe_lakewatch_catalog.gold.datastore_activity",
+        "description": [
+          "OCSF Datastore Activity events: operations against databases and object stores (queries, schema changes, bulk reads, permission changes). Use for: insider-data-access investigation, sensitive-database auditing, and detecting bulk-data exfil from databases. Common joins: `data_security_finding` for classification context; `account_change` for the actor's recent identity changes; `authentication` for the session that initiated the operation."
+        ],
+        "column_configs": [
+          {
+            "column_name": "action",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "action_id",
+            "exclude": true
+          },
+          {
+            "column_name": "activity_id",
+            "exclude": true
+          },
+          {
+            "column_name": "activity_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "actor"
+          },
+          {
+            "column_name": "api"
+          },
+          {
+            "column_name": "category_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "category_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "class_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "class_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "cloud"
+          },
+          {
+            "column_name": "database"
+          },
+          {
+            "column_name": "databucket"
+          },
+          {
+            "column_name": "device"
+          },
+          {
+            "column_name": "disposition",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "disposition_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "dst_endpoint"
+          },
+          {
+            "column_name": "enrichments"
+          },
+          {
+            "column_name": "http_request"
+          },
+          {
+            "column_name": "http_response"
+          },
+          {
+            "column_name": "message",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "metadata"
+          },
+          {
+            "column_name": "observables"
+          },
+          {
+            "column_name": "raw_data",
+            "exclude": true
+          },
+          {
+            "column_name": "severity",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "severity_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "src_endpoint"
+          },
+          {
+            "column_name": "status",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_code",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_detail",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "table"
+          },
+          {
+            "column_name": "time",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "timezone_offset",
+            "exclude": true
+          },
+          {
+            "column_name": "type",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "type_id",
+            "exclude": true
+          },
+          {
+            "column_name": "type_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "type_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "unmapped",
+            "exclude": true
+          }
+        ]
+      },
+      {
+        "identifier": "fe_lakewatch_catalog.gold.detection_finding",
+        "description": [
+          "OCSF Detection Findings: correlated alerts from detection engines (EDR, NDR, SIEM rules). Use for: triage queue management, MITRE technique coverage analysis, and false-positive review. Filter to `severity_id >= 4` for high/critical first. Common joins: `incident_finding` via `finding_info_list` if promoted to incidents; raw-event tables (`process_activity`, `network_activity`, etc.) on time + actor for underlying evidence."
+        ],
+        "column_configs": [
+          {
+            "column_name": "action",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "action_id",
+            "exclude": true
+          },
+          {
+            "column_name": "activity_id",
+            "exclude": true
+          },
+          {
+            "column_name": "activity_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "category_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "category_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "class_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "class_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "confidence",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "confidence_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "confidence_score",
+            "description": [
+              "Numeric confidence score for the detection finding. Lower values indicate lower-confidence alerts; higher values indicate stronger confidence."
+            ],
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "device"
+          },
+          {
+            "column_name": "disposition",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "disposition_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "end_time",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "enrichments"
+          },
+          {
+            "column_name": "evidences"
+          },
+          {
+            "column_name": "finding_info",
+            "description": [
+              "OCSF struct containing core metadata about the finding instance, such as its identifier, title, and other descriptive attributes."
+            ]
+          },
+          {
+            "column_name": "impact",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "impact_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "impact_score",
+            "description": [
+              "Numeric impact score representing the potential business or security impact of the detection finding."
+            ],
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "is_alert",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "lw_id",
+            "description": [
+              "Internal Lakewatch record identifier for this finding. Prefer OCSF finding identifiers for analytic joins and user-facing investigations."
+            ],
+            "exclude": true
+          },
+          {
+            "column_name": "message",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "metadata"
+          },
+          {
+            "column_name": "observables"
+          },
+          {
+            "column_name": "raw_data",
+            "exclude": true
+          },
+          {
+            "column_name": "remediation"
+          },
+          {
+            "column_name": "resources"
+          },
+          {
+            "column_name": "risk_details",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "risk_level",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "risk_level_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "risk_score",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "severity",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "severity_id",
+            "description": [
+              "OCSF severity code for the detection finding. Use `severity_id >= 4` to focus on high and critical detections."
+            ],
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "start_time",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "status",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_code",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_detail",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "time",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "timezone_offset",
+            "exclude": true
+          },
+          {
+            "column_name": "type_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "type_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "unmapped",
+            "exclude": true
+          },
+          {
+            "column_name": "vulnerabilities"
+          }
+        ]
+      },
+      {
+        "identifier": "fe_lakewatch_catalog.gold.dhcp_activity",
+        "description": [
+          "OCSF DHCP Activity events: lease assignments, releases, declines. Use for: device-to-IP attribution at a point in time (critical for IP-based investigations), unauthorized device detection, and DHCP starvation/exhaustion attacks. Common joins: `dns_activity`, `network_activity`, `http_activity` on `src_endpoint.ip` + time range — DHCP gives the IP↔device mapping needed to attribute IP-based events to specific endpoints."
+        ],
+        "column_configs": [
+          {
+            "column_name": "action",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "action_id",
+            "exclude": true
+          },
+          {
+            "column_name": "activity",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "activity_id",
+            "exclude": true
+          },
+          {
+            "column_name": "activity_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "app_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "category_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "category_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "class_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "class_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "cloud"
+          },
+          {
+            "column_name": "connection_info"
+          },
+          {
+            "column_name": "disposition",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "disposition_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "dst_endpoint"
+          },
+          {
+            "column_name": "enrichments"
+          },
+          {
+            "column_name": "is_renewal",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "lease_dur",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "message",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "metadata"
+          },
+          {
+            "column_name": "observables"
+          },
+          {
+            "column_name": "raw_data",
+            "exclude": true
+          },
+          {
+            "column_name": "severity",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "severity_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "src_endpoint"
+          },
+          {
+            "column_name": "status",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_code",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_detail",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "time",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "timezone_offset",
+            "exclude": true
+          },
+          {
+            "column_name": "traffic"
+          },
+          {
+            "column_name": "transaction_uid",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "type_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "type_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "unmapped",
+            "exclude": true
+          }
+        ]
+      },
+      {
+        "identifier": "fe_lakewatch_catalog.gold.dns_activity",
+        "description": [
+          "OCSF DNS Activity events: DNS queries and responses. Use for: C2 beaconing detection (high-volume queries to suspicious domains), DGA detection, DNS tunneling (rcode anomalies, oversized responses), and data-exfil-via-DNS. A failed-query (NXDOMAIN) ratio above 10% of total volume is a priority investigation trigger. Common joins: `network_activity` to correlate queries with subsequent flows; `dhcp_activity` to attribute source IPs to devices."
+        ],
+        "column_configs": [
+          {
+            "column_name": "action",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "action_id",
+            "exclude": true
+          },
+          {
+            "column_name": "activity",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "activity_id",
+            "exclude": true
+          },
+          {
+            "column_name": "activity_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "answers"
+          },
+          {
+            "column_name": "app_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "category_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "category_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "class_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "class_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "connection_info"
+          },
+          {
+            "column_name": "disposition",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "disposition_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "dst_endpoint"
+          },
+          {
+            "column_name": "enrichments"
+          },
+          {
+            "column_name": "message",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "metadata"
+          },
+          {
+            "column_name": "observables"
+          },
+          {
+            "column_name": "query",
+            "description": [
+              "OCSF struct describing the DNS question that was asked. The queried domain name is in `query.hostname` (use this for 'what domain was looked up'); the record type is in `query.type` (A, AAAA, CNAME, ...). Do NOT use `dst_endpoint.hostname` for the queried domain — `dst_endpoint` is the DNS resolver/server that answered (often only an IP, so its hostname is usually null)."
+            ]
+          },
+          {
+            "column_name": "raw_data",
+            "exclude": true
+          },
+          {
+            "column_name": "rcode",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "rcode_id",
+            "description": [
+              "DNS response code. Use `rcode_id = 3` to identify NXDOMAIN responses, which indicate failed lookups for non-existent domains."
+            ],
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "severity",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "severity_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "src_endpoint"
+          },
+          {
+            "column_name": "status",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_code",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_detail",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "time",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "timezone_offset",
+            "exclude": true
+          },
+          {
+            "column_name": "traffic"
+          },
+          {
+            "column_name": "type_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "type_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "unmapped",
+            "exclude": true
+          }
+        ]
+      },
+      {
+        "identifier": "fe_lakewatch_catalog.gold.email_activity",
+        "description": [
+          "OCSF Email Activity events: sent/received messages with header, attachment, and disposition metadata. Use for: phishing-campaign triage (find co-recipients of suspicious messages), data-exfiltration detection (outbound volume >70% of a user's email is a flag), and BEC investigations. Filter by `direction` to separate inbound vs outbound. Common joins: `http_activity` to find users who clicked links; `data_security_finding` for classification matches on attachments."
+        ],
+        "column_configs": [
+          {
+            "column_name": "action",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "action_id",
+            "exclude": true
+          },
+          {
+            "column_name": "activity",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "activity_id",
+            "exclude": true
+          },
+          {
+            "column_name": "activity_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "category_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "category_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "class_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "class_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "direction",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "direction_id",
+            "exclude": true
+          },
+          {
+            "column_name": "disposition",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "disposition_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "dst_endpoint"
+          },
+          {
+            "column_name": "email"
+          },
+          {
+            "column_name": "enrichments"
+          },
+          {
+            "column_name": "message",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "message_trace_uid",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "metadata"
+          },
+          {
+            "column_name": "observables"
+          },
+          {
+            "column_name": "protocol_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "raw_data",
+            "exclude": true
+          },
+          {
+            "column_name": "severity",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "severity_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "src_endpoint"
+          },
+          {
+            "column_name": "status",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_code",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_detail",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "time",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "timezone_offset",
+            "exclude": true
+          },
+          {
+            "column_name": "type_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "type_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "unmapped",
+            "exclude": true
+          }
+        ]
+      },
+      {
+        "identifier": "fe_lakewatch_catalog.gold.entity_management",
+        "description": [
+          "OCSF Entity Management events: lifecycle operations on managed entities (devices, services, applications) — registration, decommission, configuration changes. Use for: device-inventory drift detection, unauthorized-asset detection, and tracking service-account/SPN changes. Common joins: `account_change` if the entity is identity-related; `datastore_activity` if the entity is a database; `authentication` for service-account login activity."
+        ],
+        "column_configs": [
+          {
+            "column_name": "access_list"
+          },
+          {
+            "column_name": "access_mask",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "action",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "action_id",
+            "exclude": true
+          },
+          {
+            "column_name": "activity_id",
+            "exclude": true
+          },
+          {
+            "column_name": "activity_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "actor"
+          },
+          {
+            "column_name": "api"
+          },
+          {
+            "column_name": "category_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "category_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "class_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "class_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "cloud"
+          },
+          {
+            "column_name": "comment",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "device"
+          },
+          {
+            "column_name": "disposition",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "disposition_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "enrichments"
+          },
+          {
+            "column_name": "entity"
+          },
+          {
+            "column_name": "entity_result"
+          },
+          {
+            "column_name": "message",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "metadata"
+          },
+          {
+            "column_name": "observables"
+          },
+          {
+            "column_name": "raw_data",
+            "exclude": true
+          },
+          {
+            "column_name": "severity",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "severity_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "status",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_code",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_detail",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "time",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "timezone_offset",
+            "exclude": true
+          },
+          {
+            "column_name": "type_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "type_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "unmapped",
+            "exclude": true
+          }
+        ]
+      },
+      {
+        "identifier": "fe_lakewatch_catalog.gold.file_activity",
+        "description": [
+          "OCSF File Activity events: file create/read/write/delete/rename/permission-change events on endpoints. Use for: data-staging detection (large file copies to unusual locations), ransomware detection (mass file modifications/encryptions), and dropped-payload investigation. Common joins: `process_activity` on `device.uid` + time to identify the originating process; `network_activity` to correlate with subsequent exfil; `file_hosting_activity` for cloud-upload follow-up."
+        ],
+        "column_configs": [
+          {
+            "column_name": "access_mask",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "action",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "action_id",
+            "exclude": true
+          },
+          {
+            "column_name": "activity",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "activity_id",
+            "exclude": true
+          },
+          {
+            "column_name": "activity_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "actor"
+          },
+          {
+            "column_name": "category_name",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "category_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "class_name",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "class_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "component",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "device"
+          },
+          {
+            "column_name": "disposition",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "disposition_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "enrichments"
+          },
+          {
+            "column_name": "file"
+          },
+          {
+            "column_name": "file_diff",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "message",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "metadata"
+          },
+          {
+            "column_name": "observables"
+          },
+          {
+            "column_name": "raw_data",
+            "exclude": true
+          },
+          {
+            "column_name": "severity",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "severity_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "status",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "status_code",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "status_detail",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "status_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "time",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "timezone_offset",
+            "exclude": true
+          },
+          {
+            "column_name": "type_name",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "type_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "unmapped",
+            "exclude": true
+          }
+        ]
+      },
+      {
+        "identifier": "fe_lakewatch_catalog.gold.file_hosting_activity",
+        "description": [
+          "OCSF File Hosting Activity events: file-share and cloud-storage operations (uploads, downloads, sharing, permission changes). Use for: cloud-data-exfil investigation, shadow-IT discovery, and oversharing/external-sharing detection. Common joins: `data_security_finding` for classification matches; `user_access` for the sharing user's privileges; `file_activity` for the source file on the endpoint."
+        ],
+        "column_configs": [
+          {
+            "column_name": "action",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "action_id",
+            "exclude": true
+          },
+          {
+            "column_name": "activity_id",
+            "exclude": true
+          },
+          {
+            "column_name": "activity_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "actor"
+          },
+          {
+            "column_name": "category_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "category_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "class_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "class_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "connection_info"
+          },
+          {
+            "column_name": "disposition",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "disposition_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "dst_endpoint"
+          },
+          {
+            "column_name": "enrichments"
+          },
+          {
+            "column_name": "expiration_time",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "file"
+          },
+          {
+            "column_name": "file_result"
+          },
+          {
+            "column_name": "lw_id",
+            "exclude": true
+          },
+          {
+            "column_name": "message",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "metadata"
+          },
+          {
+            "column_name": "observables"
+          },
+          {
+            "column_name": "raw_data",
+            "exclude": true
+          },
+          {
+            "column_name": "severity",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "severity_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "share",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "share_type",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "share_type_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "src_endpoint"
+          },
+          {
+            "column_name": "status",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_code",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_detail",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "time",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "timezone_offset",
+            "exclude": true
+          },
+          {
+            "column_name": "type_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "type_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "unmapped",
+            "exclude": true
+          }
+        ]
+      },
+      {
+        "identifier": "fe_lakewatch_catalog.gold.group_management",
+        "description": [
+          "OCSF Group Management events: group/role creation, deletion, and membership changes (add/remove members). Use for: privilege-escalation detection (additions to admin groups), insider-threat investigation (unexpected group memberships), and access-review compliance. Common joins: `account_change` for the affected user's other recent changes; `user_access` for the post-change entitlement; `authentication` for subsequent login activity using the new privileges."
+        ],
+        "column_configs": [
+          {
+            "column_name": "action",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "action_id",
+            "exclude": true
+          },
+          {
+            "column_name": "activity",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "activity_id",
+            "exclude": true
+          },
+          {
+            "column_name": "activity_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "actor"
+          },
+          {
+            "column_name": "api"
+          },
+          {
+            "column_name": "category_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "category_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "class_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "class_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "cloud"
+          },
+          {
+            "column_name": "disposition",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "disposition_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "enrichments"
+          },
+          {
+            "column_name": "group"
+          },
+          {
+            "column_name": "message",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "metadata"
+          },
+          {
+            "column_name": "observables"
+          },
+          {
+            "column_name": "privileges"
+          },
+          {
+            "column_name": "raw_data",
+            "exclude": true
+          },
+          {
+            "column_name": "resource"
+          },
+          {
+            "column_name": "severity",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "severity_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "src_endpoint"
+          },
+          {
+            "column_name": "status",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_code",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_detail",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "time",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "timezone_offset",
+            "exclude": true
+          },
+          {
+            "column_name": "type_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "type_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "unmapped",
+            "exclude": true
+          },
+          {
+            "column_name": "user"
+          }
+        ]
+      },
+      {
+        "identifier": "fe_lakewatch_catalog.gold.http_activity",
+        "description": [
+          "OCSF HTTP Activity events: HTTP/HTTPS requests with URL, method, status, user-agent, and response sizes. Use for: web-attack detection (SQLi/XSS patterns in URLs, anomalous user-agents), exfil-via-HTTP investigation (large POSTs), and phishing-link-click analysis. Common joins: `network_activity` for layer-3/4 context; `dns_activity` for domain-resolution history; `file_activity` for download/upload payload tracking."
+        ],
+        "column_configs": [
+          {
+            "column_name": "action",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "action_id",
+            "exclude": true
+          },
+          {
+            "column_name": "activity",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "activity_id",
+            "exclude": true
+          },
+          {
+            "column_name": "activity_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "app_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "category_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "category_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "class_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "class_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "connection_info"
+          },
+          {
+            "column_name": "disposition",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "disposition_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "dst_endpoint"
+          },
+          {
+            "column_name": "enrichments"
+          },
+          {
+            "column_name": "file"
+          },
+          {
+            "column_name": "firewall_rule"
+          },
+          {
+            "column_name": "http_cookies"
+          },
+          {
+            "column_name": "http_request"
+          },
+          {
+            "column_name": "http_response"
+          },
+          {
+            "column_name": "message",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "metadata"
+          },
+          {
+            "column_name": "observables"
+          },
+          {
+            "column_name": "policy"
+          },
+          {
+            "column_name": "raw_data",
+            "exclude": true
+          },
+          {
+            "column_name": "severity",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "severity_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "src_endpoint"
+          },
+          {
+            "column_name": "status",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_code",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_detail",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "time",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "timezone_offset",
+            "exclude": true
+          },
+          {
+            "column_name": "traffic"
+          },
+          {
+            "column_name": "type_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "type_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "unmapped",
+            "exclude": true
+          }
+        ]
+      },
+      {
+        "identifier": "fe_lakewatch_catalog.gold.incident_finding",
+        "description": [
+          "OCSF Incident Findings: correlated incidents (often promoted from detection findings) with status, priority, verdict, and assignee. Use for: SOC workload management (open vs. closed by assignee), MTTR/MTTD reporting, and root-cause / verdict analysis. Filter by `status` to scope active work. Common joins: `detection_finding` via `finding_info_list` for the contributing findings; raw-event tables for the underlying evidence."
+        ],
+        "column_configs": [
+          {
+            "column_name": "action",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "action_id",
+            "exclude": true
+          },
+          {
+            "column_name": "activity_id",
+            "exclude": true
+          },
+          {
+            "column_name": "activity_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "assignee"
+          },
+          {
+            "column_name": "assignee_group"
+          },
+          {
+            "column_name": "attacks"
+          },
+          {
+            "column_name": "category_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "category_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "class_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "class_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "comment",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "confidence",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "confidence_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "confidence_score",
+            "description": [
+              "Numeric confidence score for the incident or incident correlation logic."
+            ],
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "desc",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "disposition",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "disposition_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "end_time",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "enrichments"
+          },
+          {
+            "column_name": "finding_info_list",
+            "description": [
+              "Array of OCSF finding metadata objects that link the incident back to the contributing detection findings."
+            ]
+          },
+          {
+            "column_name": "impact",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "impact_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "impact_score",
+            "description": [
+              "Numeric impact score representing the potential impact or business importance of the incident."
+            ],
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "is_suspected_breach",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "lw_id",
+            "exclude": true
+          },
+          {
+            "column_name": "message",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "metadata"
+          },
+          {
+            "column_name": "observables"
+          },
+          {
+            "column_name": "priority",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "priority_id",
+            "description": [
+              "Numeric incident priority code used to rank incident response urgency."
+            ],
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "raw_data",
+            "exclude": true
+          },
+          {
+            "column_name": "severity",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "severity_id",
+            "description": [
+              "OCSF severity code for the incident. Use `severity_id >= 4` to focus on high and critical incidents."
+            ],
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "src_url",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "start_time",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "status",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_code",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_detail",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "tickets"
+          },
+          {
+            "column_name": "time",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "timezone_offset",
+            "exclude": true
+          },
+          {
+            "column_name": "type_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "type_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "unmapped",
+            "exclude": true
+          },
+          {
+            "column_name": "vendor_attributes"
+          },
+          {
+            "column_name": "verdict",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "verdict_id",
+            "enable_format_assistance": true
+          }
+        ]
+      },
+      {
+        "identifier": "fe_lakewatch_catalog.gold.network_activity",
+        "description": [
+          "OCSF Network Activity events: network flow records (TCP/UDP/ICMP) with source/destination endpoints and traffic volumes. Use for: lateral-movement detection, C2-beaconing-flow analysis, exfiltration-volume tracking. Common joins: `dns_activity` on `src_endpoint.ip` + time; `dhcp_activity` for IP↔device attribution; `process_activity` for the originating process."
+        ],
+        "column_configs": [
+          {
+            "column_name": "action",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "action_id",
+            "exclude": true
+          },
+          {
+            "column_name": "activity",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "activity_id",
+            "exclude": true
+          },
+          {
+            "column_name": "activity_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "category_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "category_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "class_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "class_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "cloud"
+          },
+          {
+            "column_name": "connection_info"
+          },
+          {
+            "column_name": "disposition",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "disposition_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "dst_endpoint"
+          },
+          {
+            "column_name": "end_time",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "enrichments"
+          },
+          {
+            "column_name": "message",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "metadata"
+          },
+          {
+            "column_name": "observables"
+          },
+          {
+            "column_name": "policy"
+          },
+          {
+            "column_name": "raw_data",
+            "exclude": true
+          },
+          {
+            "column_name": "severity",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "severity_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "src_endpoint"
+          },
+          {
+            "column_name": "start_time",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "status",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_code",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_detail",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "time",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "timezone_offset",
+            "exclude": true
+          },
+          {
+            "column_name": "traffic",
+            "description": [
+              "OCSF traffic struct containing flow volume metrics such as `traffic.bytes_in`, `traffic.bytes_out`, `traffic.packets_in`, and `traffic.packets_out`."
+            ]
+          },
+          {
+            "column_name": "type_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "type_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "unmapped",
+            "exclude": true
+          },
+          {
+            "column_name": "url"
+          }
+        ]
+      },
+      {
+        "identifier": "fe_lakewatch_catalog.gold.process_activity",
+        "description": [
+          "OCSF Process Activity events: process creation, termination, and inter-process actions (injection, module loads, requested permissions). Use for: malware-execution detection (suspicious command lines, parent-child anomalies), living-off-the-land technique hunting (powershell, wmic, certutil), and privilege-escalation detection (token impersonation). Common joins: `file_activity` for dropped files; `network_activity` for outbound connections; `script_activity` for executed script content."
+        ],
+        "column_configs": [
+          {
+            "column_name": "action",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "action_id",
+            "exclude": true
+          },
+          {
+            "column_name": "activity",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "activity_id",
+            "exclude": true
+          },
+          {
+            "column_name": "activity_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "actor"
+          },
+          {
+            "column_name": "category_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "category_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "class_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "class_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "device"
+          },
+          {
+            "column_name": "disposition",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "disposition_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "enrichments"
+          },
+          {
+            "column_name": "exit_code",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "injection_type",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "injection_type_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "message",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "metadata"
+          },
+          {
+            "column_name": "module"
+          },
+          {
+            "column_name": "observables"
+          },
+          {
+            "column_name": "process"
+          },
+          {
+            "column_name": "raw_data",
+            "exclude": true
+          },
+          {
+            "column_name": "requested_permissions",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "severity",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "severity_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "status",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_code",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_detail",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "time",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "timezone_offset",
+            "exclude": true
+          },
+          {
+            "column_name": "type_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "type_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "unmapped",
+            "exclude": true
+          }
+        ]
+      },
+      {
+        "identifier": "fe_lakewatch_catalog.gold.scheduled_job_activity",
+        "description": [
+          "OCSF Scheduled Job Activity events: cron / Task Scheduler / launchd / systemd-timer changes — create, modify, delete, execute. Use for: persistence-mechanism detection (a classic ATT&CK technique), and tracking unauthorized scheduled tasks. Common joins: `process_activity` for the spawned processes; `file_activity` for any payload created by the task."
+        ],
+        "column_configs": [
+          {
+            "column_name": "action",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "action_id",
+            "exclude": true
+          },
+          {
+            "column_name": "activity",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "activity_id",
+            "exclude": true
+          },
+          {
+            "column_name": "activity_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "actor"
+          },
+          {
+            "column_name": "category_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "category_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "class_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "class_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "device"
+          },
+          {
+            "column_name": "disposition",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "disposition_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "enrichments"
+          },
+          {
+            "column_name": "job"
+          },
+          {
+            "column_name": "message",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "metadata"
+          },
+          {
+            "column_name": "observables"
+          },
+          {
+            "column_name": "raw_data",
+            "exclude": true
+          },
+          {
+            "column_name": "risk_details",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "risk_level",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "risk_level_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "risk_score",
+            "description": [
+              "Numeric risk score summarizing the persistence or execution risk associated with the scheduled job event."
+            ],
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "severity",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "severity_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "start_time",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "status",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_code",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_detail",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "time",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "timezone_offset",
+            "exclude": true
+          },
+          {
+            "column_name": "type_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "type_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "unmapped",
+            "exclude": true
+          }
+        ]
+      },
+      {
+        "identifier": "fe_lakewatch_catalog.gold.script_activity",
+        "description": [
+          "OCSF Script Activity events: script-engine executions (PowerShell, Python, Bash, JavaScript) with full script content where captured. Use for: malicious-script detection (encoded payloads, suspicious cmdlets), and supply-chain script analysis. Common joins: `process_activity` for the script-host process context; `file_activity` for downloaded script files."
+        ],
+        "column_configs": [
+          {
+            "column_name": "action",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "action_id",
+            "exclude": true
+          },
+          {
+            "column_name": "activity",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "activity_id",
+            "exclude": true
+          },
+          {
+            "column_name": "activity_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "actor"
+          },
+          {
+            "column_name": "category_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "category_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "class_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "class_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "device"
+          },
+          {
+            "column_name": "disposition",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "disposition_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "enrichments"
+          },
+          {
+            "column_name": "message",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "metadata"
+          },
+          {
+            "column_name": "observables"
+          },
+          {
+            "column_name": "raw_data",
+            "exclude": true
+          },
+          {
+            "column_name": "script"
+          },
+          {
+            "column_name": "severity",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "severity_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "status",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_code",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_detail",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "time",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "timezone_offset",
+            "exclude": true
+          },
+          {
+            "column_name": "type_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "type_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "unmapped",
+            "exclude": true
+          }
+        ]
+      },
+      {
+        "identifier": "fe_lakewatch_catalog.gold.ssh_activity",
+        "description": [
+          "OCSF SSH Activity events: SSH session events including authentication, key exchanges, and channel operations. Use for: anomalous-SSH-login detection (uncommon source IPs, off-hours access), lateral-movement-via-SSH investigation, and unauthorized-key-pair detection. Common joins: `authentication` for the broader login context; `network_activity` for the layer-4 connection metadata."
+        ],
+        "column_configs": [
+          {
+            "column_name": "action",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "action_id",
+            "exclude": true
+          },
+          {
+            "column_name": "activity_id",
+            "exclude": true
+          },
+          {
+            "column_name": "activity_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "app_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "auth_type",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "auth_type_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "category_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "category_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "class_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "class_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "connection_info"
+          },
+          {
+            "column_name": "disposition",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "disposition_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "dst_endpoint"
+          },
+          {
+            "column_name": "enrichments"
+          },
+          {
+            "column_name": "file"
+          },
+          {
+            "column_name": "message",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "metadata"
+          },
+          {
+            "column_name": "observables"
+          },
+          {
+            "column_name": "protocol_ver",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "raw_data",
+            "exclude": true
+          },
+          {
+            "column_name": "severity",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "severity_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "src_endpoint"
+          },
+          {
+            "column_name": "status",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_code",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_detail",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "time",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "timezone_offset",
+            "exclude": true
+          },
+          {
+            "column_name": "type_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "type_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "unmapped",
+            "exclude": true
+          }
+        ]
+      },
+      {
+        "identifier": "fe_lakewatch_catalog.gold.user_access",
+        "description": [
+          "OCSF User Access events: grants, revocations, and queries of user privileges and entitlements. Use for: privilege-creep detection, separation-of-duties validation, and access-review preparation. Common joins: `account_change` for the broader account context; `group_management` for the underlying role/group changes; `authentication` for login activity using the granted privileges."
+        ],
+        "column_configs": [
+          {
+            "column_name": "action",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "action_id",
+            "exclude": true
+          },
+          {
+            "column_name": "activity",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "activity_id",
+            "exclude": true
+          },
+          {
+            "column_name": "activity_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "actor"
+          },
+          {
+            "column_name": "api"
+          },
+          {
+            "column_name": "category_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "category_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "class_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "class_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "cloud"
+          },
+          {
+            "column_name": "disposition",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "disposition_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "enrichments"
+          },
+          {
+            "column_name": "message",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "metadata"
+          },
+          {
+            "column_name": "observables"
+          },
+          {
+            "column_name": "privileges"
+          },
+          {
+            "column_name": "raw_data",
+            "exclude": true
+          },
+          {
+            "column_name": "resource"
+          },
+          {
+            "column_name": "severity",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "severity_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "src_endpoint"
+          },
+          {
+            "column_name": "status",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_code",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_detail",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "time",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "timezone_offset",
+            "exclude": true
+          },
+          {
+            "column_name": "type_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "type_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "unmapped",
+            "exclude": true
+          },
+          {
+            "column_name": "user"
+          }
+        ]
+      },
+      {
+        "identifier": "fe_lakewatch_catalog.gold.vulnerability_finding",
+        "description": [
+          "OCSF Vulnerability Findings: vulnerability scan results — CVE matches, CVSS scores, exposed assets. Use for: patch-prioritization (cross-reference with active-exploitation indicators), exposure tracking over time, and asset-inventory coverage validation. Common joins: `detection_finding` for findings linked to active threats; `entity_management` for the affected asset's lifecycle context."
+        ],
+        "column_configs": [
+          {
+            "column_name": "action",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "action_id",
+            "exclude": true
+          },
+          {
+            "column_name": "activity",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "activity_id",
+            "exclude": true
+          },
+          {
+            "column_name": "activity_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "category_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "category_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "class_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "class_uid",
+            "exclude": true
+          },
+          {
+            "column_name": "device"
+          },
+          {
+            "column_name": "disposition",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "disposition_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "end_time",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "enrichments"
+          },
+          {
+            "column_name": "finding_info"
+          },
+          {
+            "column_name": "message",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "metadata"
+          },
+          {
+            "column_name": "observables"
+          },
+          {
+            "column_name": "raw_data",
+            "exclude": true
+          },
+          {
+            "column_name": "resources"
+          },
+          {
+            "column_name": "severity",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "severity_id",
+            "description": [
+              "OCSF severity code for the vulnerability finding. Use `severity_id >= 4` to focus on high and critical vulnerabilities."
+            ],
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "start_time",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "status",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_code",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_detail",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "status_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "time",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "timezone_offset",
+            "exclude": true
+          },
+          {
+            "column_name": "type_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "unmapped",
+            "exclude": true
+          },
+          {
+            "column_name": "vulnerabilities",
+            "description": [
+              "OCSF array describing the matched vulnerabilities, including identifiers such as CVE and related severity metadata."
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "instructions": {
+    "text_instructions": [
+      {
+        "id": "01f13960639319b280d084841e25722a",
+        "content": [
+          "You're an experienced cybersecurity analyst trained by Chris Sanders. You're analyzing available data to protect your company: find potential breaches, analyze current security posture, proactively perform threat hunting exercises, and much more.\n",
+          "\n",
+          "* Data is normalized to [OCSF](https://schema.ocsf.io/1.3.0/)\n",
+          "\n",
+          "## 💡 Quick Analysis Patterns\n",
+          "\n",
+          "* Compare authentication failure rates week-over-week to spot emerging brute force or credential stuffing campaigns before they escalate.\n",
+          "* Cross-reference high-severity account changes with concurrent threat detection findings to identify coordinated privilege abuse or insider threat activity.\n",
+          "\n",
+          "## ⚡ Best Practices\n",
+          "\n",
+          "* When a user asks about any KPI breakdown without specifying a time range or which KPIs to include, always ask a clarification question first — for example: \"Please specify the time period and the security domain you want to focus on, such as authentication, detections, or data loss prevention.\"\n",
+          "* Always round all percentage-based metrics to two decimal places when presenting results in summaries or reports.\n",
+          "* When users ask about authentication health without a time range, ask them to clarify the period — results vary significantly by window.\n",
+          "* Flag authentication failure rates above 20% as a priority investigation trigger, as this threshold typically signals automated attack patterns rather than user error.\n",
+          "* When reviewing account changes, filter to high and critical severity events first, since these represent the highest-risk privilege and access modifications requiring immediate identity governance review.\n",
+          "* Treat any detection finding with a confidence score below the median as lower priority, and focus analyst attention on findings at or above the 95th percentile impact score for triage.\n",
+          "* When analyzing DNS activity, a failed query ratio above 10% of total DNS volume should be escalated as a potential indicator of DNS tunneling or infrastructure misconfiguration.\n",
+          "* When reviewing data security violations, always note whether the action was blocked or allowed, since a low blocked-violation percentage may indicate DLP policies are in monitoring-only mode rather than enforcement mode.\n",
+          "* When outbound email activity exceeds 70% of total email volume for a given user or group, flag it for review as a potential data exfiltration signal.\n",
+          "* Limit broad network traffic and API activity analyses to rolling 30-day windows by default to keep results actionable and avoid performance issues with multi-year data pulls.\n",
+          "* When users ask about detection coverage or SOC effectiveness without specifying severity, clarify whether they want all findings or only high and critical severity events, as these represent fundamentally different operational questions.\n",
+          "* **OCSF user attribution (this dataset):** failed authentication events (`status_id = 2`) populate the acting principal in `user.name` (and `src_endpoint.ip`), while `actor.user.name` is only set on successful events. When attributing logins or failures to a user, use `COALESCE(actor.user.name, user.name)` so failed logins are not silently dropped."
+        ]
+      }
+    ],
+    "example_question_sqls": [
+      {
+        "id": "00af4105e94b40469405f9f70bc2acf6",
+        "question": [
+          "Which source IPs sent the most outbound network bytes in the last 7 days?"
+        ],
+        "sql": [
+          "SELECT\n",
+          "  src_endpoint.ip AS source_ip,\n",
+          "  SUM(traffic.bytes_out) AS total_bytes_out,\n",
+          "  COUNT(*) AS connection_count,\n",
+          "  COUNT(DISTINCT dst_endpoint.ip) AS distinct_destinations\n",
+          "FROM fe_lakewatch_catalog.gold.network_activity\n",
+          "WHERE time >= current_timestamp() - INTERVAL 7 DAYS\n",
+          "  AND time > '2020-01-01'\n",
+          "  AND traffic.bytes_out IS NOT NULL\n",
+          "  AND src_endpoint.ip IS NOT NULL\n",
+          "GROUP BY src_endpoint.ip\n",
+          "ORDER BY total_bytes_out DESC\n",
+          "LIMIT 25"
+        ]
+      },
+      {
+        "id": "26a855b561d348469b92934125bec5ff",
+        "question": [
+          "Which assignees have the most open incidents?"
+        ],
+        "sql": [
+          "SELECT\n",
+          "  assignee.name AS assignee_name,\n",
+          "  COUNT(*) AS total_incidents,\n",
+          "  COUNT_IF(severity_id >= 4) AS high_severity,\n",
+          "  COUNT_IF(priority_id >= 3) AS high_priority\n",
+          "FROM fe_lakewatch_catalog.gold.incident_finding\n",
+          "WHERE status NOT IN ('Resolved', 'Closed')\n",
+          "GROUP BY assignee.name\n",
+          "ORDER BY total_incidents DESC"
+        ]
+      },
+      {
+        "id": "5760716c6678483a965dd5165e33cbb3",
+        "question": [
+          "Which users ran the most processes in the last 24 hours?"
+        ],
+        "sql": [
+          "SELECT\n",
+          "  actor.user.name AS user_name,\n",
+          "  COUNT(*) AS process_count,\n",
+          "  COUNT(DISTINCT process.name) AS distinct_processes\n",
+          "FROM fe_lakewatch_catalog.gold.process_activity\n",
+          "WHERE time >= current_timestamp() - INTERVAL 24 HOURS\n",
+          "  AND actor.user.name IS NOT NULL\n",
+          "GROUP BY actor.user.name\n",
+          "ORDER BY process_count DESC\n",
+          "LIMIT 25"
+        ]
+      },
+      {
+        "id": "60b5b57ce0e34218a36f1bb72a514c04",
+        "question": [
+          "What is the authentication failure rate by user over the last 7 days?"
+        ],
+        "sql": [
+          "SELECT\n",
+          "  COALESCE(actor.user.name, user.name) AS user_name,\n",
+          "  COUNT(*) AS total_attempts,\n",
+          "  COUNT_IF(status_id = 2) AS failed_attempts,\n",
+          "  ROUND(100.0 * COUNT_IF(status_id = 2) / COUNT(*), 2) AS failure_rate_pct\n",
+          "FROM fe_lakewatch_catalog.gold.authentication\n",
+          "WHERE time >= current_timestamp() - INTERVAL 7 DAYS\n",
+          "  AND COALESCE(actor.user.name, user.name) IS NOT NULL\n",
+          "GROUP BY COALESCE(actor.user.name, user.name)\n",
+          "HAVING COUNT(*) >= 5\n",
+          "ORDER BY failure_rate_pct DESC, total_attempts DESC\n",
+          "LIMIT 50"
+        ]
+      },
+      {
+        "id": "a86729692ead4f36b6aae69de530030d",
+        "question": [
+          "What is the daily DNS NXDOMAIN ratio over the last 30 days?"
+        ],
+        "sql": [
+          "SELECT\n",
+          "  date_trunc('day', time) AS day,\n",
+          "  COUNT(*) AS total_queries,\n",
+          "  COUNT_IF(rcode_id = 3) AS nxdomain_queries,\n",
+          "  ROUND(100.0 * COUNT_IF(rcode_id = 3) / COUNT(*), 2) AS nxdomain_pct\n",
+          "FROM fe_lakewatch_catalog.gold.dns_activity\n",
+          "WHERE time >= current_timestamp() - INTERVAL 30 DAYS\n",
+          "GROUP BY date_trunc('day', time)\n",
+          "ORDER BY day DESC"
+        ]
+      },
+      {
+        "id": "bebf75c53f8246d18f7f25f0e02fb4ea",
+        "question": [
+          "Show high-severity detection findings grouped by class for the last 7 days"
+        ],
+        "sql": [
+          "SELECT\n",
+          "  class_name,\n",
+          "  COUNT(*) AS finding_count,\n",
+          "  COUNT_IF(severity_id = 5) AS critical_count,\n",
+          "  COUNT_IF(severity_id = 4) AS high_count\n",
+          "FROM fe_lakewatch_catalog.gold.detection_finding\n",
+          "WHERE time >= current_timestamp() - INTERVAL 7 DAYS\n",
+          "  AND severity_id >= 4\n",
+          "GROUP BY class_name\n",
+          "ORDER BY finding_count DESC"
+        ]
+      },
+      {
+        "id": "dc9209ff4e884f35bbc3379a327413da",
+        "question": [
+          "Show high-severity account change events in the last 7 days"
+        ],
+        "sql": [
+          "SELECT\n",
+          "  time,\n",
+          "  actor.user.name AS actor_name,\n",
+          "  activity_name,\n",
+          "  user.name AS target_user_name,\n",
+          "  severity,\n",
+          "  message\n",
+          "FROM fe_lakewatch_catalog.gold.account_change\n",
+          "WHERE time >= current_timestamp() - INTERVAL 7 DAYS\n",
+          "  AND severity_id >= 4\n",
+          "ORDER BY time DESC\n",
+          "LIMIT 100"
+        ]
+      },
+      {
+        "id": "fd646a4914aa4aa1b18a82c07a929732",
+        "question": [
+          "Which source IPs have the most failed authentication attempts in the last 24 hours?"
+        ],
+        "sql": [
+          "SELECT\n",
+          "  src_endpoint.ip AS source_ip,\n",
+          "  COUNT(*) AS failed_attempts,\n",
+          "  COUNT(DISTINCT actor.user.name) AS distinct_users\n",
+          "FROM fe_lakewatch_catalog.gold.authentication\n",
+          "WHERE time >= current_timestamp() - INTERVAL 24 HOURS\n",
+          "  AND status_id = 2\n",
+          "  AND src_endpoint.ip IS NOT NULL\n",
+          "GROUP BY src_endpoint.ip\n",
+          "ORDER BY failed_attempts DESC\n",
+          "LIMIT 20"
+        ]
+      }
+    ],
+    "join_specs": [
+      {
+        "id": "01f17483196b15798eab50200cb481cd",
+        "left": {
+          "identifier": "fe_lakewatch_catalog.gold.authentication"
+        },
+        "right": {
+          "identifier": "fe_lakewatch_catalog.gold.account_change"
+        },
+        "sql": [
+          "authentication.actor.user.uid = account_change.actor.user.uid",
+          "--rt=FROM_RELATIONSHIP_TYPE_MANY_TO_MANY--"
+        ],
+        "comment": [
+          "Authentication to account changes by actor user"
+        ]
+      },
+      {
+        "id": "01f17483196b1846ad7cdc914d7057dc",
+        "left": {
+          "identifier": "fe_lakewatch_catalog.gold.authentication"
+        },
+        "right": {
+          "identifier": "fe_lakewatch_catalog.gold.user_access"
+        },
+        "sql": [
+          "authentication.actor.user.uid = user_access.actor.user.uid",
+          "--rt=FROM_RELATIONSHIP_TYPE_MANY_TO_MANY--"
+        ],
+        "comment": [
+          "Authentication to user access by actor user"
+        ]
+      },
+      {
+        "id": "01f17483196b1ad1aada8f25b28bf366",
+        "left": {
+          "identifier": "fe_lakewatch_catalog.gold.account_change"
+        },
+        "right": {
+          "identifier": "fe_lakewatch_catalog.gold.user_access"
+        },
+        "sql": [
+          "account_change.actor.user.uid = user_access.actor.user.uid",
+          "--rt=FROM_RELATIONSHIP_TYPE_MANY_TO_MANY--"
+        ],
+        "comment": [
+          "Account changes to user access by actor user"
+        ]
+      },
+      {
+        "id": "01f17483196b1d3a9d1ff8be0d8cf6d1",
+        "left": {
+          "identifier": "fe_lakewatch_catalog.gold.network_activity"
+        },
+        "right": {
+          "identifier": "fe_lakewatch_catalog.gold.dns_activity"
+        },
+        "sql": [
+          "network_activity.src_endpoint.ip = dns_activity.src_endpoint.ip",
+          "--rt=FROM_RELATIONSHIP_TYPE_MANY_TO_MANY--"
+        ],
+        "comment": [
+          "Network activity to DNS by source IP"
+        ]
+      },
+      {
+        "id": "01f17483196b1f7fad979a809b491e1d",
+        "left": {
+          "identifier": "fe_lakewatch_catalog.gold.network_activity"
+        },
+        "right": {
+          "identifier": "fe_lakewatch_catalog.gold.dhcp_activity"
+        },
+        "sql": [
+          "network_activity.src_endpoint.ip = dhcp_activity.src_endpoint.ip",
+          "--rt=FROM_RELATIONSHIP_TYPE_MANY_TO_MANY--"
+        ],
+        "comment": [
+          "Network activity to DHCP by source IP"
+        ]
+      },
+      {
+        "id": "01f17483196c11daa180e4952f0fb4b4",
+        "left": {
+          "identifier": "fe_lakewatch_catalog.gold.process_activity"
+        },
+        "right": {
+          "identifier": "fe_lakewatch_catalog.gold.file_activity"
+        },
+        "sql": [
+          "process_activity.device.uid = file_activity.device.uid",
+          "--rt=FROM_RELATIONSHIP_TYPE_MANY_TO_MANY--"
+        ],
+        "comment": [
+          "Process activity to file activity by device"
+        ]
+      },
+      {
+        "id": "01f17483196c145cb66e8fba235a35f1",
+        "left": {
+          "identifier": "fe_lakewatch_catalog.gold.process_activity"
+        },
+        "right": {
+          "identifier": "fe_lakewatch_catalog.gold.script_activity"
+        },
+        "sql": [
+          "process_activity.device.uid = script_activity.device.uid",
+          "--rt=FROM_RELATIONSHIP_TYPE_MANY_TO_MANY--"
+        ],
+        "comment": [
+          "Process activity to script activity by device"
+        ]
+      },
+      {
+        "id": "01f17483196c16e491a5c4a0195a7319",
+        "left": {
+          "identifier": "fe_lakewatch_catalog.gold.scheduled_job_activity"
+        },
+        "right": {
+          "identifier": "fe_lakewatch_catalog.gold.process_activity"
+        },
+        "sql": [
+          "scheduled_job_activity.device.uid = process_activity.device.uid",
+          "--rt=FROM_RELATIONSHIP_TYPE_MANY_TO_MANY--"
+        ],
+        "comment": [
+          "Scheduled jobs to processes by device"
+        ]
+      },
+      {
+        "id": "01f17483196c1957b7bae7c5ecb5e6e8",
+        "left": {
+          "identifier": "fe_lakewatch_catalog.gold.vulnerability_finding"
+        },
+        "right": {
+          "identifier": "fe_lakewatch_catalog.gold.entity_management"
+        },
+        "sql": [
+          "vulnerability_finding.device.uid = entity_management.device.uid",
+          "--rt=FROM_RELATIONSHIP_TYPE_MANY_TO_MANY--"
+        ],
+        "comment": [
+          "Vulnerability findings to entity management by device"
+        ]
+      }
+    ],
+    "sql_snippets": {
+      "filters": [
+        {
+          "id": "01f1748319771f3d86f763889a2c3ed7",
+          "sql": [
+            "fe_lakewatch_catalog.gold.authentication.status_id = 2"
+          ],
+          "display_name": "Failed authentication events"
+        },
+        {
+          "id": "01f17483197812529fa23040474613f6",
+          "sql": [
+            "fe_lakewatch_catalog.gold.account_change.severity_id >= 4"
+          ],
+          "display_name": "High-severity account changes"
+        },
+        {
+          "id": "01f17483197815d694a8bfc44b5a8e44",
+          "sql": [
+            "fe_lakewatch_catalog.gold.detection_finding.severity_id >= 4"
+          ],
+          "display_name": "High-severity detection findings"
+        },
+        {
+          "id": "01f174831978188495ba777db2245a54",
+          "sql": [
+            "fe_lakewatch_catalog.gold.dns_activity.rcode_id = 3"
+          ],
+          "display_name": "NXDOMAIN DNS queries"
+        },
+        {
+          "id": "01f1748319781d25b276de161346ae04",
+          "sql": [
+            "fe_lakewatch_catalog.gold.incident_finding.status NOT IN ('Resolved', 'Closed')"
+          ],
+          "display_name": "Open incidents"
+        }
+      ],
+      "measures": [
+        {
+          "id": "01f1748319781f7db123250262d05c58",
+          "sql": [
+            "ROUND(100.0 * COUNT_IF(fe_lakewatch_catalog.gold.authentication.status_id = 2) / NULLIF(COUNT(*), 0), 2)"
+          ],
+          "display_name": "Authentication failure rate"
+        },
+        {
+          "id": "01f1748319791213a6cff7750caa177c",
+          "sql": [
+            "ROUND(100.0 * COUNT_IF(fe_lakewatch_catalog.gold.dns_activity.rcode_id = 3) / NULLIF(COUNT(*), 0), 2)"
+          ],
+          "display_name": "NXDOMAIN ratio"
+        },
+        {
+          "id": "01f174831979156b9abbd75b6328c587",
+          "sql": [
+            "SUM(fe_lakewatch_catalog.gold.network_activity.traffic.bytes_out)"
+          ],
+          "display_name": "Total outbound bytes"
+        },
+        {
+          "id": "01f17483197917d5a7dfb39d88eae242",
+          "sql": [
+            "COUNT_IF(fe_lakewatch_catalog.gold.detection_finding.severity_id >= 4)"
+          ],
+          "display_name": "High-severity detection finding count"
+        }
+      ]
+    }
+  },
+  "benchmarks": {
+    "questions": [
+      {
+        "id": "f6a166a67efc4ff1b44812a4fc27bb41",
+        "question": [
+          "Which 10 users had the most failed logins in the past 7 days?"
+        ],
+        "answer": [
+          {
+            "format": "SQL",
+            "content": [
+              "SELECT\n",
+              "  COALESCE(actor.user.name, user.name) AS user_name,\n",
+              "  COUNT(*) AS failed_logins\n",
+              "FROM fe_lakewatch_catalog.gold.authentication\n",
+              "WHERE time >= current_timestamp() - INTERVAL 7 DAYS\n",
+              "  AND status_id = 2\n",
+              "  AND COALESCE(actor.user.name, user.name) IS NOT NULL\n",
+              "GROUP BY COALESCE(actor.user.name, user.name)\n",
+              "ORDER BY failed_logins DESC\n",
+              "LIMIT 10"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "e62321c38a324e9ca1ce00ea5cdfe450",
+        "question": [
+          "Show high-severity account changes in the last 24 hours."
+        ],
+        "answer": [
+          {
+            "format": "SQL",
+            "content": [
+              "SELECT\n",
+              "  time,\n",
+              "  actor.user.name AS actor_name,\n",
+              "  activity_name,\n",
+              "  user.name AS target_user_name,\n",
+              "  severity,\n",
+              "  message\n",
+              "FROM fe_lakewatch_catalog.gold.account_change\n",
+              "WHERE time >= current_timestamp() - INTERVAL 24 HOURS\n",
+              "  AND severity_id >= 4\n",
+              "ORDER BY time DESC\n",
+              "LIMIT 100"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "e58c2f5f9d944700aab1bab0bcb6cb32",
+        "question": [
+          "What is the breakdown of detection findings by class for the last 30 days?"
+        ],
+        "answer": [
+          {
+            "format": "SQL",
+            "content": [
+              "SELECT\n",
+              "  class_name,\n",
+              "  COUNT(*) AS finding_count\n",
+              "FROM fe_lakewatch_catalog.gold.detection_finding\n",
+              "WHERE time >= current_timestamp() - INTERVAL 30 DAYS\n",
+              "GROUP BY class_name\n",
+              "ORDER BY finding_count DESC"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ca5cb518b62544e18e6c600c88eb43e2",
+        "question": [
+          "What was the authentication failure rate yesterday?"
+        ],
+        "answer": [
+          {
+            "format": "SQL",
+            "content": [
+              "SELECT\n",
+              "  COUNT(*) AS total_attempts,\n",
+              "  COUNT_IF(status_id = 2) AS failed_attempts,\n",
+              "  ROUND(100.0 * COUNT_IF(status_id = 2) / NULLIF(COUNT(*), 0), 2) AS failure_rate_pct\n",
+              "FROM fe_lakewatch_catalog.gold.authentication\n",
+              "WHERE time >= date_trunc('day', current_timestamp() - INTERVAL 1 DAY)\n",
+              "  AND time < date_trunc('day', current_timestamp())"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "2818d426d9674c2ebffb8202b22ecf2f",
+        "question": [
+          "Top 10 processes by execution count in the last 24 hours."
+        ],
+        "answer": [
+          {
+            "format": "SQL",
+            "content": [
+              "SELECT\n",
+              "  process.name AS process_name,\n",
+              "  COUNT(*) AS execution_count,\n",
+              "  COUNT(DISTINCT actor.user.name) AS distinct_users\n",
+              "FROM fe_lakewatch_catalog.gold.process_activity\n",
+              "WHERE time >= current_timestamp() - INTERVAL 24 HOURS\n",
+              "  AND process.name IS NOT NULL\n",
+              "GROUP BY process.name\n",
+              "ORDER BY execution_count DESC\n",
+              "LIMIT 10"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "03c21b8c2bfa4535968c7eec13158549",
+        "question": [
+          "Top 10 destination IPs by outbound bytes in the last day."
+        ],
+        "answer": [
+          {
+            "format": "SQL",
+            "content": [
+              "SELECT\n",
+              "  dst_endpoint.ip AS destination_ip,\n",
+              "  SUM(traffic.bytes_out) AS total_bytes_out,\n",
+              "  COUNT(*) AS connection_count\n",
+              "FROM fe_lakewatch_catalog.gold.network_activity\n",
+              "WHERE time >= current_timestamp() - INTERVAL 1 DAY\n",
+              "  AND time > '2020-01-01'\n",
+              "  AND traffic.bytes_out IS NOT NULL\n",
+              "  AND dst_endpoint.ip IS NOT NULL\n",
+              "GROUP BY dst_endpoint.ip\n",
+              "ORDER BY total_bytes_out DESC\n",
+              "LIMIT 10"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "01f1748366dd1ffc99356b0f5990ce8d",
+        "question": [
+          "Which users had failed authentication followed by account changes on the same day in the last 7 days?"
+        ],
+        "answer": [
+          {
+            "format": "SQL",
+            "content": [
+              "SELECT\n",
+              "  COALESCE(a.actor.user.name, a.user.name) AS user_name,\n",
+              "  COUNT(*) AS correlated_event_count\n",
+              "FROM fe_lakewatch_catalog.gold.authentication AS a\n",
+              "JOIN fe_lakewatch_catalog.gold.account_change AS ac\n",
+              "  ON a.actor.user.uid = ac.actor.user.uid\n",
+              " AND date_trunc('day', a.time) = date_trunc('day', ac.time)\n",
+              "WHERE a.time >= current_timestamp() - INTERVAL 7 DAYS\n",
+              "  AND a.status_id = 2\n",
+              "  AND COALESCE(a.actor.user.name, a.user.name) IS NOT NULL\n",
+              "GROUP BY COALESCE(a.actor.user.name, a.user.name)\n",
+              "ORDER BY correlated_event_count DESC\n",
+              "LIMIT 10"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "01f1748366ac168e9ca7bdafe8209f7b",
+        "question": [
+          "Show entity management events by activity in the last 30 days."
+        ],
+        "answer": [
+          {
+            "format": "SQL",
+            "content": [
+              "SELECT\n",
+              "  activity_name,\n",
+              "  COUNT(*) AS event_count\n",
+              "FROM fe_lakewatch_catalog.gold.entity_management\n",
+              "WHERE time >= current_timestamp() - INTERVAL 30 DAYS\n",
+              "GROUP BY activity_name\n",
+              "ORDER BY event_count DESC"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "01f17483668f13259086d555fa03acde",
+        "question": [
+          "What are the most common HTTP status codes in the last 7 days?"
+        ],
+        "answer": [
+          {
+            "format": "SQL",
+            "content": [
+              "SELECT\n",
+              "  status_code,\n",
+              "  COUNT(*) AS request_count\n",
+              "FROM fe_lakewatch_catalog.gold.http_activity\n",
+              "WHERE time >= current_timestamp() - INTERVAL 7 DAYS\n",
+              "GROUP BY status_code\n",
+              "ORDER BY request_count DESC"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "01f17483666c1ed99294ef534c4d70ff",
+        "question": [
+          "Show API activity by action in the last 7 days."
+        ],
+        "answer": [
+          {
+            "format": "SQL",
+            "content": [
+              "SELECT\n",
+              "  action,\n",
+              "  COUNT(*) AS event_count\n",
+              "FROM fe_lakewatch_catalog.gold.api_activity\n",
+              "WHERE time >= current_timestamp() - INTERVAL 7 DAYS\n",
+              "GROUP BY action\n",
+              "ORDER BY event_count DESC"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "01f17483664b157b90d79b931f8b8606",
+        "question": [
+          "Show group management events by activity in the last 24 hours."
+        ],
+        "answer": [
+          {
+            "format": "SQL",
+            "content": [
+              "SELECT\n",
+              "  activity_name,\n",
+              "  COUNT(*) AS event_count\n",
+              "FROM fe_lakewatch_catalog.gold.group_management\n",
+              "WHERE time >= current_timestamp() - INTERVAL 24 HOURS\n",
+              "GROUP BY activity_name\n",
+              "ORDER BY event_count DESC"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "01f17483662c1ee29302ae841f8e2afe",
+        "question": [
+          "Which source IPs had the most SSH events in the last 24 hours?"
+        ],
+        "answer": [
+          {
+            "format": "SQL",
+            "content": [
+              "SELECT\n",
+              "  src_endpoint.ip AS source_ip,\n",
+              "  COUNT(*) AS ssh_event_count\n",
+              "FROM fe_lakewatch_catalog.gold.ssh_activity\n",
+              "WHERE time >= current_timestamp() - INTERVAL 24 HOURS\n",
+              "  AND src_endpoint.ip IS NOT NULL\n",
+              "GROUP BY src_endpoint.ip\n",
+              "ORDER BY ssh_event_count DESC\n",
+              "LIMIT 10"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "01f17483660f10a7bf1f73cbb5b8be6a",
+        "question": [
+          "Show data security findings by risk level in the last 30 days."
+        ],
+        "answer": [
+          {
+            "format": "SQL",
+            "content": [
+              "SELECT\n",
+              "  risk_level,\n",
+              "  COUNT(*) AS finding_count\n",
+              "FROM fe_lakewatch_catalog.gold.data_security_finding\n",
+              "WHERE time >= current_timestamp() - INTERVAL 30 DAYS\n",
+              "GROUP BY risk_level\n",
+              "ORDER BY finding_count DESC"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "01f1748365f11082b5a93e019dd5e72f",
+        "question": [
+          "What is the breakdown of vulnerability findings by severity in the last 30 days?"
+        ],
+        "answer": [
+          {
+            "format": "SQL",
+            "content": [
+              "SELECT\n",
+              "  severity,\n",
+              "  COUNT(*) AS finding_count\n",
+              "FROM fe_lakewatch_catalog.gold.vulnerability_finding\n",
+              "WHERE time >= current_timestamp() - INTERVAL 30 DAYS\n",
+              "GROUP BY severity\n",
+              "ORDER BY finding_count DESC"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

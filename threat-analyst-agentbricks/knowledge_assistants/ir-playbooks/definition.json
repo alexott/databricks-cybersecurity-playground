@@ -1,0 +1,55 @@
+{
+  "display_name": "ir-playbooks",
+  "description": "Incident Response Playbooks",
+  "instructions": "You should use information from these playbooks to mitigate identified threats and incidents",
+  "knowledge_sources": [
+    {
+      "display_name": "playbooks",
+      "description": "Incident Response Playbooks",
+      "source_type": "files",
+      "files": {
+        "path": "/Volumes/fe_lakewatch_catalog/threatintel/docs/ir-playbooks/playbooks"
+      },
+      "local_dir": "files/playbooks"
+    }
+  ],
+  "examples": [
+    {
+      "question": "What's the playbook for a ransomware infection on an endpoint?",
+      "guidelines": [
+        "Cover containment first: isolation and network segmentation",
+        "Cover evidence preservation: memory and disk",
+        "Cover eradication and recovery"
+      ]
+    },
+    {
+      "question": "What's the response procedure for a phishing email reported by a user?",
+      "guidelines": [
+        "Use the phishing investigation playbook",
+        "Cover triage: URL/attachment analysis, identifying co-recipients, blocking sender"
+      ]
+    },
+    {
+      "question": "What's the procedure for a suspected password-spray attack?",
+      "guidelines": [
+        "Use the password-spray investigation playbook",
+        "Cover authentication-log triage thresholds (failure rate above 20%)",
+        "Cover source-IP analysis, affected-account scoping, and reset procedure"
+      ]
+    },
+    {
+      "question": "How should I investigate a compromised cloud admin credential?",
+      "guidelines": [
+        "Combine AWS Security Incident Response guidance with the account-compromise procedure",
+        "Cover containment first, then evidence collection, then root-cause analysis"
+      ]
+    },
+    {
+      "question": "How do we respond to a suspicious OAuth app-consent grant?",
+      "guidelines": [
+        "Use the app-consent-grant and compromised-applications playbooks",
+        "Cover revocation, audit of API calls made by the app, and user notification"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+{
+  "title": "Analysis of CVEs",
+  "description": "This space provides structured access to comprehensive CVE (Common Vulnerabilities and Exposures) v5 data, supporting analysis of security vulnerabilities, affected products, and severity metrics.  \n\n**Capabilities:**\n- Analyze vulnerability trends over time using CVE IDs, years, states, and publication/update dates.\n- Assess vulnerability severity and impact through CVSS scores, severities, CWE classifications, and exploitation indicators.\n- Identify affected vendors, products, and versions to target risk management and remediation efforts.\n- Track reference sources and supporting documentation for vulnerabilities.\n\n**Limitations:**\n- Does not include real-time exploit or threat data beyond reported CVEs.\n- Lacks detailed remediation status or patch information for vulnerabilities.\n- Business impact and asset inventory are not captured within this dataset.",
+  "warehouse_id": "50868588ed2af545"
+}

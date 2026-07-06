@@ -1,0 +1,209 @@
+{
+  "supervisor_agent": {
+    "display_name": "threat-analyst",
+    "description": "Cybersecurity threat analyst",
+    "instructions": "You're an experienced cybersecurity analyst trained by Chris Sanders. You're analyzing available data and external information (threat intel reports, etc.) to protect your company: identifying potential breaches, assessing the current security posture, proactively conducting threat-hunting exercises, and more. "
+  },
+  "tools": [
+    {
+      "tool_id": "ir-playbooks",
+      "tool_type": "knowledge_assistant",
+      "description": "Incident Response Playbooks",
+      "knowledge_assistant": {
+        "serving_endpoint_name": "ka-c85269c7-endpoint",
+        "knowledge_assistant_id": "c85269c7-8758-42c5-a01b-21fc38d58dce"
+      },
+      "export_dir": "knowledge_assistants/ir-playbooks"
+    },
+    {
+      "tool_id": "threat-intel-reports",
+      "tool_type": "knowledge_assistant",
+      "description": "Cybersecurity threat intelligence and detection engineering documents",
+      "knowledge_assistant": {
+        "serving_endpoint_name": "ka-af80f9d9-endpoint",
+        "knowledge_assistant_id": "af80f9d9-1134-405e-9cc9-09d920a82de2"
+      },
+      "export_dir": "knowledge_assistants/threat-intel-reports"
+    },
+    {
+      "tool_id": "agent-lakewatch-gold-tables",
+      "tool_type": "genie_space",
+      "description": "Enterprise cybersecurity operations center monitoring identity management, network traffic, endpoint activity, threat detections, vulnerability assessments, and data loss prevention across cloud and on-premises infrastructure. Covers: Normalized security event data spanning user authentication and account changes, network and DNS traffic flows, email communications, file and datastore operations, API usage, process and script execution, SSH sessions, vulnerability and threat detection findings, incident reports, data security policy violations, and identity access privilege assignments \u2014 all enriched with device, cloud, actor, and endpoint context.\n\n**Capabilities:**\n\n- Analyze authentication events, account and access changes, privilege assignments, and group/user management activity to answer who did what, when, and where.\n- Investigate network, process, file, script, API, email, and HTTP activities for threat detection, anomaly identification, and incident response.\n- Assess and track security findings, vulnerabilities, and incident correlations by severity, impact, risk level, and affected resources for triage and remediation prioritization.\n- Segment analysis by key dimensions such as user, device, application, cloud provider, region, privilege, and action type.\n- Trace event lineage, session context, and enrichments for deeper forensic analysis and audit trails.\n- Data is normalized to OCSF schema.\n\n**Limitations:**\n\n- Does not include business application usage data or productivity metrics outside security-context events.\n- Cannot analyze financial outcomes, customer sentiment, or direct operational efficiency unrelated to security or access control.\n- Does not provide real-time dashboards; focused on historical event data for investigation and compliance review.",
+      "genie_space": {
+        "id": "01f13cdd0e8a15b9890ce5254aabed94",
+        "space_id": "01f13cdd0e8a15b9890ce5254aabed94"
+      },
+      "export_dir": "genie_rooms/lakewatch_security_operations"
+    },
+    {
+      "tool_id": "agent-threat-intelligence-analysis",
+      "tool_type": "genie_space",
+      "description": "This space enables analysts to investigate, track, and enrich threat intelligence by aggregating Indicators of Compromise (IoCs) and threat data from multiple cybersecurity sources.\n\n**Capabilities:**\n- Identify and analyze IoCs by type (URL, domain, IP, file hash) to assess threat relevance, prevalence, and activity timelines.\n- Monitor and investigate attack trends by exploring first/last-seen timestamps, geographic origins, network associations (ASN, GeoIP), and relationships between IoCs and malware.\n- Correlate threat intelligence from sources like OpenThread Exchange, Malware Bazaar, and Microsoft Sentinel to enrich incident response, prioritize threats, and support risk analysis.\n- Segment and filter threat data by confidence score, action taken, threat type, and other relevant attributes for reporting or security operations.\n- Reference additional context and technical details via linked blog post and source code.\n\n**Limitations:**\n- Does not provide real-time threat detection, response automation, or alerting\u2014data is intended for investigation and enrichment.\n- Lacks integration with endpoint/event telemetry or user/session context; focuses on threat indicators and external threat data.\n- Underlying data quality and coverage depend on upstream sources, which may impact timeliness or completeness of intelligence.",
+      "genie_space": {
+        "id": "01f13cca24cc1d58bdb9946715d919c6",
+        "space_id": "01f13cca24cc1d58bdb9946715d919c6"
+      },
+      "export_dir": "genie_rooms/analysis_of_indicators_of_compromise"
+    },
+    {
+      "tool_id": "agent-cves",
+      "tool_type": "genie_space",
+      "description": "CVE (Common Vulnerabilities and Exposures) v5 records from MITRE/NVD and other CVE Numbering Authorities. Use this tool to investigate specific CVEs, find critical vulnerabilities with active exploitation, identify affected vendors/products, analyze CVE trends over time, and prioritize patching based on SSVC (Stakeholder-Specific Vulnerability Categorization) signals: active exploitation, automatable exploitation, and technical impact. Covers ~350k CVEs from 1999 through the present. \n\n**Capabilities:**\n- Severity-based triage via cvss_severity and cvss_base_score.\n- Vendor/product exposure analysis via the affected_products array.\n- CWE pattern research.\n- SSVC-based patch prioritization (active exploitation + automatable exploitation = highest mass-risk).\n\n**Best practices:**\n- Always filter `state = 'PUBLISHED'` to exclude rejected entries.\n- Use SSVC signals for prioritization, not just CVSS scores.",
+      "genie_space": {
+        "id": "01f14f73fcc519ec878788f630f702b0",
+        "space_id": "01f14f73fcc519ec878788f630f702b0"
+      },
+      "export_dir": "genie_rooms/analysis_of_cves"
+    },
+    {
+      "tool_id": "web_search",
+      "tool_type": "web_search",
+      "description": "",
+      "web_search": {}
+    }
+  ],
+  "examples": [
+    {
+      "question": "Which actively-exploited CVEs should we prioritize patching?",
+      "guidelines": [
+        "Route to agent-cves",
+        "Surface CVEs with ssvc_exploitation = 'active'",
+        "Combine ssvc_exploitation = 'active' with ssvc_automatable = 'yes' for highest mass-exploitation risk",
+        "If asked about specific assets, cross-reference with agent-lakewatch-gold-tables vulnerability_finding to scope which assets are affected"
+      ]
+    },
+    {
+      "question": "How should we react to malicious PowerShell detected on the endpoint?",
+      "guidelines": [
+        "Route the question to ir-playbooks agent"
+      ]
+    },
+    {
+      "question": "An emerging campaign uses technique <TTP> \u2014 how would we detect it in our environment?",
+      "guidelines": [
+        "Use threat-intel-reports to extract concrete IOCs and behaviors for the technique",
+        "Use agent-lakewatch-gold-tables to check whether the necessary telemetry exists and whether the behavior is already observed"
+      ]
+    },
+    {
+      "question": "What's the latest critical CVE affecting Microsoft?",
+      "guidelines": [
+        "Route to agent-cves",
+        "Filter cvss_severity = 'CRITICAL' and affected_products vendor matching 'microsoft' (case-insensitive) via LATERAL VIEW EXPLODE",
+        "Sort by date_published DESC; return at most the top 10",
+        "Always filter state = 'PUBLISHED'"
+      ]
+    },
+    {
+      "question": "A user account had a login from a new country at 03:14 last night. Show me everything that account did in the next hour and tell me whether the activity looks malicious.",
+      "guidelines": [
+        "Use agent-lakewatch-gold-tables to pull events for that user \u2014 authentication, account_change, user_access, process_activity, file_activity, and network_activity \u2014 within the 1-hour window after the suspicious login, ordered by time",
+        "Surface high-severity account changes, unusual process spawns, large outbound traffic, writes to sensitive paths, and any privilege escalations in that window",
+        "Consult ir-playbooks for the account-compromise / suspicious-login procedure if the activity looks malicious",
+        "Conclude with an explicit verdict (likely benign / suspicious / likely malicious) backed by the specific events you observed"
+      ]
+    },
+    {
+      "question": "Which critical vulnerabilities should we patch first based on active exploitation?",
+      "guidelines": [
+        "Use threat-intel-reports to identify CVEs flagged as actively exploited",
+        "Cross-reference with agent-lakewatch-gold-tables vulnerability_finding to scope affected assets",
+        "Prioritize by impact and active-exploitation status"
+      ]
+    },
+    {
+      "question": "How effective is my coverage for detecting critical vulnerabilities identified in threat intelligence reports? Do we have all the necessary data?",
+      "guidelines": [
+        "If it wasn't done before, extract the list of vulnerabilities from the threat intelligence reports",
+        "Research what data/logs are necessary to detect vulnerabilities, and validate if the necessary data is available by querying Genie spaces"
+      ]
+    },
+    {
+      "question": "Top 10 actively-exploited CVEs published this month, with our internal exposure for each. Rank by risk.",
+      "guidelines": [
+        "Use agent-cves to find CVEs with state = 'PUBLISHED' and ssvc_exploitation = 'active' published in the last 30 days",
+        "For each, extract affected_products via LATERAL VIEW EXPLODE to capture vendor and product",
+        "Cross-reference with agent-lakewatch-gold-tables vulnerability_finding to count affected assets per CVE",
+        "Rank by: ssvc_automatable = 'yes' first, then highest cvss_base_score, then count of affected assets",
+        "Return a table: CVE ID, vendor, product, cvss_severity, ssvc_exploitation, ssvc_automatable, affected_asset_count"
+      ]
+    },
+    {
+      "question": "Has IP <X> been seen in our environment, and is it a known threat?",
+      "guidelines": [
+        "Check agent-threat-intelligence-analysis for IoC enrichment first",
+        "If relevant, query agent-lakewatch-gold-tables for network/dns/http activity referencing the IP"
+      ]
+    },
+    {
+      "question": "A new threat actor campaign was reported recently. Extract their TTPs and tell me which we can detect with current telemetry, which we can't, and what data we'd need to add.",
+      "guidelines": [
+        "Use threat-intel-reports to extract the campaign's TTPs (MITRE ATT&CK techniques, observed behaviors, IoCs)",
+        "For each TTP, use agent-lakewatch-gold-tables to identify which OCSF tables would carry the relevant telemetry and whether that data is currently available",
+        "Categorize each TTP: \u2705 covered (data + detection logic exist), \u26a0 partial (have data but no detection logic), \u274c gap (need new data source)",
+        "Recommend specific data sources or detection logic to fill the \u274c gaps"
+      ]
+    },
+    {
+      "question": "A user just reported a phishing email at 09:47 today. Walk me through the response procedure, find any other recipients of the same message, and tell me whether anyone clicked the link.",
+      "guidelines": [
+        "Use ir-playbooks for the phishing investigation procedure and present the steps to the user",
+        "Use agent-lakewatch-gold-tables email_activity to find all recipients of the same message (match by subject + sender + time window)",
+        "Use http_activity to find any users who visited a URL contained in the email",
+        "Present results in three sections: (1) the procedure summary from ir-playbooks, (2) the recipient list, (3) the click-through list"
+      ]
+    },
+    {
+      "question": "A user just had a suspicious login from a new country \u2014 investigate.",
+      "guidelines": [
+        "Use agent-lakewatch-gold-tables to pull authentication, user_access, and account_change events for the user",
+        "If the activity looks suspicious, consult ir-playbooks for the account-compromise procedure"
+      ]
+    },
+    {
+      "question": "Are we exposed to CVE-<id> in our environment?",
+      "guidelines": [
+        "Use agent-cves to look up the CVE's affected_products, severity, and exploitation indicators",
+        "Cross-reference with agent-lakewatch-gold-tables vulnerability_finding and entity_management tables to identify affected assets in our environment",
+        "Always report both the external CVE intelligence AND our internal exposure"
+      ]
+    },
+    {
+      "question": "Help me threat-hunt for credential-dumping activity in the last 30 days.",
+      "guidelines": [
+        "Consult ir-playbooks for credential-dumping detection guidance",
+        "Use agent-lakewatch-gold-tables to query process/script/file activity for known techniques like LSASS access or mimikatz patterns"
+      ]
+    },
+    {
+      "question": "Show me suspicious DNS lookups to known C2 infrastructure in the last week.",
+      "guidelines": [
+        "Use agent-threat-intelligence-analysis to fetch current C2 domains and IPs",
+        "Use agent-lakewatch-gold-tables dns_activity to find matches",
+        "Flag failed-query ratios above 10% of total DNS volume as additional anomalies"
+      ]
+    },
+    {
+      "question": "We received a phishing report \u2014 walk me through the response.",
+      "guidelines": [
+        "Use ir-playbooks for the phishing response procedure",
+        "Use agent-lakewatch-gold-tables email_activity to identify other recipients of the same message",
+        "Use http_activity to find users who clicked the link"
+      ]
+    },
+    {
+      "question": "Build a detection for <technique> and tell me what coverage looks like today.",
+      "guidelines": [
+        "Use threat-intel-reports and ir-playbooks for the technique's known patterns",
+        "Use agent-lakewatch-gold-tables to confirm telemetry availability",
+        "Do not claim coverage exists unless you've validated against the data"
+      ]
+    },
+    {
+      "question": "What are the emerging threats and attacks reported in the last 4 weeks?",
+      "guidelines": [
+        "Check threat reports first"
+      ]
+    }
+  ]
+}

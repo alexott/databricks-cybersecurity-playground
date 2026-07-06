@@ -1,0 +1,422 @@
+{
+  "version": 2,
+  "config": {
+    "sample_questions": [
+      {
+        "id": "01f174841ac71b79ac93be6e5aaa0617",
+        "question": [
+          "How many CVEs have active exploitation according to SSVC?"
+        ]
+      },
+      {
+        "id": "01f174841aec1ff1a4e6551a78591b10",
+        "question": [
+          "What is the most common CWE among critical-severity CVEs?"
+        ]
+      },
+      {
+        "id": "01f174841b0b1563a48a913e4fcc7704",
+        "question": [
+          "List the 10 vendors with the most published CVEs of all time."
+        ]
+      },
+      {
+        "id": "01f174841b2a1ae5b44172f6970b920d",
+        "question": [
+          "What is the highest CVSS base score among CVEs published in the last 30 days?"
+        ]
+      }
+    ]
+  },
+  "data_sources": {
+    "tables": [
+      {
+        "identifier": "fe_lakewatch_catalog.lakewatch_field.cves_v5",
+        "description": [
+          "CVE v5 records from MITRE / NVD, covering vulnerabilities from 1999 through the present (~350k records). Each row is one CVE with metadata, CVSS scoring, CWE classification, and SSVC (Stakeholder-Specific Vulnerability Categorization). Use for: vulnerability triage and patch prioritization (filter `cvss_severity = 'CRITICAL'` + `ssvc_exploitation = 'active'`), vendor/product exposure assessment (LATERAL VIEW EXPLODE on `affected_products`), CVE trend analysis over time (`cve_year`, `date_published`), and CWE-pattern research."
+        ],
+        "column_configs": [
+          {
+            "column_name": "affected_products"
+          },
+          {
+            "column_name": "assigner_org_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "assigner_short_name",
+            "synonyms": [
+              "assigner",
+              "CNA",
+              "CVE Numbering Authority",
+              "reporter",
+              "issuer",
+              "organization",
+              "assigning org"
+            ],
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "cve_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "cve_year",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "cvss_base_score",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "cvss_severity",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "cvss_source",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "cvss_vector",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "cvss_version",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "cwe_description",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "cwe_id",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "date_published",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "date_reserved",
+            "description": [
+              "Timestamp when the CVE ID was reserved by a CNA before publication details were available. This is a pre-publication administrative timestamp — use `date_published` for recency filtering and trend analysis."
+            ],
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "date_updated",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "description",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "raw",
+            "exclude": true
+          },
+          {
+            "column_name": "references"
+          },
+          {
+            "column_name": "ssvc_automatable",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "ssvc_exploitation",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "ssvc_technical_impact",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "state",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "title",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          }
+        ]
+      }
+    ]
+  },
+  "instructions": {
+    "text_instructions": [
+      {
+        "id": "dc68659ea32d4cc189fc0e77e4c08b65",
+        "content": [
+          "This space contains CVE (Common Vulnerabilities and Exposures) v5 data from MITRE / NVD, spanning 1999 to present (~350k records).\n",
+          "\n",
+          "## Querying patterns\n",
+          "* For \"critical CVEs\" / \"high-severity CVEs\", use the `cvss_severity` column (values: 'CRITICAL', 'HIGH', 'MEDIUM', 'LOW', 'NONE'). Prefer the qualitative column over `cvss_base_score` unless the user explicitly asks for a score threshold.\n",
+          "* `affected_products` is `array<struct<vendor, product, defaultStatus, platforms, versions, ...>>`. Use `LATERAL VIEW EXPLODE(affected_products) AS prod` to filter on `prod.vendor` / `prod.product`.\n",
+          "* `references` is also an array of structs — use `EXISTS` or `LATERAL VIEW EXPLODE` patterns when needed.\n",
+          "* The `description` field is the best place for keyword searches (`ILIKE`); product / vendor filtering should go through `affected_products`.\n",
+          "\n",
+          "## Triage priority (SSVC values)\n",
+          "* `ssvc_exploitation = 'active'` — in-the-wild exploitation, highest patch priority.\n",
+          "* `ssvc_exploitation = 'poc'` — proof-of-concept exists, second priority.\n",
+          "* `ssvc_exploitation = 'none'` — no known public exploitation.\n",
+          "* `ssvc_automatable = 'yes'` — attacker can script exploitation at scale; combine with `ssvc_exploitation = 'active'` for highest mass-exploitation risk.\n",
+          "* `ssvc_technical_impact = 'total'` — full system compromise possible upon exploitation.\n",
+          "\n",
+          "## Best practices\n",
+          "* **Time window defaults:** \"Recent\" means the last 90 days (`date_published`). \"Trends over time\" means year-to-date aggregated by `cve_year` or month. Use year-to-date only when the user explicitly asks for a trend or time-series breakdown; for all other recency queries, default to 90 days.\n",
+          "* When grouping by vendor or product, prefer `LATERAL VIEW EXPLODE(affected_products)` over searching the `description` text.\n",
+          "* For assigner/CNA queries, always output `assigner_short_name` (readable name like 'mitre', 'microsoft') rather than `assigner_org_id` (UUID).\n",
+          "* Round percentage metrics to two decimal places when summarizing."
+        ]
+      }
+    ],
+    "example_question_sqls": [
+      {
+        "id": "2de1106c21f249cfbe1e11fea06ec340",
+        "question": [
+          "Recent critical or high-severity CVEs affecting Microsoft."
+        ],
+        "sql": [
+          "SELECT\n",
+          "  c.cve_id,\n",
+          "  c.date_published,\n",
+          "  c.cvss_severity,\n",
+          "  c.cvss_base_score,\n",
+          "  c.ssvc_exploitation,\n",
+          "  c.title\n",
+          "FROM fe_lakewatch_catalog.lakewatch_field.cves_v5 c\n",
+          "LATERAL VIEW EXPLODE(c.affected_products) AS prod\n",
+          "WHERE c.state = 'PUBLISHED'\n",
+          "  AND c.cvss_severity IN ('CRITICAL', 'HIGH')\n",
+          "  AND lower(prod.vendor) = 'microsoft'\n",
+          "  AND c.date_published >= current_timestamp() - INTERVAL 180 DAYS\n",
+          "GROUP BY c.cve_id, c.date_published, c.cvss_severity, c.cvss_base_score, c.ssvc_exploitation, c.title\n",
+          "ORDER BY c.date_published DESC\n",
+          "LIMIT 50"
+        ]
+      },
+      {
+        "id": "4a70869ce6bf47e698c887f2f499be17",
+        "question": [
+          "Top 25 vendors by CVE count published in the last year."
+        ],
+        "sql": [
+          "SELECT\n",
+          "  prod.vendor AS vendor,\n",
+          "  COUNT(DISTINCT cve_id) AS cve_count\n",
+          "FROM fe_lakewatch_catalog.lakewatch_field.cves_v5\n",
+          "LATERAL VIEW EXPLODE(affected_products) AS prod\n",
+          "WHERE state = 'PUBLISHED'\n",
+          "  AND date_published >= current_timestamp() - INTERVAL 365 DAYS\n",
+          "  AND prod.vendor IS NOT NULL\n",
+          "GROUP BY prod.vendor\n",
+          "ORDER BY cve_count DESC\n",
+          "LIMIT 25"
+        ]
+      },
+      {
+        "id": "627d23bd9ebc4daf84ee92ddacdfb2c7",
+        "question": [
+          "How many CVEs were published in the last 30 days, broken down by severity?"
+        ],
+        "sql": [
+          "SELECT\n",
+          "  cvss_severity,\n",
+          "  COUNT(*) AS cve_count\n",
+          "FROM fe_lakewatch_catalog.lakewatch_field.cves_v5\n",
+          "WHERE state = 'PUBLISHED'\n",
+          "  AND date_published >= current_timestamp() - INTERVAL 30 DAYS\n",
+          "GROUP BY cvss_severity\n",
+          "ORDER BY cve_count DESC"
+        ]
+      },
+      {
+        "id": "68ac71e8768745b0b370b850c77bdb3e",
+        "question": [
+          "Distribution of CVE counts per year for the last 10 years."
+        ],
+        "sql": [
+          "SELECT\n",
+          "  cve_year,\n",
+          "  COUNT(*) AS cve_count,\n",
+          "  COUNT_IF(cvss_severity = 'CRITICAL') AS critical_count,\n",
+          "  COUNT_IF(ssvc_exploitation = 'active') AS active_exploited_count\n",
+          "FROM fe_lakewatch_catalog.lakewatch_field.cves_v5\n",
+          "WHERE state = 'PUBLISHED'\n",
+          "  AND cve_year >= YEAR(current_date()) - 10\n",
+          "GROUP BY cve_year\n",
+          "ORDER BY cve_year DESC"
+        ]
+      },
+      {
+        "id": "dd4746f0d26b4d7091e46844c0002913",
+        "question": [
+          "Show critical CVEs with active exploitation published in the last 90 days."
+        ],
+        "sql": [
+          "SELECT\n",
+          "  cve_id,\n",
+          "  date_published,\n",
+          "  cvss_base_score,\n",
+          "  ssvc_exploitation,\n",
+          "  ssvc_automatable,\n",
+          "  title\n",
+          "FROM fe_lakewatch_catalog.lakewatch_field.cves_v5\n",
+          "WHERE state = 'PUBLISHED'\n",
+          "  AND cvss_severity = 'CRITICAL'\n",
+          "  AND ssvc_exploitation = 'active'\n",
+          "  AND date_published >= current_timestamp() - INTERVAL 90 DAYS\n",
+          "ORDER BY date_published DESC\n",
+          "LIMIT 50"
+        ]
+      },
+      {
+        "id": "e5f8f1a991c1401498bfcddb19262a12",
+        "question": [
+          "Most common CWE classifications among CVEs published this year."
+        ],
+        "sql": [
+          "SELECT\n",
+          "  cwe_id,\n",
+          "  cwe_description,\n",
+          "  COUNT(*) AS cve_count\n",
+          "FROM fe_lakewatch_catalog.lakewatch_field.cves_v5\n",
+          "WHERE state = 'PUBLISHED'\n",
+          "  AND cve_year = YEAR(current_date())\n",
+          "  AND cwe_id IS NOT NULL\n",
+          "GROUP BY cwe_id, cwe_description\n",
+          "ORDER BY cve_count DESC\n",
+          "LIMIT 25"
+        ]
+      }
+    ],
+    "sql_snippets": {
+      "filters": [
+        {
+          "id": "01f174841ad1147e96ba26350bb24a28",
+          "sql": [
+            "cves_v5.state = 'PUBLISHED'"
+          ],
+          "display_name": "Published CVEs only"
+        },
+        {
+          "id": "01f174841ad117539e437a06e46bfa7c",
+          "sql": [
+            "cves_v5.ssvc_exploitation = 'active'"
+          ],
+          "display_name": "Active in-the-wild exploitation"
+        },
+        {
+          "id": "01f174841ad11b799bffd34172b81b37",
+          "sql": [
+            "cves_v5.ssvc_exploitation = 'active' AND cves_v5.ssvc_automatable = 'yes'"
+          ],
+          "display_name": "Highest mass-exploitation risk"
+        },
+        {
+          "id": "01f174841ad11dc4a0685814557a8e4b",
+          "sql": [
+            "cves_v5.ssvc_technical_impact = 'total'"
+          ],
+          "display_name": "Full-system-compromise impact"
+        }
+      ]
+    }
+  },
+  "benchmarks": {
+    "questions": [
+      {
+        "id": "f70bb081e3b544289560548da008a44b",
+        "question": [
+          "How many CVEs have active exploitation according to SSVC?"
+        ],
+        "answer": [
+          {
+            "format": "SQL",
+            "content": [
+              "SELECT COUNT(*) AS active_exploited_cves\n",
+              "FROM fe_lakewatch_catalog.lakewatch_field.cves_v5\n",
+              "WHERE state = 'PUBLISHED'\n",
+              "  AND ssvc_exploitation = 'active'"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "b7725a49bb7c4430ad77e6020700b754",
+        "question": [
+          "What is the most common CWE among critical-severity CVEs?"
+        ],
+        "answer": [
+          {
+            "format": "SQL",
+            "content": [
+              "SELECT\n",
+              "  cwe_id,\n",
+              "  cwe_description,\n",
+              "  COUNT(*) AS cve_count\n",
+              "FROM fe_lakewatch_catalog.lakewatch_field.cves_v5\n",
+              "WHERE state = 'PUBLISHED'\n",
+              "  AND cvss_severity = 'CRITICAL'\n",
+              "  AND cwe_id IS NOT NULL\n",
+              "GROUP BY cwe_id, cwe_description\n",
+              "ORDER BY cve_count DESC\n",
+              "LIMIT 1"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "44c1e6a3c915417d9a0bb8d23cb1c31e",
+        "question": [
+          "List the 10 vendors with the most published CVEs of all time."
+        ],
+        "answer": [
+          {
+            "format": "SQL",
+            "content": [
+              "SELECT\n",
+              "  prod.vendor,\n",
+              "  COUNT(DISTINCT cve_id) AS cve_count\n",
+              "FROM fe_lakewatch_catalog.lakewatch_field.cves_v5\n",
+              "LATERAL VIEW EXPLODE(affected_products) AS prod\n",
+              "WHERE state = 'PUBLISHED'\n",
+              "  AND prod.vendor IS NOT NULL\n",
+              "GROUP BY prod.vendor\n",
+              "ORDER BY cve_count DESC\n",
+              "LIMIT 10"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "36f016bafc1b4038b17911707e0f62aa",
+        "question": [
+          "What is the highest CVSS base score among CVEs published in the last 30 days?"
+        ],
+        "answer": [
+          {
+            "format": "SQL",
+            "content": [
+              "SELECT MAX(cvss_base_score) AS highest_score\n",
+              "FROM fe_lakewatch_catalog.lakewatch_field.cves_v5\n",
+              "WHERE state = 'PUBLISHED'\n",
+              "  AND date_published >= current_timestamp() - INTERVAL 30 DAYS"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
