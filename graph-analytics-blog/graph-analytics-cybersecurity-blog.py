@@ -4,7 +4,7 @@
 
 # COMMAND ----------
 
-gold_schema = "fe_lakewatch_catalog.gold"
+gold_schema = "<your catalog>.gold"   # Change it!
 
 # COMMAND ----------
 
