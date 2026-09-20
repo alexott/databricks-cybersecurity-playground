@@ -6,3 +6,5 @@ Now available:
 
 - `protocols.sql` contains two functions `proto_name_to_code` and `proto_code_to_name` to remap network protocol codes and names.
 - `ocsf.sql` contains functions that map `activity_id` into `activity_name` for different categories.
+- `tldextract.sql` contains functions to extract public suffix and registered domain from hostname/URL.
+
