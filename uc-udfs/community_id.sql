@@ -1,4 +1,5 @@
 -- Databricks notebook source
+-- TODO: implement it as batch function, similar to tldextract
 CREATE OR REPLACE FUNCTION community_id_hash(
   src_ip STRING,
   src_port INT,
