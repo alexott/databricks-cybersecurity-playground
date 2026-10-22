@@ -192,3 +192,16 @@ def test_register_src_modules_by_value_makes_functions_portable():
         input=payload, capture_output=True, cwd="/")
     assert out.returncode == 0, out.stderr.decode()
     assert out.stdout.decode().strip() == "latest_changes"
+
+
+def test_register_src_modules_by_value_skips_placeholders(monkeypatch):
+    # sys.modules may hold None placeholders (and modules without __file__); with the
+    # working directory inside src/ (as for a notebook task) they must be skipped.
+    import pathlib
+    import sys
+
+    from common import silver
+
+    monkeypatch.setitem(sys.modules, "zz_placeholder", None)
+    monkeypatch.chdir(pathlib.Path(silver.__file__).parent)
+    silver.register_src_modules_by_value()

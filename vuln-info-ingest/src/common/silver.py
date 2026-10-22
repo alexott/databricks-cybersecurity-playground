@@ -20,8 +20,8 @@ def register_src_modules_by_value() -> None:
 
     for name in {n.split(".")[0] for n in list(sys.modules)}:
         mod = sys.modules.get(name)
-        path = getattr(mod, "__file__", None) or ""
-        if os.path.abspath(path).startswith(_SRC + os.sep):
+        path = getattr(mod, "__file__", None)   # None placeholders, built-in modules
+        if path and os.path.abspath(path).startswith(_SRC + os.sep):
             cloudpickle.register_pickle_by_value(mod)
 
 
