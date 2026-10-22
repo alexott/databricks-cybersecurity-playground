@@ -1,0 +1,65 @@
+{
+  "schema_version": "1.9.0",
+  "id": "PYSEC-2026-4112",
+  "published": "2026-10-01T16:44:34.145574Z",
+  "modified": "2026-10-05T06:30:02.388571428Z",
+  "aliases": [
+    "CVE-2026-102831",
+    "GHSA-6966-vjj6-99xv",
+    "PYSEC-2026-4057",
+    "PYSEC-2026-4058",
+    "PYSEC-2026-4060"
+  ],
+  "summary": "JupyterLab: Cross-site scripting (XSS) in JupyterLab via notebook cells pasted from the system clipboard",
+  "details": "## Description\n\nJupyterLab 4.5.0 enabled copying and pasing cells through the system clipboard. The paste path parses clipboard text as cell JSON and inserts the cells without clearing `metadata.trust",
+  "affected": [
+    {
+      "package": {
+        "name": "notebook",
+        "ecosystem": "PyPI",
+        "purl": "pkg:pypi/notebook"
+      },
+      "ranges": [
+        {
+          "type": "ECOSYSTEM",
+          "events": [
+            {
+              "introduced": "7.5.0"
+            },
+            {
+              "fixed": "7.6.3"
+            }
+          ]
+        }
+      ],
+      "versions": [
+        "7.5.0",
+        "7.5.1",
+        "7.5.2"
+      ],
+      "database_specific": {
+        "source": "https://github.com/pypa/advisory-database/blob/main/vulns/notebook/PYSEC-2026-4112.yaml"
+      }
+    }
+  ],
+  "references": [
+    {
+      "type": "WEB",
+      "url": "https://github.com/jupyterlab/jupyterlab/security/advisories/GHSA-6966-vjj6-99xv"
+    },
+    {
+      "type": "ADVISORY",
+      "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-102831"
+    },
+    {
+      "type": "WEB",
+      "url": "https://github.com/jupyterlab/jupyterlab/commit/1a10a7da5ff655849b21581c2633b46483ae0be9"
+    }
+  ],
+  "severity": [
+    {
+      "type": "CVSS_V3",
+      "score": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:N"
+    }
+  ]
+}

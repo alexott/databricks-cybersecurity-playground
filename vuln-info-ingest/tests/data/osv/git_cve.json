@@ -1,0 +1,79 @@
+{
+  "schema_version": "1.9.0",
+  "id": "CVE-2026-104470",
+  "published": "2026-10-02T11:38:35.372Z",
+  "modified": "2026-10-05T02:55:44.524355228Z",
+  "aliases": [
+    "CVE-2026-105224",
+    "GHSA-6rvf-7pwm-6j44"
+  ],
+  "summary": "YesWiki before 4.6.7 SSRF via Bazar valeur Action url Parameter",
+  "details": "YesWiki before 4.6.7 contains a server-side request forgery vulnerability that allows page editors to make the server fetch arbitrary URLs via the url parameter of the Bazar valeur action. Attackers c",
+  "affected": [
+    {
+      "ranges": [
+        {
+          "type": "GIT",
+          "repo": "https://github.com/yeswiki/yeswiki",
+          "events": [
+            {
+              "introduced": "0"
+            },
+            {
+              "fixed": "07120ed8971047f504f7ec78060828f1895f475f"
+            }
+          ],
+          "database_specific": {
+            "extracted_events": [
+              {
+                "introduced": "0"
+              },
+              {
+                "fixed": "4.6.7"
+              }
+            ],
+            "source": [
+              "AFFECTED_FIELD",
+              "DESCRIPTION"
+            ]
+          }
+        }
+      ],
+      "versions": [
+        "v4.6.6",
+        "v4.6.5",
+        "v4.6.4"
+      ],
+      "database_specific": {
+        "source": "https://storage.googleapis.com/cve-osv-conversion/osv-output/CVE-2026-104470.json"
+      }
+    }
+  ],
+  "references": [
+    {
+      "type": "ADVISORY",
+      "url": "https://github.com/CVEProject/cvelistV5/tree/main/cves/2026/104xxx/CVE-2026-104470.json"
+    },
+    {
+      "type": "ADVISORY",
+      "url": "https://github.com/YesWiki/yeswiki/security/advisories/GHSA-6rvf-7pwm-6j44"
+    },
+    {
+      "type": "ADVISORY",
+      "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-104470"
+    }
+  ],
+  "database_specific": {
+    "cna_assigner": "VulnCheck",
+    "cwe_ids": [
+      "CWE-918"
+    ],
+    "osv_generated_from": "https://github.com/CVEProject/cvelistV5/tree/main/cves/2026/104xxx/CVE-2026-104470.json"
+  },
+  "severity": [
+    {
+      "type": "CVSS_V4",
+      "score": "CVSS:4.0/AV:N/AC:L/AT:N/PR:L/UI:N/VC:L/VI:N/VA:N/SC:L/SI:N/SA:N"
+    }
+  ]
+}
