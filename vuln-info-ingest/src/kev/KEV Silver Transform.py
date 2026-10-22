@@ -19,7 +19,7 @@ CHECKPOINT = volume_path(p, "kev_checkpoints") + "/silver"
 
 # COMMAND ----------
 
-# DBTITLE 1,Create silver table (inline comments mirrored in kev_vulnerabilities_comments.sql)
+# DBTITLE 1,Create silver table with column comments
 spark.sql(f"""
   CREATE TABLE IF NOT EXISTS {SILVER_TABLE} (
     cve_id STRING NOT NULL
