@@ -1,0 +1,14 @@
+[tool.poetry]
+name = "vuln-info-ingest"
+version = "0.1.0"
+description = "Ingestion of vulnerability data (CVE v5, GHSA, OSV, CISA KEV) into Databricks."
+authors = ["Alex Ott <alexott@gmail.com>"]
+package-mode = false
+
+[tool.poetry.dependencies]
+python = ">=3.11,<3.14"
+
+[tool.poetry.group.test.dependencies]
+pytest = "^9.0.3"
+pytest-spark = "^0.8.0"
+pyspark = ">=4.0.1"
