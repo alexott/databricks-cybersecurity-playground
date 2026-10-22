@@ -14,18 +14,13 @@ resources:
         - name: schema
           default: ${var.schema}
         - name: volume
-          default: ${var.volume}
+          default: ${resources.volumes.reference.name}
         - name: tarball_url
           default: https://codeload.github.com/github/advisory-database/tar.gz/refs/heads/main
         - name: part_records
           default: "20000"
       tasks:
-        - task_key: setup
-          notebook_task:
-            notebook_path: "../src/common/Create volume.py"
         - task_key: load
-          depends_on:
-            - task_key: setup
           notebook_task:
             notebook_path: "../src/ghsa/Load advisories.py"
         - task_key: silver

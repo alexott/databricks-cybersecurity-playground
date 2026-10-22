@@ -14,7 +14,7 @@ resources:
         - name: schema
           default: ${var.schema}
         - name: volume
-          default: ${var.volume}
+          default: ${resources.volumes.reference.name}
         - name: bucket_url
           default: https://storage.googleapis.com/osv-vulnerabilities
         - name: part_records
@@ -28,12 +28,7 @@ resources:
         - name: min_snapshot_ratio
           default: "0.9"
       tasks:
-        - task_key: setup
-          notebook_task:
-            notebook_path: "../src/common/Create volume.py"
         - task_key: incremental
-          depends_on:
-            - task_key: setup
           notebook_task:
             notebook_path: "../src/osv/Incremental load.py"
         - task_key: check_full_load

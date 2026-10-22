@@ -14,7 +14,7 @@ resources:
         - name: schema
           default: ${var.schema}
         - name: volume
-          default: ${var.volume}
+          default: ${resources.volumes.reference.name}
         - name: tarball_url
           default: https://codeload.github.com/CVEProject/cvelistV5/tar.gz/refs/heads/main
         - name: delta_log_url
@@ -28,12 +28,7 @@ resources:
         - name: part_records
           default: "20000"
       tasks:
-        - task_key: setup
-          notebook_task:
-            notebook_path: "../src/common/Create volume.py"
         - task_key: incremental
-          depends_on:
-            - task_key: setup
           notebook_task:
             notebook_path: "../src/cve_v5/Incremental load.py"
         - task_key: check_full_load

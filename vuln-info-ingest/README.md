@@ -20,8 +20,11 @@ change feed. Column comments are part of the silver `CREATE TABLE` statements.
 ## Deployment
 
 Prerequisites: a Unity Catalog catalog and schema you can create tables and volumes
-in, and serverless compute for jobs. The scratch Volume (`volume` variable) is created
-by the jobs if missing.
+in, and serverless compute for jobs. The scratch Volume (`volume` variable) is a bundle
+resource, created by `bundle deploy`. If a Volume with that name already exists, adopt it
+with `databricks bundle deployment bind reference <catalog>.<schema>.<volume> -t <target>`.
+Note that `bundle destroy` deletes the Volume, including the silver streaming
+checkpoints in it.
 
 ```sh
 databricks bundle validate -t dev --profile <profile>
@@ -63,12 +66,12 @@ job while the matching periodic job is running (pause the periodic job first).
 
 | Job | Tasks | Schedule |
 |---|---|---|
-| `vuln_cve_v5` | `setup` → `incremental` → `check_full_load` → `full_load` (only if needed) → `silver` | `cve_v5_schedule` |
-| `vuln_cve_v5_initial_load` | `setup` → `full_load` → `silver` | none |
-| `vuln_osv` | `setup` → `incremental` → `check_full_load` → `full_load` (only if needed) → `silver` | `osv_schedule` |
-| `vuln_osv_initial_load` | `setup` → `full_load` → `silver` | none |
-| `vuln_ghsa` | `setup` → `load` → `silver` | `ghsa_schedule` |
-| `vuln_kev` | `setup` → `load` → `silver` | `kev_schedule` |
+| `vuln_cve_v5` | `incremental` → `check_full_load` → `full_load` (only if needed) → `silver` | `cve_v5_schedule` |
+| `vuln_cve_v5_initial_load` | `full_load` → `silver` | none |
+| `vuln_osv` | `incremental` → `check_full_load` → `full_load` (only if needed) → `silver` | `osv_schedule` |
+| `vuln_osv_initial_load` | `full_load` → `silver` | none |
+| `vuln_ghsa` | `load` → `silver` | `ghsa_schedule` |
+| `vuln_kev` | `load` → `silver` | `kev_schedule` |
 
 All settings are job parameters (no config files); defaults are in the job YAML files
 and can be changed per run. Every job has `catalog`, `schema` and `volume`; besides
@@ -241,6 +244,7 @@ Notes:
 databricks.yml                  bundle definition and targets
 resources/variables.yml         bundle variables
 resources/vuln_*.job.yml        one file per job
+resources/reference.volume.yml  the scratch Volume
 src/common/
   params.py                     job parameters (widgets), table/Volume names
   staging.py                    gzip JSON-line staging parts on the Volume
@@ -248,7 +252,6 @@ src/common/
   merge.py                      dedupe before MERGE, last change per key from CDF
   fetch_log.py                  fetch-log rows and incremental watermarks
   silver.py                     generic raw CDF -> silver streaming MERGE
-  Create volume.py              notebook: creates the scratch Volume
 src/<source>/                   cve_v5, ghsa, osv, kev
   helpers.py                    pure Python / raw-table id columns
   transform.py                  raw VARIANT -> typed silver columns

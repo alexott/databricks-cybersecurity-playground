@@ -14,16 +14,11 @@ resources:
         - name: schema
           default: ${var.schema}
         - name: volume
-          default: ${var.volume}
+          default: ${resources.volumes.reference.name}
         - name: catalog_url
           default: https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json
       tasks:
-        - task_key: setup
-          notebook_task:
-            notebook_path: "../src/common/Create volume.py"
         - task_key: load
-          depends_on:
-            - task_key: setup
           notebook_task:
             notebook_path: "../src/kev/Load KEV.py"
         - task_key: silver

@@ -1,0 +1,8 @@
+resources:
+  volumes:
+    reference:
+      catalog_name: ${var.catalog}
+      schema_name: ${var.schema}
+      name: ${var.volume}
+      volume_type: MANAGED
+      comment: Scratch space of vuln-info-ingest jobs (staging files and streaming checkpoints)
