@@ -1,0 +1,14 @@
+{"dataType":"CVE_RECORD","dataVersion":"5.1",
+ "cveMetadata":{"cveId":"CVE-2021-44228","assignerOrgId":"f0158376-9dc2-43b6-827c-5f631a4d8d09","assignerShortName":"apache","state":"PUBLISHED","dateReserved":"2021-11-26T00:00:00.000Z","datePublished":"2021-12-10T00:00:00.000Z","dateUpdated":"2025-02-04T14:25:34.416Z"},
+ "containers":{
+  "cna":{"title":"Apache Log4j2 JNDI features do not protect against attacker controlled LDAP and other JNDI related endpoints",
+   "descriptions":[{"lang":"de","value":"Deutsch"},{"lang":"en","value":"Apache Log4j2 2.0-beta9 through 2.15.0 JNDI features ..."}],
+   "affected":[{"vendor":"Apache Software Foundation","product":"Apache Log4j2","collectionURL":"https://repo.maven.apache.org/maven2","packageName":"org.apache.logging.log4j:log4j-core","defaultStatus":"unaffected","platforms":["Java"],
+     "versions":[{"version":"2.0-beta9","status":"affected","lessThan":"2.3.1","versionType":"maven"},{"version":"2.4","status":"affected","lessThanOrEqual":"2.12.1","versionType":"maven"}]}],
+   "metrics":[{"cvssV3_1":{"version":"3.1","baseScore":10.0,"baseSeverity":"CRITICAL","vectorString":"CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"}}],
+   "problemTypes":[{"descriptions":[{"type":"CWE","cweId":"CWE-502","description":"CWE-502 Deserialization of Untrusted Data","lang":"en"}]},
+                   {"descriptions":[{"type":"CWE","cweId":"CWE-400","description":"CWE-400 Uncontrolled Resource Consumption","lang":"en"},{"type":"text","description":"no id","lang":"en"}]}],
+   "references":[{"url":"https://logging.apache.org/log4j/2.x/security.html","name":"vendor","tags":["vendor-advisory"]}]},
+  "adp":[{"providerMetadata":{"orgId":"af854a3a-2127-422b-91ae-364da2661108","shortName":"CVE"},"title":"CVE Program Container"},
+         {"providerMetadata":{"orgId":"134c704f-9b21-4f2e-91b3-4a467353bcc0","shortName":"CISA-ADP"},
+          "metrics":[{"other":{"type":"ssvc","content":{"options":[{"Exploitation":"active"},{"Automatable":"yes"},{"Technical Impact":"total"}]}}}]}]}}

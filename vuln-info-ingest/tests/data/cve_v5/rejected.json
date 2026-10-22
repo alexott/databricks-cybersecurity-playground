@@ -1,0 +1,3 @@
+{"dataType":"CVE_RECORD","dataVersion":"5.1",
+ "cveMetadata":{"cveId":"CVE-2023-99999","assignerOrgId":"00000000-0000-0000-0000-000000000002","assignerShortName":"mitre","state":"REJECTED","dateReserved":"2023-01-01T00:00:00Z","dateRejected":"2023-06-01T00:00:00Z","dateUpdated":"2023-06-01T00:00:00Z"},
+ "containers":{"cna":{"rejectedReasons":[{"lang":"en","value":"DO NOT USE THIS CANDIDATE NUMBER."}]}}}

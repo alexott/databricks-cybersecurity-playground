@@ -1,0 +1,9 @@
+{"dataType":"CVE_RECORD","dataVersion":"5.1",
+ "cveMetadata":{"cveId":"CVE-2024-0001","assignerOrgId":"00000000-0000-0000-0000-000000000001","assignerShortName":"example","state":"PUBLISHED","dateReserved":"2024-01-01T00:00:00Z","datePublished":"2024-01-02T00:00:00Z","dateUpdated":"2024-02-01T00:00:00Z"},
+ "containers":{
+  "cna":{"descriptions":[{"lang":"en-US","value":"Only en-US description"}],
+   "affected":[{"vendor":"Example","product":"Widget","defaultStatus":"unknown","versions":[{"version":"1.0","status":"affected"}]}],
+   "problemTypes":[{"descriptions":[{"type":"text","description":"n/a","lang":"en"}]}],
+   "references":[{"url":"https://example.com/a"}]},
+  "adp":[{"providerMetadata":{"orgId":"134c704f-9b21-4f2e-91b3-4a467353bcc0","shortName":"CISA-ADP"},
+          "metrics":[{"cvssV3_1":{"version":"3.1","baseScore":7.5,"baseSeverity":"HIGH","vectorString":"CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N"}}]}]}}
