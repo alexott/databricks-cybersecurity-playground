@@ -46,7 +46,7 @@ from concurrent.futures import ThreadPoolExecutor
 from osv.helpers import changed_since, record_url, to_single_line
 from osv.transform import extract_raw_data
 from common.staging import write_text_parts, clear_parts
-from common.http import fetch_with_retries
+from common.fetch import fetch_with_retries
 from common.merge import dedupe_latest
 from common.fetch_log import append_fetch_log, read_watermark
 from delta.tables import DeltaTable

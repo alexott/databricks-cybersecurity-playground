@@ -1,12 +1,13 @@
 import datetime
 import gzip
+import http.client
 import io
 import urllib.error
 
 import pytest
 from pyspark.sql import SparkSession
 
-from common import fetch_log, http, merge, params, staging
+from common import fetch, fetch_log, merge, params, staging
 
 
 class FakeWidgets:
@@ -101,26 +102,26 @@ def _http_error(code):
 
 def test_fetch_with_retries_retries_transient(monkeypatch):
     urlopen, calls = _fake_urlopen([_http_error(503), urllib.error.URLError("dns"), b" data \n"])
-    monkeypatch.setattr(http.urllib.request, "urlopen", urlopen)
-    assert http.fetch_with_retries("u", sleep=lambda s: None) == b"data"
+    monkeypatch.setattr(fetch.urllib.request, "urlopen", urlopen)
+    assert fetch.fetch_with_retries("u", sleep=lambda s: None) == b"data"
     assert len(calls) == 3
 
 
 def test_fetch_with_retries_404_is_none(monkeypatch):
     urlopen, _ = _fake_urlopen([_http_error(404)])
-    monkeypatch.setattr(http.urllib.request, "urlopen", urlopen)
-    assert http.fetch_with_retries("u", sleep=lambda s: None) is None
+    monkeypatch.setattr(fetch.urllib.request, "urlopen", urlopen)
+    assert fetch.fetch_with_retries("u", sleep=lambda s: None) is None
 
 
 def test_fetch_with_retries_raises_other_and_exhausted(monkeypatch):
     urlopen, _ = _fake_urlopen([_http_error(403)])
-    monkeypatch.setattr(http.urllib.request, "urlopen", urlopen)
+    monkeypatch.setattr(fetch.urllib.request, "urlopen", urlopen)
     with pytest.raises(urllib.error.HTTPError):
-        http.fetch_with_retries("u", sleep=lambda s: None)
+        fetch.fetch_with_retries("u", sleep=lambda s: None)
     urlopen, _ = _fake_urlopen([_http_error(500)] * 4)
-    monkeypatch.setattr(http.urllib.request, "urlopen", urlopen)
+    monkeypatch.setattr(fetch.urllib.request, "urlopen", urlopen)
     with pytest.raises(urllib.error.HTTPError):
-        http.fetch_with_retries("u", sleep=lambda s: None)
+        fetch.fetch_with_retries("u", sleep=lambda s: None)
 
 
 def test_dedupe_latest(spark_session: SparkSession):
@@ -163,3 +164,31 @@ def test_read_watermark(spark_session: SparkSession):
         datetime.datetime(2026, 10, 2, tzinfo=datetime.timezone.utc)
     spark_session.createDataFrame([(None,)], "watermark timestamp").createOrReplaceTempView("fetch_log_empty")
     assert fetch_log.read_watermark(spark_session, "fetch_log_empty") is None
+
+
+def test_fetch_with_retries_retries_connection_reset_and_incomplete_read(monkeypatch):
+    urlopen, calls = _fake_urlopen([ConnectionResetError("reset"), http.client.IncompleteRead(b"x"),
+                                    TimeoutError("timed out"), b"ok"])
+    monkeypatch.setattr(fetch.urllib.request, "urlopen", urlopen)
+    assert fetch.fetch_with_retries("u", sleep=lambda s: None) == b"ok"
+    assert len(calls) == 4
+
+
+def test_register_src_modules_by_value_makes_functions_portable():
+    # On serverless, foreachBatch functions are unpickled in a separate Python process
+    # where src/ is not importable; our modules must travel by value.
+    import subprocess
+    import sys
+
+    from pyspark import cloudpickle
+
+    from common import silver
+
+    silver.register_src_modules_by_value()
+    payload = cloudpickle.dumps(merge.latest_changes)
+    out = subprocess.run(
+        [sys.executable, "-I", "-c",
+         "import pickle, sys; print(pickle.loads(sys.stdin.buffer.read()).__name__)"],
+        input=payload, capture_output=True, cwd="/")
+    assert out.returncode == 0, out.stderr.decode()
+    assert out.stdout.decode().strip() == "latest_changes"

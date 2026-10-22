@@ -21,7 +21,10 @@ def parse_ts(s: str) -> datetime.datetime:
 
 
 def raw_github_url(link: str) -> str:
-    """deltaLog githubLink (github.com/<o>/<r>/blob/<ref>/<path>) -> raw download URL."""
+    """deltaLog githubLink -> raw download URL. deltaLog links are raw URLs already;
+    github.com/<o>/<r>/blob/<ref>/<path> links are converted."""
+    if link.startswith("https://raw.githubusercontent.com/"):
+        return link
     m = _GITHUB_BLOB.match(link)
     if not m:
         raise ValueError(f"unexpected githubLink: {link}")
@@ -32,21 +35,26 @@ def newest_fetch_time(delta_log: list[dict]) -> datetime.datetime | None:
     return max((parse_ts(e["fetchTime"]) for e in delta_log), default=None)
 
 
-def plan_incremental(delta_log: list[dict], watermark: datetime.datetime | None, threshold: int
+def plan_incremental(delta_log: list[dict], watermark: datetime.datetime | None, threshold: int,
+                     overlap: datetime.timedelta = datetime.timedelta(0)
                      ) -> tuple[dict[str, str], datetime.datetime | None, bool]:
     """Decide what an incremental run does.
 
     Returns ({cve_id: githubLink}, newest fetchTime processed, needs_full_load).
+    Entries newer than `watermark - overlap` are processed: records are downloaded
+    from a CDN-cached URL, so a record changed shortly before the last run may have
+    come back stale and is fetched again (the MERGE is idempotent).
     A full load is needed when there is no watermark, when the log no longer reaches
-    back to the watermark (deltaLog.json keeps a rolling window, so changes could be
+    back to that point (deltaLog.json keeps a rolling window, so changes could be
     missing), or when more than `threshold` CVEs changed."""
     if watermark is None:
         return {}, None, True
     if not delta_log:
         return {}, None, False
-    if min(parse_ts(e["fetchTime"]) for e in delta_log) > watermark:
+    since = watermark - overlap
+    if min(parse_ts(e["fetchTime"]) for e in delta_log) > since:
         return {}, None, True
-    entries = sorted((e for e in delta_log if parse_ts(e["fetchTime"]) > watermark),
+    entries = sorted((e for e in delta_log if parse_ts(e["fetchTime"]) > since),
                      key=lambda e: parse_ts(e["fetchTime"]))
     if not entries:
         return {}, None, False

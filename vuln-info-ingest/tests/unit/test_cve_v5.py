@@ -20,6 +20,12 @@ def test_parse_ts():
         datetime.datetime(2024, 5, 30, 15, 40, 23, 392000, tzinfo=UTC)
 
 
+def test_raw_github_url_passes_raw_links_through():
+    # The format deltaLog.json actually uses.
+    link = "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/84xxx/CVE-2026-84284.json"
+    assert helpers.raw_github_url(link) == link
+
+
 def test_raw_github_url():
     assert helpers.raw_github_url(
         "https://github.com/CVEProject/cvelistV5/blob/main/cves/2024/1xxx/CVE-2024-1234.json") == \
@@ -30,7 +36,7 @@ def test_raw_github_url():
 
 def _entry(ts, new=(), updated=()):
     def items(ids):
-        return [{"cveId": i, "githubLink": f"https://github.com/o/r/blob/main/cves/{i}-{ts}.json"} for i in ids]
+        return [{"cveId": i, "githubLink": f"https://raw.githubusercontent.com/o/r/main/cves/{i}-{ts}.json"} for i in ids]
     return {"fetchTime": ts, "numberOfChanges": len(new) + len(updated), "new": items(new), "updated": items(updated)}
 
 
@@ -46,8 +52,20 @@ def test_plan_incremental_since_watermark_latest_link_wins():
     changes, newest, full = helpers.plan_incremental(_LOG, wm, threshold=10)
     assert not full
     assert newest == helpers.parse_ts("2026-10-22T12:00:00.000Z")
-    assert changes == {"CVE-1": "https://github.com/o/r/blob/main/cves/CVE-1-2026-10-22T12:00:00.000Z.json",
-                       "CVE-2": "https://github.com/o/r/blob/main/cves/CVE-2-2026-10-22T11:00:00.000Z.json"}
+    assert changes == {"CVE-1": "https://raw.githubusercontent.com/o/r/main/cves/CVE-1-2026-10-22T12:00:00.000Z.json",
+                       "CVE-2": "https://raw.githubusercontent.com/o/r/main/cves/CVE-2-2026-10-22T11:00:00.000Z.json"}
+
+
+def test_plan_incremental_overlap_refetches_recent_entries():
+    # raw.githubusercontent.com is CDN-cached: re-read entries shortly before the
+    # watermark so a record fetched stale last run is fetched again.
+    wm = helpers.parse_ts("2026-10-22T11:30:00.000Z")
+    changes, newest, full = helpers.plan_incremental(_LOG, wm, threshold=10,
+                                                     overlap=datetime.timedelta(minutes=45))
+    assert not full and set(changes) == {"CVE-1", "CVE-2"}
+    assert newest == helpers.parse_ts("2026-10-22T12:00:00.000Z")
+    changes, _, _ = helpers.plan_incremental(_LOG, wm, threshold=10)
+    assert set(changes) == {"CVE-1"}
 
 
 def test_plan_incremental_no_watermark_needs_full():

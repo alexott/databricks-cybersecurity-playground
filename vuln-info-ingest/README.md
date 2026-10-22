@@ -74,7 +74,7 @@ All settings are job parameters (no config files); defaults are in the job YAML 
 and can be changed per run. Every job has `catalog`, `schema` and `volume`; besides
 those:
 
-- CVE v5: `tarball_url`, `delta_log_url`, `full_reload_threshold` (5000), `fetch_threads` (16), `part_records` (20000).
+- CVE v5: `tarball_url`, `delta_log_url`, `full_reload_threshold` (5000), `fetch_threads` (16), `watermark_overlap_minutes` (30), `part_records` (20000).
 - GHSA: `tarball_url`, `part_records` (20000).
 - OSV: `bucket_url`, `full_reload_threshold` (100000), `watermark_overlap_hours` (6), `fetch_threads` (32), `min_snapshot_ratio` (0.9), `part_records` (20000).
 - KEV: `catalog_url`.
@@ -97,7 +97,9 @@ advanced. The watermark is the newest `fetchTime` of `cves/deltaLog.json`, read 
 the download.
 
 **Incremental load** reads `cves/deltaLog.json`, takes the CVEs new or updated after
-the watermark, downloads each record from GitHub and merges it the same way.
+the watermark minus `watermark_overlap_minutes`, downloads each record from GitHub and
+merges it the same way. The overlap re-reads recent changes because
+`raw.githubusercontent.com` is CDN-cached and can briefly return the previous version.
 `deltaLog.json` only keeps a rolling window of changes, so when the watermark is older
 than its oldest entry the job falls back to the full load.
 
@@ -242,7 +244,7 @@ resources/vuln_*.job.yml        one file per job
 src/common/
   params.py                     job parameters (widgets), table/Volume names
   staging.py                    gzip JSON-line staging parts on the Volume
-  http.py                       single-record downloads with retries
+  fetch.py                      single-record downloads with retries
   merge.py                      dedupe before MERGE, last change per key from CDF
   fetch_log.py                  fetch-log rows and incremental watermarks
   silver.py                     generic raw CDF -> silver streaming MERGE

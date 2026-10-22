@@ -6,7 +6,7 @@
 # MAGIC %md
 # MAGIC # CVE v5 incremental load — deltaLog.json since the watermark, upsert cves_v5_raw
 # MAGIC Reads `cves/deltaLog.json`, takes the CVEs new/updated after the stored
-# MAGIC watermark, downloads each record and `MERGE`s it (gated by `date_updated`).
+# MAGIC watermark (minus a small overlap), downloads each record and `MERGE`s it (gated by `date_updated`).
 # MAGIC Sets the task value `needs_full_load=true` instead when there is no watermark
 # MAGIC yet, when deltaLog no longer reaches back to the watermark, or when more than
 # MAGIC `full_reload_threshold` CVEs changed; the job then runs `Full load`.
@@ -19,7 +19,8 @@ sys.path.append(os.path.abspath(".."))
 from common.params import COMMON_PARAMS, get_params, table_name, volume_path
 
 p = get_params(dbutils, {**COMMON_PARAMS, "delta_log_url": str, "full_reload_threshold": int,
-                         "fetch_threads": int, "part_records": int})
+                         "fetch_threads": int, "part_records": int,
+                         "watermark_overlap_minutes": float})
 INCREMENTAL_STAGING = volume_path(p, "cve_v5") + "/incremental"
 RAW_TABLE = table_name(p, "cves_v5_raw")
 FETCH_LOG_TABLE = table_name(p, "cves_v5_fetch_log")
@@ -32,7 +33,7 @@ import datetime, json, urllib.request
 from concurrent.futures import ThreadPoolExecutor
 from cve_v5.helpers import plan_incremental, raw_github_url, extract_raw_data
 from common.staging import to_single_line, write_text_parts, clear_parts
-from common.http import fetch_with_retries
+from common.fetch import fetch_with_retries
 from common.merge import dedupe_latest
 from common.fetch_log import append_fetch_log, read_watermark
 from delta.tables import DeltaTable
@@ -40,7 +41,9 @@ from delta.tables import DeltaTable
 watermark = read_watermark(spark, FETCH_LOG_TABLE)
 with urllib.request.urlopen(p["delta_log_url"]) as r:
     delta_log = json.load(r)
-changes, newest, needs_full = plan_incremental(delta_log, watermark, p["full_reload_threshold"])
+# Records come from a CDN-cached URL: re-read recent entries in case one was stale.
+overlap = datetime.timedelta(minutes=p["watermark_overlap_minutes"])
+changes, newest, needs_full = plan_incremental(delta_log, watermark, p["full_reload_threshold"], overlap)
 print(f"watermark={watermark}: {len(changes)} changed CVEs, newest fetchTime={newest}, full={needs_full}")
 
 if needs_full:

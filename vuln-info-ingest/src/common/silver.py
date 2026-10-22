@@ -2,9 +2,27 @@
 each micro-batch, transformed, into the silver table on `key`."""
 from __future__ import annotations
 
+import os
+import sys
 from typing import Callable
 
 from common.merge import latest_changes
+
+_SRC = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+def register_src_modules_by_value() -> None:
+    """Make cloudpickle ship our src/ packages by value. On serverless (Spark Connect)
+    the foreachBatch function is unpickled in a separate Python process where src/
+    is not on sys.path, so references to e.g. common.merge or cve_v5.transform must
+    not be pickled as imports."""
+    from pyspark import cloudpickle
+
+    for name in {n.split(".")[0] for n in list(sys.modules)}:
+        mod = sys.modules.get(name)
+        path = getattr(mod, "__file__", None) or ""
+        if os.path.abspath(path).startswith(_SRC + os.sep):
+            cloudpickle.register_pickle_by_value(mod)
 
 
 def stream_cdf_to_silver(spark, raw_table: str, silver_table: str, key: str,
@@ -18,6 +36,8 @@ def stream_cdf_to_silver(spark, raw_table: str, silver_table: str, key: str,
     `_change_type`; a last change of type 'delete' removes the silver row."""
     from delta.tables import DeltaTable
     from pyspark.sql import functions as F
+
+    register_src_modules_by_value()
 
     def merge(df):
         src = transform_fn(latest_changes(df, key, apply_deletes)).alias("s")

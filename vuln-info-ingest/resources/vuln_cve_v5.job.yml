@@ -23,6 +23,8 @@ resources:
           default: "5000"
         - name: fetch_threads
           default: "16"
+        - name: watermark_overlap_minutes
+          default: "30"
         - name: part_records
           default: "20000"
       tasks:
