@@ -17,6 +17,9 @@ DESCRIPTIONS_TYPE = "ARRAY<STRUCT<lang: STRING, value: STRING>>"
 PROBLEM_TYPES_TYPE = "ARRAY<STRUCT<descriptions: ARRAY<STRUCT<cweId: STRING, description: STRING>>>>"
 # CISA-ADP is located by providerMetadata.shortName among the first adp entries.
 _ADP_SLOTS = 3
+# CISA-ADP metrics[] mixes CVSS entries and `other` entries (type 'ssvc', 'kev', ...).
+_ADP_OTHER_METRICS_TYPE = ("ARRAY<STRUCT<other: STRUCT<type: STRING, "
+                           "content: STRUCT<options: ARRAY<MAP<STRING, STRING>>>>>>")
 
 
 def _v(path: str, typ: str = "string"):
@@ -31,6 +34,15 @@ def _cisa_adp(path: str, typ: str = "string"):
         F.when(_v(f"containers.adp[{i}].providerMetadata.shortName") == "CISA-ADP",
                _v(f"containers.adp[{i}].{path}", typ))
         for i in range(_ADP_SLOTS)])
+
+
+def _ssvc(option: str):
+    """SSVC decision point (e.g. 'Exploitation') from the CISA-ADP metrics entry of type
+    'ssvc', wherever it sits in metrics[]; options are matched by name, not position."""
+    from pyspark.sql import functions as F
+    options = F.get(F.filter(_cisa_adp("metrics", _ADP_OTHER_METRICS_TYPE),
+                             lambda m: m["other"]["type"] == "ssvc"), 0)["other"]["content"]["options"]
+    return F.get(F.filter(F.transform(options, lambda o: o[option]), lambda v: v.isNotNull()), 0)
 
 
 def _cvss(field, alias: str):
@@ -79,9 +91,9 @@ def transform_cves(df):
                    f"coalesce({problem_types}, array()), pt -> coalesce(pt.descriptions, array()))), "
                    f"d -> d.cweId), x -> x IS NOT NULL))").alias("cwe_ids"),
             cna("problemTypes[0].descriptions[0].description").alias("cwe_description"),
-            _cisa_adp("metrics[0].other.content.options[0].Exploitation").alias("ssvc_exploitation"),
-            _cisa_adp("metrics[0].other.content.options[1].Automatable").alias("ssvc_automatable"),
-            _cisa_adp("metrics[0].other.content.options[2]['Technical Impact']").alias("ssvc_technical_impact"),
+            _ssvc("Exploitation").alias("ssvc_exploitation"),
+            _ssvc("Automatable").alias("ssvc_automatable"),
+            _ssvc("Technical Impact").alias("ssvc_technical_impact"),
             cna("references", REFERENCES_TYPE).alias("references"),
             F.col("raw"),
         )

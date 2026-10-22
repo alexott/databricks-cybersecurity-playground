@@ -11,4 +11,6 @@
    "references":[{"url":"https://logging.apache.org/log4j/2.x/security.html","name":"vendor","tags":["vendor-advisory"]}]},
   "adp":[{"providerMetadata":{"orgId":"af854a3a-2127-422b-91ae-364da2661108","shortName":"CVE"},"title":"CVE Program Container"},
          {"providerMetadata":{"orgId":"134c704f-9b21-4f2e-91b3-4a467353bcc0","shortName":"CISA-ADP"},
-          "metrics":[{"other":{"type":"ssvc","content":{"options":[{"Exploitation":"active"},{"Automatable":"yes"},{"Technical Impact":"total"}]}}}]}]}}
+          "metrics":[{"cvssV3_1":{"version":"3.1","baseScore":10.0,"baseSeverity":"CRITICAL","vectorString":"CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"}},
+                     {"other":{"type":"ssvc","content":{"id":"CVE-2021-44228","options":[{"Exploitation":"active"},{"Automatable":"yes"},{"Technical Impact":"total"}],"role":"CISA Coordinator","version":"2.0.3"}}},
+                     {"other":{"type":"kev","content":{"dateAdded":"2021-12-10","reference":"https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=CVE-2021-44228"}}}]}]}}
