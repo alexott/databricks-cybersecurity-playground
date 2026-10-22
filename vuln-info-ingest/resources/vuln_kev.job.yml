@@ -1,0 +1,33 @@
+resources:
+  jobs:
+    vuln_kev:
+      name: vuln_kev
+      description: Load the CISA Known Exploited Vulnerabilities catalog into kev_raw and kev_vulnerabilities
+      max_concurrent_runs: 1
+      schedule:
+        quartz_cron_expression: ${var.kev_schedule}
+        timezone_id: ${var.timezone}
+        pause_status: ${var.pause_status}
+      parameters:
+        - name: catalog
+          default: ${var.catalog}
+        - name: schema
+          default: ${var.schema}
+        - name: volume
+          default: ${var.volume}
+        - name: catalog_url
+          default: https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json
+      tasks:
+        - task_key: setup
+          notebook_task:
+            notebook_path: "../src/common/Create volume.py"
+        - task_key: load
+          depends_on:
+            - task_key: setup
+          notebook_task:
+            notebook_path: "../src/kev/Load KEV.py"
+        - task_key: silver
+          depends_on:
+            - task_key: load
+          notebook_task:
+            notebook_path: "../src/kev/KEV Silver Transform.py"

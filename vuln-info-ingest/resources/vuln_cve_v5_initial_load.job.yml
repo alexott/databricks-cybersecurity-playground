@@ -1,0 +1,33 @@
+resources:
+  jobs:
+    vuln_cve_v5_initial_load:
+      name: vuln_cve_v5_initial_load
+      description: One-time full load of CVE v5 records (cvelistV5 tarball); safe to re-run
+      max_concurrent_runs: 1
+      parameters:
+        - name: catalog
+          default: ${var.catalog}
+        - name: schema
+          default: ${var.schema}
+        - name: volume
+          default: ${var.volume}
+        - name: tarball_url
+          default: https://codeload.github.com/CVEProject/cvelistV5/tar.gz/refs/heads/main
+        - name: delta_log_url
+          default: https://raw.githubusercontent.com/CVEProject/cvelistV5/refs/heads/main/cves/deltaLog.json
+        - name: part_records
+          default: "20000"
+      tasks:
+        - task_key: setup
+          notebook_task:
+            notebook_path: "../src/common/Create volume.py"
+        - task_key: full_load
+          depends_on:
+            - task_key: setup
+          notebook_task:
+            notebook_path: "../src/cve_v5/Full load.py"
+        - task_key: silver
+          depends_on:
+            - task_key: full_load
+          notebook_task:
+            notebook_path: "../src/cve_v5/CVE v5 Silver Transform.py"

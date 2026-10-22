@@ -1,0 +1,35 @@
+resources:
+  jobs:
+    vuln_ghsa:
+      name: vuln_ghsa
+      description: Load the GitHub Advisory Database into ghsa_raw and github_advisories
+      max_concurrent_runs: 1
+      schedule:
+        quartz_cron_expression: ${var.ghsa_schedule}
+        timezone_id: ${var.timezone}
+        pause_status: ${var.pause_status}
+      parameters:
+        - name: catalog
+          default: ${var.catalog}
+        - name: schema
+          default: ${var.schema}
+        - name: volume
+          default: ${var.volume}
+        - name: tarball_url
+          default: https://codeload.github.com/github/advisory-database/tar.gz/refs/heads/main
+        - name: part_records
+          default: "20000"
+      tasks:
+        - task_key: setup
+          notebook_task:
+            notebook_path: "../src/common/Create volume.py"
+        - task_key: load
+          depends_on:
+            - task_key: setup
+          notebook_task:
+            notebook_path: "../src/ghsa/Load advisories.py"
+        - task_key: silver
+          depends_on:
+            - task_key: load
+          notebook_task:
+            notebook_path: "../src/ghsa/GHSA Silver Transform.py"

@@ -1,0 +1,29 @@
+variables:
+  catalog:
+    description: Catalog for all tables and the scratch Volume
+  schema:
+    description: Schema for all tables and the scratch Volume
+  volume:
+    description: Scratch Volume (created if missing) for staging files and streaming checkpoints
+    default: reference
+  schedule:
+    description: Default Quartz cron schedule of the periodic jobs
+    default: "0 0 */6 * * ?"
+  cve_v5_schedule:
+    description: Schedule of the CVE v5 job
+    default: ${var.schedule}
+  ghsa_schedule:
+    description: Schedule of the GHSA job
+    default: ${var.schedule}
+  osv_schedule:
+    description: Schedule of the OSV job
+    default: ${var.schedule}
+  kev_schedule:
+    description: Schedule of the KEV job
+    default: ${var.schedule}
+  timezone:
+    description: Time zone of the schedules
+    default: UTC
+  pause_status:
+    description: PAUSED or UNPAUSED (the dev target sets PAUSED)
+    default: UNPAUSED

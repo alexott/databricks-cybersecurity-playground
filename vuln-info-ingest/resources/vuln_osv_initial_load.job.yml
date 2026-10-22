@@ -1,0 +1,33 @@
+resources:
+  jobs:
+    vuln_osv_initial_load:
+      name: vuln_osv_initial_load
+      description: One-time full load of the OSV database (all.zip snapshot); safe to re-run
+      max_concurrent_runs: 1
+      parameters:
+        - name: catalog
+          default: ${var.catalog}
+        - name: schema
+          default: ${var.schema}
+        - name: volume
+          default: ${var.volume}
+        - name: bucket_url
+          default: https://storage.googleapis.com/osv-vulnerabilities
+        - name: part_records
+          default: "20000"
+        - name: min_snapshot_ratio
+          default: "0.9"
+      tasks:
+        - task_key: setup
+          notebook_task:
+            notebook_path: "../src/common/Create volume.py"
+        - task_key: full_load
+          depends_on:
+            - task_key: setup
+          notebook_task:
+            notebook_path: "../src/osv/Full load.py"
+        - task_key: silver
+          depends_on:
+            - task_key: full_load
+          notebook_task:
+            notebook_path: "../src/osv/OSV Silver Transform.py"

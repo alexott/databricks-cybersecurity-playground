@@ -1,0 +1,58 @@
+resources:
+  jobs:
+    vuln_osv:
+      name: vuln_osv
+      description: Incremental load of the OSV database into osv_raw and osv_vulnerabilities (falls back to a full load)
+      max_concurrent_runs: 1
+      schedule:
+        quartz_cron_expression: ${var.osv_schedule}
+        timezone_id: ${var.timezone}
+        pause_status: ${var.pause_status}
+      parameters:
+        - name: catalog
+          default: ${var.catalog}
+        - name: schema
+          default: ${var.schema}
+        - name: volume
+          default: ${var.volume}
+        - name: bucket_url
+          default: https://storage.googleapis.com/osv-vulnerabilities
+        - name: part_records
+          default: "20000"
+        - name: full_reload_threshold
+          default: "100000"
+        - name: watermark_overlap_hours
+          default: "6"
+        - name: fetch_threads
+          default: "32"
+        - name: min_snapshot_ratio
+          default: "0.9"
+      tasks:
+        - task_key: setup
+          notebook_task:
+            notebook_path: "../src/common/Create volume.py"
+        - task_key: incremental
+          depends_on:
+            - task_key: setup
+          notebook_task:
+            notebook_path: "../src/osv/Incremental load.py"
+        - task_key: check_full_load
+          depends_on:
+            - task_key: incremental
+          condition_task:
+            op: EQUAL_TO
+            left: "{{tasks.incremental.values.needs_full_load}}"
+            right: "true"
+        - task_key: full_load
+          depends_on:
+            - task_key: check_full_load
+              outcome: "true"
+          notebook_task:
+            notebook_path: "../src/osv/Full load.py"
+        - task_key: silver
+          depends_on:
+            - task_key: incremental
+            - task_key: full_load
+          run_if: NONE_FAILED
+          notebook_task:
+            notebook_path: "../src/osv/OSV Silver Transform.py"

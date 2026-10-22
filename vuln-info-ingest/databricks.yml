@@ -1,0 +1,31 @@
+# Databricks Asset Bundle for ingestion of vulnerability data (CVE v5, GHSA, OSV, CISA KEV).
+# See README.md for deployment instructions.
+bundle:
+  name: vuln_info_ingest
+
+include:
+  - resources/*.yml
+
+sync:
+  exclude:
+    - tests/**
+    - .venv/**
+
+targets:
+  dev:
+    # Resources are prefixed with '[dev <user>]'. Schedules set pause_status explicitly,
+    # so development mode doesn't pause them: pause them here.
+    mode: development
+    default: true
+    variables:
+      catalog: cybersecurity
+      schema: datasets
+      pause_status: PAUSED
+
+  prod:
+    mode: production
+    workspace:
+      root_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}
+    variables:
+      catalog: cybersecurity
+      schema: datasets
