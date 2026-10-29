@@ -19,3 +19,5 @@ Create the functions and run the tests on a SQL warehouse with `tests/run_sql.py
 
     python3 uc-udfs/tests/run_sql.py --profile <profile> --warehouse-id <id> --catalog <catalog> --schema <schema> \
       uc-udfs/aws_identifiers.sql uc-udfs/tests/aws_identifiers_test.sql
+
+Use `--warehouse-name <name>` instead of `--warehouse-id` to find the warehouse by its name (for example, in CI/CD that deploys to several workspaces).
