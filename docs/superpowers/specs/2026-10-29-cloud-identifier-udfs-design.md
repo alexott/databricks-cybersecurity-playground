@@ -28,6 +28,7 @@ Out of scope: OCI OCIDs, HTTPS storage URLs, `r2://`, incomplete ARNs (`arn:aws:
 | Reuse | Wrapper functions call the parsers and don't copy the regexes. All functions must be in the same schema |
 | Tests | One SQL test notebook per file: a `VALUES` table of inputs and expected outputs, `raise_error` on a mismatch |
 | Test data | Examples from the vendor documentation listed in each section, plus log shapes |
+| Secret scanning | AWS key-shaped test values are built at run time with `concat`; the pre-commit hook is not bypassed |
 
 ## Layout
 
@@ -411,11 +412,10 @@ Other values give `NULL`, and so does a value that the parser returns as `NULL`.
 The Databricks pre-commit hook flags AWS key-shaped strings (`AKIA...`, `ASIA...`, `AIDA...`,
 `AROA...`) as `aws-access-token`, also when they are documentation examples. The hook must not be
 bypassed without approval in #no-secrets-in-code. This affects `tests/aws_identifiers_test.sql`
-(unique ID and access key test vectors). The implementation plan must pick one of:
+(unique ID and access key test vectors).
 
-- get approval for the documentation example values, and commit with `SKIP_SECRET_SCAN=1`;
-- build the test values at run time in SQL (for example `concat('AKI', 'A', ...)`), so that the
-  file doesn't contain the literal strings.
+Decision: the test values are built at run time in SQL (for example `concat('AKI', 'A', ...)`),
+so the files don't contain the literal strings. The hook is not bypassed.
 
 ## README
 
