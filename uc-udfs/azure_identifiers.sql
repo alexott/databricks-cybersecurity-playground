@@ -19,6 +19,8 @@
 -- MAGIC - These ID forms are supported: resource group, subscription, management group and tenant level resources, child resources (`.../virtualNetworks/vnet1/subnets/subnet1`),
 -- MAGIC   extension resources (`<resource ID>/providers/Microsoft.Authorization/roleAssignments/<guid>`), scopes (`/subscriptions/<id>`, `/subscriptions/<id>/resourceGroups/<name>`, `/tenants/<id>`),
 -- MAGIC   and IDs that end with a provider namespace (`/tenants/<id>/providers/Microsoft.aadiam` in Entra ID diagnostic logs).
+-- MAGIC - The ID is split at the last `/providers/` that is followed by a provider namespace with a `.` (`Microsoft.Web`), so a resource can be named `providers`.
+-- MAGIC   An ID with a namespace without `.` gives `NULL`.
 -- MAGIC - `resource_type` is the provider namespace and all types (`Microsoft.Network/virtualNetworks/subnets`), and `resource_name` is the last name (`subnet1`).
 -- MAGIC   For an ID that ends with a provider namespace, `resource_type` is the namespace and `resource_name` is `NULL`.
 -- MAGIC - `parent_id` is the resource that is extended (extension resources), the parent resource (child resources), or the resource group, subscription or tenant scope.
@@ -77,8 +79,9 @@ CREATE OR REPLACE FUNCTION azure_resource_id_parse_cleaned(s STRING)
   RETURN CASE
     WHEN s RLIKE '(?i)/providers/' THEN azure_resource_id_parse_parts(
       s,
-      regexp_extract(s, '(?i)^(.*)/providers/(.*)$', 1),
-      split(regexp_extract(s, '(?i)^(.*)/providers/(.*)$', 2), '/'))
+      -- the last /providers/ that is followed by a namespace (Microsoft.Web): a resource can be named providers
+      regexp_extract(s, r'(?i)^(.*)/providers/([^/]*\.[^/]*(/.*)?)$', 1),
+      split(regexp_extract(s, r'(?i)^(.*)/providers/([^/]*\.[^/]*(/.*)?)$', 2), '/'))
     WHEN s RLIKE '(?i)^/subscriptions/[^/]+$' THEN named_struct(
       'tenant_id', CAST(NULL AS STRING),
       'subscription_id', regexp_extract(s, '(?i)^/subscriptions/([^/]+)', 1),

@@ -7,14 +7,15 @@
 -- MAGIC |----------|--------|
 -- MAGIC | `storage_uri_parse(uri)` | `STRUCT<cloud, scheme, account, container, path>` for `s3://`, `s3a://`, `s3n://`, `gs://`, `abfss://`, `abfs://`, `wasbs://`, `wasb://` URIs |
 -- MAGIC | `cloud_resource_to_ocsf(id)` | `STRUCT<cloud, resource>` in the shape of the OCSF [`cloud`](https://schema.ocsf.io/objects/cloud) and [`resource_details`](https://schema.ocsf.io/objects/resource_details) objects, for an AWS ARN, an Azure resource ID or a GCP resource name |
--- MAGIC | `storage_uri_parse_trimmed`, `cloud_resource_ocsf_aws`, `cloud_resource_ocsf_azure`, `cloud_resource_ocsf_gcp_zoned`, `cloud_resource_ocsf_gcp` | helpers, don't call them directly |
+-- MAGIC | `cloud_resource_ocsf_aws(aws_arn_parse(id))`, `cloud_resource_ocsf_azure(azure_resource_id_clean(id), azure_resource_id_parse(id))`, `cloud_resource_ocsf_gcp(gcp_resource_name_parse(id))` | the same result as `cloud_resource_to_ocsf`, for identifiers of one cloud |
+-- MAGIC | `storage_uri_parse_trimmed`, `cloud_resource_ocsf_gcp_zoned` | helpers, don't call them directly |
 -- MAGIC
 -- MAGIC This file uses the functions from `aws_identifiers.sql`, `azure_identifiers.sql` and `gcp_identifiers.sql`. Create them first, in the same schema.
 -- MAGIC
 -- MAGIC Behavior of `storage_uri_parse`:
 -- MAGIC
 -- MAGIC - `cloud` is `aws`, `azure` or `gcp`. `account` is the Azure storage account (`NULL` for S3 and GCS). `container` is the bucket or container.
--- MAGIC   `path` has no leading `/`, and is `NULL` if empty.
+-- MAGIC   `path` has no leading `/` (also for `s3://bucket//key`), and is `NULL` if empty.
 -- MAGIC - Azure hosts are `<account>.dfs.core.<suffix>` or `<account>.blob.core.<suffix>`, so sovereign clouds (`core.chinacloudapi.cn`, `core.usgovcloudapi.net`) work.
 -- MAGIC - Other values (`dbfs:/`, `/Volumes/...`, HTTPS URLs) give `NULL`.
 -- MAGIC
@@ -28,6 +29,8 @@
 -- MAGIC   and `service/resource_type` for GCP (`compute.googleapis.com/instances`). `resource.group.name` is the Azure resource group.
 -- MAGIC - For a GCP zone (`zones/us-central1-a`, or `locations/us-central1-a` for zonal GKE clusters), the region is the zone without the last part (`us-central1`). Azure resource IDs don't have a region.
 -- MAGIC - The struct has only the fields that an identifier can give. Use its fields when you build an OCSF row.
+-- MAGIC - Databricks computes the arguments of all function calls in the `CASE`, so `cloud_resource_to_ocsf` can parse each value with all three parsers.
+-- MAGIC   If a column has identifiers of one cloud only, the function for that cloud (`cloud_resource_ocsf_aws(aws_arn_parse(id))`, ...) does less work.
 -- MAGIC
 -- MAGIC Create all functions in the same schema: a function body finds the other functions in the schema of that function.
 
@@ -43,13 +46,13 @@ CREATE OR REPLACE FUNCTION storage_uri_parse_trimmed(uri STRING)
       'scheme', lower(regexp_extract(uri, '^([^:]+)://', 1)),
       'account', CAST(NULL AS STRING),
       'container', regexp_extract(uri, '^[^:]+://([^/]+)', 1),
-      'path', nullif(regexp_extract(uri, '^[^:]+://[^/]+/?(.*)$', 1), ''))
+      'path', nullif(regexp_extract(uri, '^[^:]+://[^/]+/*(.*)$', 1), ''))
     WHEN uri RLIKE r'(?i)^(abfss?|wasbs?)://[^/@]+@[^/.]+\.(dfs|blob)\.core\.[^/]+(/|$)' THEN named_struct(
       'cloud', 'azure',
       'scheme', lower(regexp_extract(uri, '^([^:]+)://', 1)),
       'account', regexp_extract(uri, '@([^/.]+)[.]', 1),
       'container', regexp_extract(uri, '^[^:]+://([^/@]+)@', 1),
-      'path', nullif(regexp_extract(uri, '^[^:]+://[^/]+/?(.*)$', 1), ''))
+      'path', nullif(regexp_extract(uri, '^[^:]+://[^/]+/*(.*)$', 1), ''))
   END;
 
 -- COMMAND ----------
@@ -68,7 +71,7 @@ CREATE OR REPLACE FUNCTION cloud_resource_ocsf_aws(a STRUCT<`partition`: STRING,
                  resource: STRUCT<uid: STRING, name: STRING, type: STRING, region: STRING, zone: STRING, cloud_partition: STRING,
                                   `group`: STRUCT<name: STRING>>>
   DETERMINISTIC
-  COMMENT 'Helper for cloud_resource_to_ocsf: maps the result of aws_arn_parse to the OCSF cloud and resource_details fields'
+  COMMENT 'Maps the result of aws_arn_parse to the OCSF cloud and resource_details fields (the AWS part of cloud_resource_to_ocsf)'
   RETURN CASE
     WHEN a IS NOT NULL THEN named_struct(
       'cloud', named_struct(
@@ -101,7 +104,7 @@ CREATE OR REPLACE FUNCTION cloud_resource_ocsf_azure(id STRING, z STRUCT<tenant_
                  resource: STRUCT<uid: STRING, name: STRING, type: STRING, region: STRING, zone: STRING, cloud_partition: STRING,
                                   `group`: STRUCT<name: STRING>>>
   DETERMINISTIC
-  COMMENT 'Helper for cloud_resource_to_ocsf: maps the cleaned Azure resource ID and the result of azure_resource_id_parse to the OCSF cloud and resource_details fields'
+  COMMENT 'Maps the cleaned Azure resource ID (azure_resource_id_clean) and the result of azure_resource_id_parse to the OCSF cloud and resource_details fields (the Azure part of cloud_resource_to_ocsf)'
   RETURN CASE
     WHEN z IS NOT NULL THEN named_struct(
       'cloud', named_struct(
@@ -163,7 +166,7 @@ CREATE OR REPLACE FUNCTION cloud_resource_ocsf_gcp(g STRUCT<service: STRING, rel
                  resource: STRUCT<uid: STRING, name: STRING, type: STRING, region: STRING, zone: STRING, cloud_partition: STRING,
                                   `group`: STRUCT<name: STRING>>>
   DETERMINISTIC
-  COMMENT 'Helper for cloud_resource_to_ocsf: maps the result of gcp_resource_name_parse to the OCSF cloud and resource_details fields'
+  COMMENT 'Maps the result of gcp_resource_name_parse to the OCSF cloud and resource_details fields (the GCP part of cloud_resource_to_ocsf)'
   -- the zone is the zones value, or a locations value that is a zone (us-central1-a, for zonal GKE clusters)
   RETURN cloud_resource_ocsf_gcp_zoned(g, coalesce(
     try_element_at(g.segments, 'zones'),

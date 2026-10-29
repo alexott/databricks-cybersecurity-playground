@@ -177,7 +177,8 @@ Returns `STRUCT<tenant_id, subscription_id, resource_group, management_group, pr
 2. `tenant_id`, `subscription_id`, `resource_group`, `management_group` come from the leading scope:
    `/tenants/{t}`, `/subscriptions/{s}`, `/subscriptions/{s}/resourceGroups/{rg}`,
    `/providers/Microsoft.Management/managementGroups/{mg}`.
-3. The part after the last `/providers/` is `{Namespace}[/{type1}/{name1}[/{type2}/{name2}...]]`:
+3. The part after the last `/providers/` that is followed by a namespace with a `.` (`Microsoft.Web`;
+   a resource can be named `providers`) is `{Namespace}[/{type1}/{name1}[/{type2}/{name2}...]]`:
    - `provider_namespace` = `Namespace`;
    - `resource_type` = the namespace and all types, joined with `/` (`Microsoft.Network/virtualNetworks/subnets`);
    - `resource_name` = the last segment;
@@ -368,7 +369,7 @@ Returns `STRUCT<cloud, scheme, account, container, path>` (all `STRING`).
 | `wasbs://c@acct.blob.core.windows.net/p`, `wasb://...` | `azure` | `acct` | `c` | `p` |
 
 - The Azure host is `<acct>.(dfs|blob).core.<suffix>`, so sovereign clouds work.
-- `path` has no leading `/`. An empty path gives `NULL`.
+- `path` has no leading `/` (all leading slashes are removed: `s3://b//k` gives `k`). An empty path gives `NULL`.
 - `scheme` is the lowercase scheme. Other values (`dbfs:/`, `/Volumes/...`, HTTPS URLs) give `NULL`.
 
 ### `cloud_resource_to_ocsf(id STRING)`

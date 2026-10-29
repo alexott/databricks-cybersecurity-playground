@@ -91,7 +91,7 @@ CREATE OR REPLACE FUNCTION aws_assumed_role_to_role_arn_parsed(a STRUCT<`partiti
   DETERMINISTIC
   COMMENT 'Helper for aws_assumed_role_to_role_arn: builds the IAM role ARN from the result of aws_arn_parse'
   RETURN CASE
-    WHEN a.service = 'iam' AND a.resource_type = 'role' THEN concat('arn:', a.`partition`, ':iam::', a.account_id, ':', a.resource)
+    WHEN a.service = 'iam' AND a.resource_type = 'role' AND a.resource_id IS NOT NULL THEN concat('arn:', a.`partition`, ':iam::', a.account_id, ':', a.resource)
     WHEN a.service = 'sts' AND a.resource_type = 'assumed-role' AND nullif(get(split(a.resource_id, '/'), 0), '') IS NOT NULL
       THEN concat('arn:', a.`partition`, ':iam::', a.account_id, ':role/', get(split(a.resource_id, '/'), 0))
   END;

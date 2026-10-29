@@ -20,6 +20,8 @@ FROM (
       ('s3n://my-bucket/k', '{"cloud":"aws","scheme":"s3n","container":"my-bucket","path":"k"}'),
       ('s3://my-bucket', '{"cloud":"aws","scheme":"s3","container":"my-bucket"}'),
       ('s3://my-bucket/', '{"cloud":"aws","scheme":"s3","container":"my-bucket"}'),
+      ('s3://my-bucket//k/x', '{"cloud":"aws","scheme":"s3","container":"my-bucket","path":"k/x"}'),
+      ('abfss://container1@account1.dfs.core.windows.net//p', '{"cloud":"azure","scheme":"abfss","account":"account1","container":"container1","path":"p"}'),
       ('S3://my-bucket/k', '{"cloud":"aws","scheme":"s3","container":"my-bucket","path":"k"}'),
       ('gs://my-bucket/o/p.json', '{"cloud":"gcp","scheme":"gs","container":"my-bucket","path":"o/p.json"}'),
       ('abfss://container1@account1.dfs.core.windows.net/p/q',

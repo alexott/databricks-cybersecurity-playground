@@ -103,6 +103,8 @@ FROM (
       ('arn:aws:iam::123456789012:role/service-role/QuickSightAction', 'QuickSightAction',
        'arn:aws:iam::123456789012:role/service-role/QuickSightAction'),
       ('arn:aws:sts::123456789012:federated-user/Paulo', NULL, NULL),
+      ('arn:aws:iam::123456789012:role/', NULL, NULL),
+      ('arn:aws:sts::123456789012:assumed-role/', NULL, NULL),
       ('arn:aws:iam::123456789012:user/John', NULL, NULL),
       ('arn:aws:iam::123456789012:root', NULL, NULL),
       ('AWS Internal', NULL, NULL),
