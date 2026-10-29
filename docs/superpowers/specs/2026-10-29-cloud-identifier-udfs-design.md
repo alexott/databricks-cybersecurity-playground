@@ -102,13 +102,18 @@ session name of an STS `assumed-role/...` ARN. Other input gives `NULL`.
 
 ### `aws_account_id_from_access_key(key_id STRING)`
 
-- Only for `AKIA`/`ASIA` keys. Other input gives `NULL`.
+- Only for `AKIA`/`ASIA` keys with 16 base32 characters after the prefix. Other input gives `NULL`.
+- Keys created before 2019-03-29 don't encode the account ID (5th character before `Q` in the base32
+  alphabet, usually `I` or `J`). They give `NULL`.
 - Base32-decode the 10 characters after the prefix (`aggregate` over the characters, each character
   is 5 bits). Take the first 48 bits as `BIGINT` `x`. The account is `(x & 0x7fffffffff80) >> 7`,
   left-padded with zeros to 12 digits.
 - The same result as `aws sts get-access-key-info`, without an API call.
-- The AWS docs pages don't have keys that decode. The test vectors come from the published
-  write-up of this technique and must be verified during implementation.
+- Test vectors from [Aidan Steele's write-up](https://awsteele.com/blog/2020/09/26/aws-access-key-format.html)
+  (verified with a Python implementation): `ASIA` + `Y34FZKBOKMUTVV7A` → `609629065308`,
+  `ASIA` + `Y34FZKBNKMUTVV7A` → `609629065306`, `ASIA` + `Y34FZKAOKMUTVV7A` → `609629065244`,
+  `ASIA` + `QAAAAAAAAAAAAAAA` → `000000000000`, `ASIA` + `6RVFFB77AAAAAAAA` → `999999999998`.
+  The AWS documentation example key (`AKIA` + `IOSFODNN7EXAMPLE`) is an old-format key and gives `NULL`.
 
 ### Test cases
 
@@ -200,8 +205,13 @@ Returns `STRUCT<tenant_id, subscription_id, resource_group, management_group, pr
 
 ### `azure_resource_id_normalize(id STRING)`
 
-`lower(trim(id))` without a trailing `/`. A join key for Activity Log (often upper case),
+`lower(azure_resource_id_clean(id))`. A join key for Activity Log (often upper case),
 Resource Graph and Defender.
+
+### `azure_resource_id_clean(id STRING)`
+
+The ID after step 1 of `azure_resource_id_parse` (trimmed, one pair of surrounding double quotes and
+trailing `/` removed), in the original case. Empty gives `NULL`. `cloud_resource_to_ocsf` uses it as `resource.uid`.
 
 ### Test cases
 
@@ -253,7 +263,7 @@ Input forms, all converted to a relative name:
 
 - full resource name `//<service>/<relative>`: `service` is the host;
 - resource URI `https://<host>/[<svc>/]<version>/<relative>`: the path up to and including the version
-  segment (`v\d+` with an optional `alpha`/`beta` suffix and number) is removed. `service` is the
+  segment (`v\d+` with optional letters and digits, such as `v1beta1`, or `alpha`/`beta`) is removed. `service` is the
   host, but for `www.googleapis.com` it is `<first path segment>.googleapis.com`;
 - relative name (audit log `protoPayload.resourceName`): `service` is `NULL`
   (use `coalesce` with `protoPayload.serviceName`).
@@ -314,11 +324,11 @@ An optional `serviceAccount:` prefix is removed.
 
 | Pattern | account_type | Extracted |
 |---|---|---|
-| `NAME@PROJECT_ID.iam.gserviceaccount.com` (`PROJECT_ID` doesn't start with `gcp-sa-`) | `user_managed` | `project_id` |
+| `service-PROJECT_NUMBER@X.iam.gserviceaccount.com` (`gcp-sa-X`, also older domains such as `compute-system`) | `service_agent` | `project_number`, `service` = `X` without `gcp-sa-` |
+| other `...@gcp-sa-X.iam.gserviceaccount.com` | `service_agent` | `service` = `X` |
+| `NAME@PROJECT_ID.iam.gserviceaccount.com` (no rule above matches) | `user_managed` | `project_id` |
 | `PROJECT_ID@appspot.gserviceaccount.com` | `default_app_engine` | `project_id` |
 | `PROJECT_NUMBER-compute@developer.gserviceaccount.com` | `default_compute` | `project_number` |
-| `service-PROJECT_NUMBER@gcp-sa-X.iam.gserviceaccount.com` | `service_agent` | `project_number`, `service` = `X` |
-| other `...@gcp-sa-X.iam.gserviceaccount.com` | `service_agent` | `service` = `X` |
 | `LOCAL@SVC.gserviceaccount.com` (other domains: `cloudservices`, `cloudbuild`, `system`, ...) | `service_agent` | `service` = `SVC`; `project_number` if `LOCAL` is all digits |
 | other | `NULL` | |
 
@@ -385,7 +395,7 @@ Other values give `NULL`, and so does a value that the parser returns as `NULL`.
 | OCSF field | AWS | Azure | GCP |
 |---|---|---|---|
 | `cloud.provider` | `AWS` | `Azure` | `GCP` |
-| `cloud.account` (uid / type / type_id) | `account_id` / `AWS Account` / `10` | `subscription_id` / `Azure Subscription` / `13` | `project` / `GCP Project` / `11` |
+| `cloud.account` (uid / type / type_id) | `account_id` / `AWS Account` / `10` (only a 12-digit account ID; not `aws` or `*`) | `subscription_id` / `Azure Subscription` / `13` | `project` / `GCP Project` / `11` |
 | `cloud.region`, `resource.region` | `region` | `NULL` | `regions` or `locations`; for `zones`, the zone without the last `-x` part (`us-central1-a` → `us-central1`) |
 | `cloud.zone`, `resource.zone` | `NULL` | `NULL` | `zones` |
 | `cloud_partition` (both) | `partition` | `NULL` | `NULL` |
@@ -416,6 +426,20 @@ bypassed without approval in #no-secrets-in-code. This affects `tests/aws_identi
 
 Decision: the test values are built at run time in SQL (for example `concat('AKI', 'A', ...)`),
 so the files don't contain the literal strings. The hook is not bypassed.
+
+## Implementation notes (from prototyping)
+
+- Helper functions bind intermediate values (SQL UDFs have no local variables): for example
+  `aws_arn_parse(arn)` calls `aws_arn_parse_parts(split(trim(arn), ':', 6))`. Each file lists its
+  helpers in the header table as "helpers, don't call them directly".
+- `CASE` uses positive conditions (`WHEN <valid> THEN <struct> END`). With `WHEN <invalid> THEN NULL
+  ELSE <struct>`, a `NULL` input makes the condition `NULL` and gives a struct of `NULL` fields.
+- Array access uses `get(arr, i)` and maps use `try_element_at`: they give `NULL` out of range in
+  ANSI mode. Regexes with `\` use raw string literals (`r'...'`). Struct fields named `partition`
+  and `group` are quoted with backticks.
+- All public functions remove surrounding spaces (`trim`) before parsing.
+- Tests compare `to_json(<result>)` with the expected JSON (`to_json` leaves out `NULL` fields).
+  `uc-udfs/tests/run_sql.py` runs the `.sql` files cell by cell on a SQL warehouse.
 
 ## README
 
