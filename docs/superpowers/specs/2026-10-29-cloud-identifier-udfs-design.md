@@ -438,6 +438,9 @@ so the files don't contain the literal strings. The hook is not bypassed.
   ANSI mode. Regexes with `\` use raw string literals (`r'...'`). Struct fields named `partition`
   and `group` are quoted with backticks.
 - All public functions remove surrounding spaces (`trim`) before parsing.
+- On Databricks, the arguments of a SQL UDF call are computed also when the `CASE` branch with the
+  call is not used. An argument must never raise an error for any input: `map_from_arrays` in
+  `gcp_resource_name_build_checked` gets empty arrays when the segments are invalid.
 - Tests compare `to_json(<result>)` with the expected JSON (`to_json` leaves out `NULL` fields).
   `uc-udfs/tests/run_sql.py` runs the `.sql` files cell by cell on a SQL warehouse.
 
