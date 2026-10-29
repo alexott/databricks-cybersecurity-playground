@@ -14,8 +14,8 @@ Use cases, in priority order:
    service accounts, account ID from a leaked access key).
 3. Normalization into OCSF `cloud` and `resource_details` objects.
 
-Out of scope: OCI OCIDs, HTTPS storage URLs, `r2://`, incomplete ARNs (`arn:aws:sqs`), Azure tenant
-and AWS organization (not encoded in the identifiers).
+Out of scope: OCI OCIDs, HTTPS storage URLs, `r2://`, incomplete ARNs (`arn:aws:sqs`), AWS organization
+(not encoded in the identifiers).
 
 ## Decisions
 
@@ -162,29 +162,40 @@ Source: [ARM template resource functions](https://learn.microsoft.com/en-us/azur
 
 ### `azure_resource_id_parse(id STRING)`
 
-Returns `STRUCT<subscription_id, resource_group, management_group, provider_namespace, resource_type, resource_name, parent_id>`
+Returns `STRUCT<tenant_id, subscription_id, resource_group, management_group, provider_namespace, resource_type, resource_name, parent_id>`
 (all `STRING`).
 
-1. Trim, remove a trailing `/`. If the value doesn't start with `/`, the result is `NULL`.
-2. `subscription_id`, `resource_group`, `management_group` come from the leading scope:
-   `/subscriptions/{s}`, `/subscriptions/{s}/resourceGroups/{rg}`,
+1. Trim, remove one pair of surrounding double quotes, remove a trailing `/`. If the value doesn't
+   start with `/`, the result is `NULL`. (Entra ID audit logs put JSON-encoded strings in
+   `modifiedProperties[].newValue`, for example `"\"/subscriptions/...\""`.)
+2. `tenant_id`, `subscription_id`, `resource_group`, `management_group` come from the leading scope:
+   `/tenants/{t}`, `/subscriptions/{s}`, `/subscriptions/{s}/resourceGroups/{rg}`,
    `/providers/Microsoft.Management/managementGroups/{mg}`.
-3. The part after the last `/providers/` is `{Namespace}/{type1}/{name1}[/{type2}/{name2}...]`:
+3. The part after the last `/providers/` is `{Namespace}[/{type1}/{name1}[/{type2}/{name2}...]]`:
    - `provider_namespace` = `Namespace`;
    - `resource_type` = the namespace and all types, joined with `/` (`Microsoft.Network/virtualNetworks/subnets`);
    - `resource_name` = the last segment;
+   - namespace only, no type/name pairs (Entra ID diagnostic logs: `/tenants/{t}/providers/Microsoft.aadiam`;
+     resource provider IDs: `/subscriptions/{s}/providers/Microsoft.Compute`): `resource_type` = the
+     namespace, `resource_name` = `NULL`;
    - an odd number of type/name segments (a collection, not a resource) gives `NULL`.
 4. `parent_id`:
    - extension resource: the part before the last `/providers/` (the resource or scope that is extended);
    - child resource: the ID without the last type/name pair;
-   - top-level resource: its resource group or subscription scope;
+   - top-level resource and namespace-only ID: its resource group, subscription or tenant scope;
    - subscription, management group, tenant-level resource: `NULL` (the ID doesn't encode the management group).
 5. Scope-only IDs:
    - `/subscriptions/{s}` gives type `Microsoft.Resources/subscriptions`, name `{s}`, parent `NULL`;
    - `/subscriptions/{s}/resourceGroups/{rg}` gives type `Microsoft.Resources/resourceGroups`,
-     name `{rg}`, parent `/subscriptions/{s}`.
-6. The keywords `subscriptions`, `resourceGroups`, `providers` are matched without case. Values keep
-   the original case. Subscription IDs are not validated as GUIDs.
+     name `{rg}`, parent `/subscriptions/{s}`;
+   - `/tenants/{t}` gives `tenant_id` `{t}`, the other fields `NULL`.
+6. The keywords `tenants`, `subscriptions`, `resourceGroups`, `providers` are matched without case
+   (logs have `resourceGroups`, `resourcegroups` and `RESOURCEGROUPS`). Values keep the original
+   case. Subscription and tenant IDs are not validated as GUIDs.
+7. Document: in Entra ID sign-in logs, `properties.resourceId` is the application ID of the resource
+   (a GUID such as `00000003-0000-0000-c000-000000000000` for Microsoft Graph), not an ARM ID, so
+   it gives `NULL`. IDs inside URL-encoded `requestUri` filters (`resourceOriginId%20eq%20'...'`) are
+   not extracted; use `url_decode` and `regexp_extract` first.
 
 ### `azure_resource_id_normalize(id STRING)`
 
@@ -193,7 +204,11 @@ Resource Graph and Defender.
 
 ### Test cases
 
-`{s}` = `aaaa0a0a-bb1b-cc2c-dd3d-eeeeee4e4e4e`, `{g}` = a GUID.
+`{s}` = `aaaa0a0a-bb1b-cc2c-dd3d-eeeeee4e4e4e`, `{t}` and `{g}` = GUIDs.
+
+The cases include the ID shapes found in Azure sample logs (Entra ID audit, sign-in, password
+policy logs; NSG and Key Vault diagnostic logs; Log Analytics exports). The tests use only
+placeholder subscription and tenant IDs and resource names, never the values from the samples.
 
 | ID | resource_type | resource_name | parent_id / other |
 |---|---|---|---|
@@ -205,6 +220,16 @@ Resource Graph and Defender.
 | `/subscriptions/{s}/providers/Microsoft.Authorization/roleDefinitions/{g}` | `Microsoft.Authorization/roleDefinitions` | `{g}` | `/subscriptions/{s}`; `resource_group` `NULL` |
 | `/providers/Microsoft.Management/managementGroups/mg1` | `Microsoft.Management/managementGroups` | `mg1` | `NULL`; `management_group` `mg1` |
 | `/providers/Microsoft.Management/managementGroups/mg1/providers/Microsoft.Authorization/policyDefinitions/p1` | `Microsoft.Authorization/policyDefinitions` | `p1` | `/providers/Microsoft.Management/managementGroups/mg1` |
+| `/providers/Microsoft.Management/managementGroups/{g}` (PIM audit logs: management group named by a GUID) | `Microsoft.Management/managementGroups` | `{g}` | `NULL`; `management_group` `{g}` |
+| `/tenants/{t}/providers/Microsoft.aadiam` (Entra ID diagnostic logs) | `Microsoft.aadiam` | `NULL` | `/tenants/{t}`; `tenant_id` `{t}` |
+| `/TENANTS/{T}/PROVIDERS/MICROSOFT.AADIAM`, `/tenants/{t}/providers/microsoft.aadiam` | `MICROSOFT.AADIAM`, `microsoft.aadiam` | `NULL` | `_normalize` is the same for the three forms |
+| `/tenants/{t}` | `NULL` | `NULL` | `tenant_id` `{t}` |
+| `/subscriptions/{s}/providers/Microsoft.Compute` (resource provider) | `Microsoft.Compute` | `NULL` | `/subscriptions/{s}` |
+| `/subscriptions/{s}/resourcegroups/rg1/providers/microsoft.operationalinsights/workspaces/ws1` (Log Analytics `ResourceUri`, `_Internal_WorkspaceResourceId`) | `microsoft.operationalinsights/workspaces` | `ws1` | `/subscriptions/{s}/resourcegroups/rg1`; `resource_group` `rg1` |
+| `/SUBSCRIPTIONS/{S}/RESOURCEGROUPS/RG1/PROVIDERS/MICROSOFT.NETWORK/NETWORKSECURITYGROUPS/NSG1` (NSG logs) | `MICROSOFT.NETWORK/NETWORKSECURITYGROUPS` | `NSG1` | `/SUBSCRIPTIONS/{S}/RESOURCEGROUPS/RG1` |
+| `/SUBSCRIPTIONS/{S}/RESOURCEGROUPS/RG1/PROVIDERS/MICROSOFT.KEYVAULT/VAULTS/KV1` (Key Vault logs) | `MICROSOFT.KEYVAULT/VAULTS` | `KV1` | |
+| `"/subscriptions/{s}/providers/Microsoft.Authorization/roleDefinitions/{g}"` (with quotes: Entra audit `newValue`) | `Microsoft.Authorization/roleDefinitions` | `{g}` | quotes removed |
+| `00000003-0000-0000-c000-000000000000` (sign-in log `resourceId`) | | | result `NULL` |
 | `/providers/Microsoft.Authorization/policyDefinitions/{g}` | `Microsoft.Authorization/policyDefinitions` | `{g}` | `NULL` |
 | `/subscriptions/{s}` | `Microsoft.Resources/subscriptions` | `{s}` | `NULL` |
 | `/subscriptions/{s}/resourceGroups/rg1` | `Microsoft.Resources/resourceGroups` | `rg1` | `/subscriptions/{s}` |
@@ -352,7 +377,7 @@ STRUCT<
                    cloud_partition STRING, group: STRUCT<name STRING>>>
 ```
 
-Detection: `arn:` → AWS. `/subscriptions/...` or `/providers/...` → Azure. `//...`,
+Detection: `arn:` → AWS. `/subscriptions/...`, `/tenants/...` or `/providers/...` (case-insensitive) → Azure. `//...`,
 `https://...googleapis.com/...`, relative `projects/`, `folders/`, `organizations/` → GCP.
 Other values give `NULL`, and so does a value that the parser returns as `NULL`.
 
@@ -363,22 +388,23 @@ Other values give `NULL`, and so does a value that the parser returns as `NULL`.
 | `cloud.region`, `resource.region` | `region` | `NULL` | `regions` or `locations`; for `zones`, the zone without the last `-x` part (`us-central1-a` → `us-central1`) |
 | `cloud.zone`, `resource.zone` | `NULL` | `NULL` | `zones` |
 | `cloud_partition` (both) | `partition` | `NULL` | `NULL` |
-| `cloud.org` (uid / ou_uid) | `NULL` | `NULL` | `segments['organizations']` / `segments['folders']` |
+| `cloud.org` (uid / ou_uid) | `NULL` | `tenant_id` / `NULL` | `segments['organizations']` / `segments['folders']` |
 | `resource.uid` | the ARN | the ID | `//service/relative_name`, or `relative_name` if `service` is `NULL` |
 | `resource.name` | `resource_id`; last path segment for IAM `user`, `group`, `role`, `policy`, `instance-profile`, `server-certificate` | `resource_name` | `resource_name` |
 | `resource.type` | `service:resource_type` (`ec2:instance`, `iam:role`, `s3:object`); `service` if `resource_type` is `NULL` | `resource_type` | `service/resource_type` (`compute.googleapis.com/instances`); `resource_type` if `service` is `NULL` |
 | `resource.group.name` | `NULL` | `resource_group` | `NULL` |
 
 - The `provider` strings are a choice (OCSF only gives examples: "AWS, MS Azure, GCP"). Document them.
-- Not mapped: Azure tenant, AWS organization (not in the identifiers), Azure management group
-  (no clear OCSF field).
+- `cloud.account` is `NULL` when the identifier has no account, subscription or project (for example
+  `/tenants/{t}/providers/Microsoft.aadiam`).
+- Not mapped: AWS organization (not in the identifiers), Azure management group (no clear OCSF field).
 
 ### Test cases
 
 - `storage_uri_parse`: each row of the table, sovereign Azure host (`core.chinacloudapi.cn`),
   bucket with no path (`s3://b`, `s3://b/`), invalid values.
-- `cloud_resource_to_ocsf`: one AWS IAM role, one S3 object, one EC2 instance; one Azure VM and one
-  role assignment; one GCP Compute instance in a zone, one `global` network, one folder; invalid values.
+- `cloud_resource_to_ocsf`: one AWS IAM role, one S3 object, one EC2 instance; one Azure VM, one
+  role assignment, one Entra ID `/tenants/{t}/providers/Microsoft.aadiam`; one GCP Compute instance in a zone, one `global` network, one folder; invalid values.
 
 ## Secret scanning
 
