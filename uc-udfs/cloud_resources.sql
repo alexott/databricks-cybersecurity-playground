@@ -7,7 +7,7 @@
 -- MAGIC |----------|--------|
 -- MAGIC | `storage_uri_parse(uri)` | `STRUCT<cloud, scheme, account, container, path>` for `s3://`, `s3a://`, `s3n://`, `gs://`, `abfss://`, `abfs://`, `wasbs://`, `wasb://` URIs |
 -- MAGIC | `cloud_resource_to_ocsf(id)` | `STRUCT<cloud, resource>` in the shape of the OCSF [`cloud`](https://schema.ocsf.io/objects/cloud) and [`resource_details`](https://schema.ocsf.io/objects/resource_details) objects, for an AWS ARN, an Azure resource ID or a GCP resource name |
--- MAGIC | `storage_uri_parse_trimmed`, `cloud_resource_ocsf_aws`, `cloud_resource_ocsf_azure`, `cloud_resource_ocsf_gcp` | helpers, don't call them directly |
+-- MAGIC | `storage_uri_parse_trimmed`, `cloud_resource_ocsf_aws`, `cloud_resource_ocsf_azure`, `cloud_resource_ocsf_gcp_zoned`, `cloud_resource_ocsf_gcp` | helpers, don't call them directly |
 -- MAGIC
 -- MAGIC This file uses the functions from `aws_identifiers.sql`, `azure_identifiers.sql` and `gcp_identifiers.sql`. Create them first, in the same schema.
 -- MAGIC
@@ -26,7 +26,7 @@
 -- MAGIC   and `NULL` if the identifier doesn't have one. `cloud.org` is the Azure tenant, or the GCP organization and folder.
 -- MAGIC - `resource.type` is `service:resource_type` for AWS (`iam:role`), the resource type for Azure (`Microsoft.Compute/virtualMachines`),
 -- MAGIC   and `service/resource_type` for GCP (`compute.googleapis.com/instances`). `resource.group.name` is the Azure resource group.
--- MAGIC - For a GCP zone (`us-central1-a`), the region is the zone without the last part (`us-central1`). Azure resource IDs don't have a region.
+-- MAGIC - For a GCP zone (`zones/us-central1-a`, or `locations/us-central1-a` for zonal GKE clusters), the region is the zone without the last part (`us-central1`). Azure resource IDs don't have a region.
 -- MAGIC - The struct has only the fields that an identifier can give. Use its fields when you build an OCSF row.
 -- MAGIC
 -- MAGIC Create all functions in the same schema: a function body finds the other functions in the schema of that function.
@@ -123,20 +123,21 @@ CREATE OR REPLACE FUNCTION cloud_resource_ocsf_azure(id STRING, z STRUCT<tenant_
 
 -- COMMAND ----------
 
-CREATE OR REPLACE FUNCTION cloud_resource_ocsf_gcp(g STRUCT<service: STRING, relative_name: STRING, project: STRING, location: STRING, resource_type: STRING,
-                                                          resource_name: STRING, parent: STRING, segments: MAP<STRING, STRING>>)
+CREATE OR REPLACE FUNCTION cloud_resource_ocsf_gcp_zoned(g STRUCT<service: STRING, relative_name: STRING, project: STRING, location: STRING, resource_type: STRING,
+                                                          resource_name: STRING, parent: STRING, segments: MAP<STRING, STRING>>,
+                                                          zone STRING)
   RETURNS STRUCT<cloud: STRUCT<provider: STRING, region: STRING, zone: STRING, cloud_partition: STRING,
                                account: STRUCT<uid: STRING, type: STRING, type_id: INT>, org: STRUCT<uid: STRING, ou_uid: STRING>>,
                  resource: STRUCT<uid: STRING, name: STRING, type: STRING, region: STRING, zone: STRING, cloud_partition: STRING,
                                   `group`: STRUCT<name: STRING>>>
   DETERMINISTIC
-  COMMENT 'Helper for cloud_resource_to_ocsf: maps the result of gcp_resource_name_parse to the OCSF cloud and resource_details fields'
+  COMMENT 'Helper for cloud_resource_to_ocsf: maps the result of gcp_resource_name_parse and its zone to the OCSF cloud and resource_details fields'
   RETURN CASE
     WHEN g IS NOT NULL THEN named_struct(
       'cloud', named_struct(
         'provider', 'GCP',
-        'region', if(try_element_at(g.segments, 'zones') IS NULL, g.location, nullif(regexp_extract(try_element_at(g.segments, 'zones'), '^(.*)-[^-]+$', 1), '')),
-        'zone', try_element_at(g.segments, 'zones'),
+        'region', if(zone IS NULL, g.location, nullif(regexp_extract(zone, '^(.*)-[^-]+$', 1), '')),
+        'zone', zone,
         'cloud_partition', CAST(NULL AS STRING),
         'account', CASE WHEN g.project IS NOT NULL THEN named_struct('uid', g.project, 'type', 'GCP Project', 'type_id', 11) END,
         'org', CASE
@@ -147,11 +148,26 @@ CREATE OR REPLACE FUNCTION cloud_resource_ocsf_gcp(g STRUCT<service: STRING, rel
         'uid', if(g.service IS NULL, g.relative_name, concat('//', g.service, '/', g.relative_name)),
         'name', g.resource_name,
         'type', if(g.service IS NULL, g.resource_type, concat(g.service, '/', g.resource_type)),
-        'region', if(try_element_at(g.segments, 'zones') IS NULL, g.location, nullif(regexp_extract(try_element_at(g.segments, 'zones'), '^(.*)-[^-]+$', 1), '')),
-        'zone', try_element_at(g.segments, 'zones'),
+        'region', if(zone IS NULL, g.location, nullif(regexp_extract(zone, '^(.*)-[^-]+$', 1), '')),
+        'zone', zone,
         'cloud_partition', CAST(NULL AS STRING),
         'group', CAST(NULL AS STRUCT<name: STRING>)))
   END;
+
+-- COMMAND ----------
+
+CREATE OR REPLACE FUNCTION cloud_resource_ocsf_gcp(g STRUCT<service: STRING, relative_name: STRING, project: STRING, location: STRING, resource_type: STRING,
+                                                          resource_name: STRING, parent: STRING, segments: MAP<STRING, STRING>>)
+  RETURNS STRUCT<cloud: STRUCT<provider: STRING, region: STRING, zone: STRING, cloud_partition: STRING,
+                               account: STRUCT<uid: STRING, type: STRING, type_id: INT>, org: STRUCT<uid: STRING, ou_uid: STRING>>,
+                 resource: STRUCT<uid: STRING, name: STRING, type: STRING, region: STRING, zone: STRING, cloud_partition: STRING,
+                                  `group`: STRUCT<name: STRING>>>
+  DETERMINISTIC
+  COMMENT 'Helper for cloud_resource_to_ocsf: maps the result of gcp_resource_name_parse to the OCSF cloud and resource_details fields'
+  -- the zone is the zones value, or a locations value that is a zone (us-central1-a, for zonal GKE clusters)
+  RETURN cloud_resource_ocsf_gcp_zoned(g, coalesce(
+    try_element_at(g.segments, 'zones'),
+    CASE WHEN try_element_at(g.segments, 'locations') RLIKE '[0-9]-[a-z]$' THEN try_element_at(g.segments, 'locations') END));
 
 -- COMMAND ----------
 

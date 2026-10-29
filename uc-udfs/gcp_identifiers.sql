@@ -16,7 +16,7 @@
 -- MAGIC Behavior of `gcp_resource_name_parse`:
 -- MAGIC
 -- MAGIC - It takes full resource names (`//compute.googleapis.com/projects/p/zones/z/instances/i`, Cloud Asset Inventory),
--- MAGIC   resource URIs and selfLinks (`https://www.googleapis.com/compute/v1/projects/p/zones/z/instances/i`), and relative names (`projects/p/zones/z/instances/i`, audit log `protoPayload.resourceName`).
+-- MAGIC   resource URIs and selfLinks on `googleapis.com` hosts (`https://www.googleapis.com/compute/v1/projects/p/zones/z/instances/i`), and relative names (`projects/p/zones/z/instances/i`, audit log `protoPayload.resourceName`).
 -- MAGIC   For a relative name, `service` is `NULL`: use `coalesce` with `protoPayload.serviceName`.
 -- MAGIC - `segments` maps each collection to its ID (`{"projects":"p","zones":"z","instances":"i"}`). `resource_type` is the last collection, `resource_name` is the last ID,
 -- MAGIC   and `parent` is the relative name without the last collection and ID. `location` is the `locations`, `zones` or `regions` value, or `global`.
@@ -120,13 +120,13 @@ CREATE OR REPLACE FUNCTION gcp_resource_name_parse_trimmed(name STRING)
       WHEN name RLIKE '^//[^/]+/.' THEN regexp_extract(name, '^//([^/]+)/', 1)
       WHEN name RLIKE r'^https://www\.googleapis\.com/' THEN
         concat(nullif(regexp_extract(name, '^https://[^/]+/(?:([^/]+)/)?(?:v[0-9]+[a-z0-9]*|alpha|beta)/(.*)$', 1), ''), '.googleapis.com')
-      WHEN name RLIKE '^https://[^/]+/' THEN regexp_extract(name, '^https://([^/]+)/', 1)
+      WHEN name RLIKE r'^https://[^/]*googleapis\.com/' THEN regexp_extract(name, '^https://([^/]+)/', 1)
     END,
     CASE
       -- a Cloud Storage bucket full name has no collection
       WHEN name RLIKE r'^//storage\.googleapis\.com/[^/]+$' THEN concat('projects/_/buckets/', regexp_extract(name, '^//[^/]+/(.*)$', 1))
       WHEN name RLIKE '^//[^/]+/.' THEN regexp_extract(name, '^//[^/]+/(.*)$', 1)
-      WHEN name RLIKE '^https://' THEN nullif(regexp_extract(name, '^https://[^/]+/(?:[^/]+/)?(?:v[0-9]+[a-z0-9]*|alpha|beta)/(.*)$', 1), '')
+      WHEN name RLIKE r'^https://[^/]*googleapis\.com/' THEN nullif(regexp_extract(name, '^https://[^/]+/(?:[^/]+/)?(?:v[0-9]+[a-z0-9]*|alpha|beta)/(.*)$', 1), '')
       WHEN name RLIKE '^[a-zA-Z]' AND NOT name RLIKE '://' THEN name
     END);
 

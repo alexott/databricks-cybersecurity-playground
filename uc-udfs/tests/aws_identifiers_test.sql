@@ -139,6 +139,7 @@ FROM (
       (concat('AP', 'KA', 'EXAMPLE123456789'), 'public_key'),
       (concat('AS', 'CA', 'EXAMPLE123456789'), 'certificate'),
       (concat('AS', 'IA', 'EXAMPLE123456789'), 'temporary_access_key'),
+      (concat(' AI', 'DA', 'JQABLZS4A3QDU576Q '), 'user'),
       ('111122223333', NULL),
       ('XXXXJQABLZS4A3QDU576Q', NULL),
       (lower(concat('AI', 'DA', 'JQABLZS4A3QDU576Q')), NULL),
@@ -166,6 +167,7 @@ FROM (
       (concat('AS', 'IA', 'QAAAAAAAAAAAAAAA'), '000000000000'),
       (concat('AS', 'IA', '6RVFFB77AAAAAAAA'), '999999999998'),
       (concat('AK', 'IA', 'Y34FZKBOKMUTVV7A'), '609629065308'),
+      (concat(' AS', 'IA', 'Y34FZKBOKMUTVV7A '), '609629065308'),
       -- a key created before 2019-03-29 (the AWS documentation example) doesn't encode the account ID
       (concat('AK', 'IA', 'IOSFODNN7EXAMPLE'), NULL),
       (concat('AR', 'OA', 'Y34FZKBOKMUTVV7A'), NULL),

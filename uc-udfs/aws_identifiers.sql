@@ -111,7 +111,7 @@ CREATE OR REPLACE FUNCTION aws_unique_id_type(id STRING)
   DETERMINISTIC
   COMMENT 'Returns the type of an IAM unique ID or access key ID from its prefix (access_key, temporary_access_key, user, role, group, ...). A :suffix is ignored. Returns NULL for an unknown prefix or an invalid value'
   RETURN CASE
-    WHEN id RLIKE '^[A-Z0-9]{16,128}(:.*)?$' THEN CASE substr(id, 1, 4)
+    WHEN trim(id) RLIKE '^[A-Z0-9]{16,128}(:.*)?$' THEN CASE substr(trim(id), 1, 4)
       WHEN 'ABIA' THEN 'sts_bearer_token'
       WHEN 'ACCA' THEN 'context_specific_credential'
       WHEN 'AGPA' THEN 'group'
@@ -135,11 +135,11 @@ CREATE OR REPLACE FUNCTION aws_account_id_from_access_key(key_id STRING)
   COMMENT 'Returns the 12-digit AWS account ID encoded in an AKIA/ASIA access key ID (the same as aws sts get-access-key-info). Returns NULL for keys created before 2019-03-29 and for invalid values'
   RETURN CASE
     -- the 5th character must be Q-Z or 2-7: older keys do not encode the account ID
-    WHEN key_id RLIKE '^(AKIA|ASIA)[Q-Z2-7][A-Z2-7]{15}$' THEN lpad(
+    WHEN trim(key_id) RLIKE '^(AKIA|ASIA)[Q-Z2-7][A-Z2-7]{15}$' THEN lpad(
       CAST(shiftright(
         CAST(conv(substr(array_join(transform(sequence(5, 14),
           -- base32: each character is 5 bits
-          i -> lpad(conv(CAST(instr('ABCDEFGHIJKLMNOPQRSTUVWXYZ234567', substr(key_id, i, 1)) - 1 AS STRING), 10, 2), 5, '0')), ''),
+          i -> lpad(conv(CAST(instr('ABCDEFGHIJKLMNOPQRSTUVWXYZ234567', substr(trim(key_id), i, 1)) - 1 AS STRING), 10, 2), 5, '0')), ''),
           1, 48), 2, 10) AS BIGINT)
         -- 0x7fffffffff80: drop the top bit and the low 7 bits of the first 6 bytes
         & 140737488355200, 7) AS STRING),

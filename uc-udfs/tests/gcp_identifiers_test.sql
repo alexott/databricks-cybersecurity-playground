@@ -97,6 +97,9 @@ FROM (
       ('projects//instances/i1', NULL),
       ('/projects/my-project', NULL),
       ('https://www.googleapis.com/', NULL),
+      -- other HTTPS URLs are not GCP resource names (Microsoft Graph requestUri, Azure storage)
+      ('https://graph.microsoft.com/beta/users/abc', NULL),
+      ('https://acct.blob.core.windows.net/c/v1/a/b', NULL),
       ('s3://bucket/key', NULL),
       ('foo', NULL),
       ('', NULL),

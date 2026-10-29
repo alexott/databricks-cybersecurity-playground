@@ -262,7 +262,8 @@ Returns `STRUCT<service STRING, relative_name STRING, project STRING, location S
 Input forms, all converted to a relative name:
 
 - full resource name `//<service>/<relative>`: `service` is the host;
-- resource URI `https://<host>/[<svc>/]<version>/<relative>`: the path up to and including the version
+- resource URI `https://<host>/[<svc>/]<version>/<relative>` (only hosts that end in `googleapis.com`;
+  other HTTPS URLs, such as Microsoft Graph `requestUri`, give `NULL`): the path up to and including the version
   segment (`v\d+` with optional letters and digits, such as `v1beta1`, or `alpha`/`beta`) is removed. `service` is the
   host, but for `www.googleapis.com` it is `<first path segment>.googleapis.com`;
 - relative name (audit log `protoPayload.resourceName`): `service` is `NULL`
@@ -397,7 +398,7 @@ Other values give `NULL`, and so does a value that the parser returns as `NULL`.
 | `cloud.provider` | `AWS` | `Azure` | `GCP` |
 | `cloud.account` (uid / type / type_id) | `account_id` / `AWS Account` / `10` (only a 12-digit account ID; not `aws` or `*`) | `subscription_id` / `Azure Subscription` / `13` | `project` / `GCP Project` / `11` |
 | `cloud.region`, `resource.region` | `region` | `NULL` | `regions` or `locations`; for `zones`, the zone without the last `-x` part (`us-central1-a` → `us-central1`) |
-| `cloud.zone`, `resource.zone` | `NULL` | `NULL` | `zones` |
+| `cloud.zone`, `resource.zone` | `NULL` | `NULL` | `zones`, or a `locations` value that is a zone (`us-central1-a`, zonal GKE clusters) |
 | `cloud_partition` (both) | `partition` | `NULL` | `NULL` |
 | `cloud.org` (uid / ou_uid) | `NULL` | `tenant_id` / `NULL` | `segments['organizations']` / `segments['folders']` |
 | `resource.uid` | the ARN | the ID | `//service/relative_name`, or `relative_name` if `service` is `NULL` |
