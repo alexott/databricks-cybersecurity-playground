@@ -1,4 +1,4 @@
-# Databricks Asset Bundle for ingestion of vulnerability data (CVE v5, GHSA, OSV, CISA KEV, FIRST EPSS, MITRE CWE, MITRE ATT&CK).
+# Databricks Asset Bundle for ingestion of vulnerability data (CVE v5, GHSA, OSV, CISA KEV, FIRST EPSS, MITRE CWE, MITRE ATT&CK, MITRE ATLAS).
 # See README.md for deployment instructions.
 bundle:
   name: vuln_info_ingest

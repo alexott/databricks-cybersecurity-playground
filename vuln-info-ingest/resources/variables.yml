@@ -33,6 +33,12 @@ variables:
   attack_schedule:
     description: Schedule of the ATT&CK job (ATT&CK is released about twice a year)
     default: "0 30 4 ? * MON"
+  atlas_version:
+    description: ATLAS release of the ATLAS job, 'latest' or e.g. '2026.10'
+    default: latest
+  atlas_schedule:
+    description: Schedule of the ATLAS job (ATLAS is released about monthly)
+    default: "0 0 5 ? * MON"
   timezone:
     description: Time zone of the schedules
     default: UTC

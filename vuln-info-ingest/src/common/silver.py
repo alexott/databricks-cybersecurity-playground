@@ -26,22 +26,26 @@ def register_src_modules_by_value() -> None:
 
 
 def stream_cdf_to_silver(spark, raw_table: str, silver_table: str, key: str,
-                         transform_fn: Callable, checkpoint: str, apply_deletes: bool = False) -> None:
+                         transform_fn: Callable, checkpoint: str, apply_deletes: bool = False,
+                         silver_key: str | None = None) -> None:
     """If silver is empty, MERGE the full raw snapshot first (CDF history may not
     cover the whole table) and start the stream at the latest raw version; then
     process all pending changes (availableNow) and return.
 
     `transform_fn(df)` gets raw rows plus `_change_type`. Without `apply_deletes` it
     must return exactly the silver columns. With `apply_deletes` it must also keep
-    `_change_type`; a last change of type 'delete' removes the silver row."""
+    `_change_type`; a last change of type 'delete' removes the silver row.
+    `key` is the raw-table key; `silver_key` (default `key`) is the silver column the
+    MERGE matches on, when the transform renames the key."""
     from delta.tables import DeltaTable
     from pyspark.sql import functions as F
 
     register_src_modules_by_value()
+    silver_key = silver_key or key
 
     def merge(df):
         src = transform_fn(latest_changes(df, key, apply_deletes)).alias("s")
-        m = DeltaTable.forName(spark, silver_table).alias("t").merge(src, f"t.{key} = s.{key}")
+        m = DeltaTable.forName(spark, silver_table).alias("t").merge(src, f"t.{silver_key} = s.{silver_key}")
         if apply_deletes:
             values = {c: f"s.{c}" for c in spark.table(silver_table).columns}
             m = (m.whenMatchedDelete(condition="s._change_type = 'delete'")

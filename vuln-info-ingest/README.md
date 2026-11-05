@@ -14,6 +14,7 @@ with periodic [Lakeflow Jobs](https://docs.databricks.com/aws/en/jobs/), deploye
 | [MITRE CWE](https://cwe.mitre.org/) | `cwe_entries` | Weakness names, hierarchy, CAPEC attack patterns for the CWE ids of the other tables |
 | [CAPEC](https://capec.mitre.org/) + [ATT&CK](https://attack.mitre.org/) | `cwe_capec_attack` | CWE → CAPEC → ATT&CK technique edges (one-time build) |
 | [MITRE ATT&CK](https://attack.mitre.org/) | `attack_objects`, `attack_relationships` (+ views) | Techniques, tactics, groups, software, mitigations and how they relate |
+| [MITRE ATLAS](https://atlas.mitre.org/) | `atlas_objects`, `atlas_relationships` (+ views) | ATT&CK-style matrix of attacks on AI systems, with case studies |
 
 All silver tables carry `cve_id`, the join key between them. Every source except EPSS
 has a `<source>_raw` table (one row per record with the original JSON as `VARIANT` plus
@@ -49,6 +50,8 @@ Bundle variables (`resources/variables.yml`):
 | `epss_schedule` | `0 0 15 * * ?` | Schedule of the EPSS job (daily, after the ~13:30 UTC publication) |
 | `cwe_schedule` | `0 0 4 ? * MON` | Schedule of the CWE job (weekly; the catalog is released a few times a year) |
 | `attack_version` | `latest` | ATT&CK version of the ATT&CK and `cwe_capec_attack` jobs, e.g. `19.1` to pin |
+| `atlas_version` | `latest` | ATLAS release of the ATLAS job, e.g. `2026.10` to pin |
+| `atlas_schedule` | `0 0 5 ? * MON` | Schedule of the ATLAS job (weekly; ATLAS is released about monthly) |
 | `attack_schedule` | `0 30 4 ? * MON` | Schedule of the ATT&CK job (weekly; ATT&CK is released about twice a year) |
 | `timezone` | `UTC` | Time zone of the schedules |
 | `pause_status` | `UNPAUSED` | `PAUSED` or `UNPAUSED`; the `dev` target sets `PAUSED` |
@@ -81,7 +84,7 @@ only looks back `lookback_days`, 14 by default):
 databricks bundle run vuln_epss_initial_load -t <target> --profile <profile>
 ```
 
-GHSA, KEV, CWE and ATT&CK always load a full snapshot, so their periodic jobs need no preparation.
+GHSA, KEV, CWE, ATT&CK and ATLAS always load a full snapshot, so their periodic jobs need no preparation.
 Full loads are idempotent `MERGE`s and safe to re-run, but don't run an initial-load
 job while the matching periodic job is running (pause the periodic job first).
 
@@ -100,6 +103,7 @@ job while the matching periodic job is running (pause the periodic job first).
 | `vuln_cwe` | `load` → `silver` | `cwe_schedule` |
 | `vuln_cwe_capec_attack` | `build` | none |
 | `vuln_attack` | `load` → `silver` | `attack_schedule` |
+| `vuln_atlas` | `load` → `silver` | `atlas_schedule` |
 
 All settings are job parameters (no config files); defaults are in the job YAML files
 and can be changed per run. Every job has `catalog`, `schema` and `volume`; besides
@@ -111,6 +115,7 @@ those:
 - KEV: `catalog_url`.
 - CWE: `catalog_url`.
 - ATT&CK: `index_url`, `domains` (`enterprise-attack,mobile-attack,ics-attack`), `attack_version` (`${var.attack_version}`).
+- ATLAS: `manifest_url`, `atlas_version` (`${var.atlas_version}`).
 - CWE → CAPEC → ATT&CK: `capec_url`, `index_url`, `attack_version` (`${var.attack_version}`); no `volume`.
 - EPSS: `base_url`, `lookback_days` (14; 3000 in the initial-load job), `batch_days` (90), `fetch_threads` (8), `min_snapshot_ratio` (0.9).
 
@@ -442,6 +447,53 @@ Notes:
 - The `attack_version` bundle variable sets the version of both jobs, e.g.
   `--var attack_version=19.1` to pin.
 
+## MITRE ATLAS
+
+[ATLAS](https://atlas.mitre.org/) (Adversarial Threat Landscape for AI Systems) is an
+ATT&CK-style knowledge base of attacks on AI and ML systems, with case studies of
+real incidents and exercises. It is loaded from MITRE's
+[atlas-data](https://github.com/mitre-atlas/atlas-data) releases.
+
+- `atlas_raw` — one row per object and per relationship: `raw` VARIANT + `atlas_id`,
+  `object_type`, `modified`, `content_hash`, `atlas_release`, and the soft-delete
+  marker `date_removed`. Change Data Feed on.
+- `atlas_objects` — typed silver for tactics, techniques, mitigations, case studies,
+  entities, software and the matrix, kept in sync from `atlas_raw`.
+- `atlas_relationships` — typed silver for the relationships, from the same change feed.
+- Views: `atlas_techniques` (with parent and tactics), `atlas_tactics` (in matrix
+  order), `atlas_mitigations`, `atlas_case_studies`, `atlas_software`,
+  `atlas_entities`, `atlas_relationships_resolved`.
+- `atlas_fetch_log` — one row per load run (release, release date, counts).
+
+Data facts (checked 2026-11-05, release 2026.10 of 2026-10-28):
+
+- Releases are about monthly. `dist/manifest.yaml` lists every release with its
+  file; the current format is 6 (`dist/v6/ATLAS-<release>.yaml`, ~1.1 MB, format
+  6.1.0 since 2026.10).
+- 2026.10 has 16 tactics, 221 techniques (incl. sub-techniques), 44 mitigations,
+  77 case studies, 44 entities, 37 software and 1,750 relationships.
+- Objects are keyed by ATLAS id (`AML.T0000`, `AML.T0000.003`, `AML.CS0002`, ...) and
+  have created / modified dates. Relationships have neither an id nor a date; their
+  key is `<source>|<type>|<target>|<step-id>` and changes are detected with a content
+  hash. Technique tactics and parents are relationships (`achieves`, `specializes`).
+- The STIX bundle in `atlas-navigator-data` and the format-5 `dist/ATLAS.yaml` lag
+  behind (170 techniques), so the loader reads the format-6 YAML.
+
+The loader resolves the release in the manifest (`atlas_version=latest` or pinned)
+and stops if the fetch log already has it. Otherwise it downloads the release YAML,
+flattens it into one record per object and relationship, stages them on the Volume,
+and `MERGE`s into `atlas_raw` on `atlas_id`: update when the content hash changed,
+insert new records, soft-delete records that are no longer in the release.
+
+Notes:
+
+- `attack_id` is the corresponding ATT&CK object (`attack-reference`), e.g. `T1596`
+  for `AML.T0000`; join it to `attack_objects.attack_id` / `attack_techniques`.
+- Case-study procedures are `employs` relationships, one row per step (`step_id`,
+  `tactic_id`, `leads_to`).
+- Pinning an older release overwrites changed rows with the older content (changes
+  are detected by hash, not date).
+
 ## Layout
 
 ```
@@ -456,7 +508,7 @@ src/common/
   merge.py                      dedupe before MERGE, last change per key from CDF
   fetch_log.py                  fetch-log rows and incremental watermarks
   silver.py                     generic raw CDF -> silver streaming MERGE
-src/<source>/                   cve_v5, ghsa, osv, kev, epss, cwe, capec, attack
+src/<source>/                   cve_v5, ghsa, osv, kev, epss, cwe, capec, attack, atlas
   helpers.py                    pure Python / raw-table id columns
   transform.py                  raw VARIANT -> typed silver columns
   *load*.py, Load *.py          loader notebooks
