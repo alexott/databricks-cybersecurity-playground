@@ -48,6 +48,7 @@ Bundle variables (`resources/variables.yml`):
 | `cve_v5_schedule`, `ghsa_schedule`, `osv_schedule`, `kev_schedule` | `${var.schedule}` | Per-source schedule override |
 | `epss_schedule` | `0 0 15 * * ?` | Schedule of the EPSS job (daily, after the ~13:30 UTC publication) |
 | `cwe_schedule` | `0 0 4 ? * MON` | Schedule of the CWE job (weekly; the catalog is released a few times a year) |
+| `attack_version` | `latest` | ATT&CK version of the ATT&CK and `cwe_capec_attack` jobs, e.g. `19.1` to pin |
 | `attack_schedule` | `0 30 4 ? * MON` | Schedule of the ATT&CK job (weekly; ATT&CK is released about twice a year) |
 | `timezone` | `UTC` | Time zone of the schedules |
 | `pause_status` | `UNPAUSED` | `PAUSED` or `UNPAUSED`; the `dev` target sets `PAUSED` |
@@ -109,8 +110,8 @@ those:
 - OSV: `bucket_url`, `full_reload_threshold` (100000), `watermark_overlap_hours` (6), `fetch_threads` (32), `min_snapshot_ratio` (0.9), `part_records` (20000).
 - KEV: `catalog_url`.
 - CWE: `catalog_url`.
-- ATT&CK: `index_url`, `domains` (`enterprise-attack,mobile-attack,ics-attack`), `attack_version` (`latest` or e.g. `19.1`).
-- CWE → CAPEC → ATT&CK: `capec_url`, `attack_url` (Enterprise ATT&CK STIX bundle, pinned to 19.1); no `volume`.
+- ATT&CK: `index_url`, `domains` (`enterprise-attack,mobile-attack,ics-attack`), `attack_version` (`${var.attack_version}`).
+- CWE → CAPEC → ATT&CK: `capec_url`, `index_url`, `attack_version` (`${var.attack_version}`); no `volume`.
 - EPSS: `base_url`, `lookback_days` (14; 3000 in the initial-load job), `batch_days` (90), `fetch_threads` (8), `min_snapshot_ratio` (0.9).
 
 The incremental loaders set the task value `needs_full_load`. When it is `true`
@@ -374,12 +375,13 @@ Notes:
   weakness (`Related_Weaknesses` of each CAPEC attack pattern; 1,212 edges).
 - `CAPEC` → `maps_to_technique` → `technique`: the ATT&CK techniques of an attack
   pattern (its `ATTACK` taxonomy mappings; 270 edges), named from the Enterprise
-  ATT&CK STIX bundle given by `attack_url`.
+  ATT&CK STIX bundle of the `attack_version` bundle variable (the same as the ATT&CK job).
 
 The `vuln_cwe_capec_attack` job downloads both files and rebuilds the table with
 `CREATE OR REPLACE`. It has no schedule: CAPEC has not been released since 3.9
 (2023-01-24). Re-run it after a CAPEC release or to move to another ATT&CK version
-(ATT&CK 19.1 and 20.0 give the same edges today).
+(ATT&CK 19.1 and 20.0 give the same edges today). With `attack_version=latest` a
+later rebuild can pick up renamed techniques; `source_version` records the versions used.
 
 Notes:
 
@@ -435,7 +437,10 @@ Notes:
 - Filter `NOT revoked AND NOT deprecated` for the current matrix; a revoked object's
   replacement is its `revoked-by` relationship.
 - `attack_techniques.technique_id` joins to `cwe_capec_attack.dst_id`. That job
-  downloads its own pinned Enterprise bundle and does not need these tables.
+  downloads the Enterprise bundle itself (the same `attack_version`) and does not need
+  these tables.
+- The `attack_version` bundle variable sets the version of both jobs, e.g.
+  `--var attack_version=19.1` to pin.
 
 ## Layout
 

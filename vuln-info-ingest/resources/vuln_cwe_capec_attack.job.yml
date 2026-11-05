@@ -11,9 +11,10 @@ resources:
           default: ${var.schema}
         - name: capec_url
           default: https://capec.mitre.org/data/xml/capec_latest.xml
-        - name: attack_url
-          # Pinned ATT&CK version; keep it in sync with other users of ATT&CK data.
-          default: https://raw.githubusercontent.com/mitre-attack/attack-stix-data/master/enterprise-attack/enterprise-attack-19.1.json
+        - name: index_url
+          default: https://raw.githubusercontent.com/mitre-attack/attack-stix-data/master/index.json
+        - name: attack_version
+          default: ${var.attack_version}
       tasks:
         - task_key: build
           notebook_task:

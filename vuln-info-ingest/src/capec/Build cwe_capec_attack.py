@@ -6,7 +6,8 @@
 # MAGIC %md
 # MAGIC # cwe_capec_attack — CWE -> CAPEC -> ATT&CK edge table
 # MAGIC Downloads the CAPEC catalog XML (~4 MB) and the Enterprise ATT&CK STIX bundle
-# MAGIC (~55 MB, version-pinned by `attack_url`), and rebuilds `cwe_capec_attack` with
+# MAGIC (~55 MB) of `attack_version` (`latest` or e.g. `19.1`, looked up in
+# MAGIC attack-stix-data's `index.json`), and rebuilds `cwe_capec_attack` with
 # MAGIC `CREATE OR REPLACE`: CWE weakness -> CAPEC attack pattern edges and CAPEC attack
 # MAGIC pattern -> ATT&CK technique edges (`capec.helpers`). CAPEC has not been released
 # MAGIC since 3.9 (2023-01-24), so this is a one-time job; re-run it after a new CAPEC
@@ -19,24 +20,28 @@ import os, sys
 sys.path.append(os.path.abspath(".."))
 from common.params import get_params, table_name
 
-p = get_params(dbutils, {"catalog": str, "schema": str, "capec_url": str, "attack_url": str})
+p = get_params(dbutils, {"catalog": str, "schema": str, "capec_url": str, "index_url": str,
+                         "attack_version": str})
 TABLE = table_name(p, "cwe_capec_attack")
 
 # COMMAND ----------
 
 # DBTITLE 1,Download CAPEC and ATT&CK, build the edges
 import collections, json
+from attack.helpers import resolve_versions
 from capec.helpers import build_rows, parse_attack_techniques, parse_capec
 from common.fetch import fetch_with_retries
 
 def download(url: str) -> bytes:
-    data = fetch_with_retries(url, strip=False)
+    data = fetch_with_retries(url, timeout=120, strip=False)
     if data is None:
         raise RuntimeError(f"not found: {url}")
     return data
 
 capec = parse_capec(download(p["capec_url"]))
-attack = parse_attack_techniques(json.loads(download(p["attack_url"])))
+_, attack_url = resolve_versions(json.loads(download(p["index_url"])), ["enterprise-attack"],
+                                 p["attack_version"])["enterprise-attack"]
+attack = parse_attack_techniques(json.loads(download(attack_url)))
 rows = build_rows(capec, attack)
 n_dropped = sum(1 for _, t in set(capec[3]) if t not in attack[1])
 print(f"CAPEC {capec[0]} ({capec[1]}), ATT&CK {attack[0]}: {len(rows)} edges "

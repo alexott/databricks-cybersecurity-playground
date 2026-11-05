@@ -20,7 +20,7 @@ resources:
         - name: domains
           default: enterprise-attack,mobile-attack,ics-attack
         - name: attack_version
-          default: latest
+          default: ${var.attack_version}
       tasks:
         - task_key: load
           notebook_task:
