@@ -3,7 +3,7 @@
 Different pieces of code related to doing cybersecurity on Databricks
 
 * [uc-udfs](uc-udfs/) - cybersecurity-related user-defined functions for Unity Catalog.
-* [vuln-info-ingest](vuln-info-ingest/) - ingestion of vulnerability data (CVE v5, GitHub advisories, OSV, CISA KEV, FIRST EPSS, MITRE CWE) with Databricks Asset Bundles.
+* [vuln-info-ingest](vuln-info-ingest/) - ingestion of vulnerability data (CVE v5, GitHub advisories, OSV, CISA KEV, FIRST EPSS, MITRE CWE, MITRE ATT&CK) with Databricks Asset Bundles.
 
 ## Source code/supporting materials for blog posts
 

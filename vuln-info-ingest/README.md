@@ -13,6 +13,7 @@ with periodic [Lakeflow Jobs](https://docs.databricks.com/aws/en/jobs/), deploye
 | [FIRST EPSS](https://www.first.org/epss/) | `epss_scores`, `epss_scores_history` | Daily probability of exploitation in the next 30 days |
 | [MITRE CWE](https://cwe.mitre.org/) | `cwe_entries` | Weakness names, hierarchy, CAPEC attack patterns for the CWE ids of the other tables |
 | [CAPEC](https://capec.mitre.org/) + [ATT&CK](https://attack.mitre.org/) | `cwe_capec_attack` | CWE → CAPEC → ATT&CK technique edges (one-time build) |
+| [MITRE ATT&CK](https://attack.mitre.org/) | `attack_objects`, `attack_relationships` (+ views) | Techniques, tactics, groups, software, mitigations and how they relate |
 
 All silver tables carry `cve_id`, the join key between them. Every source except EPSS
 has a `<source>_raw` table (one row per record with the original JSON as `VARIANT` plus
@@ -47,6 +48,7 @@ Bundle variables (`resources/variables.yml`):
 | `cve_v5_schedule`, `ghsa_schedule`, `osv_schedule`, `kev_schedule` | `${var.schedule}` | Per-source schedule override |
 | `epss_schedule` | `0 0 15 * * ?` | Schedule of the EPSS job (daily, after the ~13:30 UTC publication) |
 | `cwe_schedule` | `0 0 4 ? * MON` | Schedule of the CWE job (weekly; the catalog is released a few times a year) |
+| `attack_schedule` | `0 30 4 ? * MON` | Schedule of the ATT&CK job (weekly; ATT&CK is released about twice a year) |
 | `timezone` | `UTC` | Time zone of the schedules |
 | `pause_status` | `UNPAUSED` | `PAUSED` or `UNPAUSED`; the `dev` target sets `PAUSED` |
 
@@ -78,7 +80,7 @@ only looks back `lookback_days`, 14 by default):
 databricks bundle run vuln_epss_initial_load -t <target> --profile <profile>
 ```
 
-GHSA, KEV and CWE always load a full snapshot, so their periodic jobs need no preparation.
+GHSA, KEV, CWE and ATT&CK always load a full snapshot, so their periodic jobs need no preparation.
 Full loads are idempotent `MERGE`s and safe to re-run, but don't run an initial-load
 job while the matching periodic job is running (pause the periodic job first).
 
@@ -96,6 +98,7 @@ job while the matching periodic job is running (pause the periodic job first).
 | `vuln_epss_initial_load` | `load` → `current` | none |
 | `vuln_cwe` | `load` → `silver` | `cwe_schedule` |
 | `vuln_cwe_capec_attack` | `build` | none |
+| `vuln_attack` | `load` → `silver` | `attack_schedule` |
 
 All settings are job parameters (no config files); defaults are in the job YAML files
 and can be changed per run. Every job has `catalog`, `schema` and `volume`; besides
@@ -106,6 +109,7 @@ those:
 - OSV: `bucket_url`, `full_reload_threshold` (100000), `watermark_overlap_hours` (6), `fetch_threads` (32), `min_snapshot_ratio` (0.9), `part_records` (20000).
 - KEV: `catalog_url`.
 - CWE: `catalog_url`.
+- ATT&CK: `index_url`, `domains` (`enterprise-attack,mobile-attack,ics-attack`), `attack_version` (`latest` or e.g. `19.1`).
 - CWE → CAPEC → ATT&CK: `capec_url`, `attack_url` (Enterprise ATT&CK STIX bundle, pinned to 19.1); no `volume`.
 - EPSS: `base_url`, `lookback_days` (14; 3000 in the initial-load job), `batch_days` (90), `fetch_threads` (8), `min_snapshot_ratio` (0.9).
 
@@ -386,6 +390,53 @@ Notes:
 - From a CVE to techniques: explode `cves_v5.cwe_ids`, join `src_id` of the CWE edges,
   then join their `dst_id` to `src_id` of the CAPEC edges.
 
+## MITRE ATT&CK
+
+[ATT&CK](https://attack.mitre.org/) describes adversary behavior: tactics, techniques,
+the groups and software that use them, and mitigations. It is loaded from MITRE's
+[attack-stix-data](https://github.com/mitre-attack/attack-stix-data) (STIX 2.1).
+
+- `attack_raw` — one row per STIX object: `raw` VARIANT + `stix_id`, `type`,
+  `attack_id` (T1059, G0016, S0154, ...), `modified`, `attack_version`, and the
+  soft-delete marker `date_removed`. Change Data Feed on.
+- `attack_objects` — typed silver for every object except relationships, kept in sync
+  from `attack_raw`.
+- `attack_relationships` — typed silver for the relationship objects, from the same
+  change feed.
+- Views over the silver tables: `attack_techniques`, `attack_tactics`, `attack_groups`,
+  `attack_software`, `attack_mitigations`, `attack_campaigns`, and
+  `attack_relationships_resolved` (source and target as ATT&CK ids and names).
+- `attack_fetch_log` — one row per load run (domains, versions, counts).
+
+Data facts (checked 2026-11-05, ATT&CK 20.0, released 2026-10-13):
+
+- One STIX bundle per domain: Enterprise (~55 MB, 26,690 objects), Mobile (~6 MB,
+  2,684), ICS (~5 MB, 2,566). `index.json` lists every version of each domain.
+- Groups, software, data sources and some relationships are in several domains with
+  the same STIX id and identical content; they are one row, `domains` lists the
+  domains. All domains together are ~31.7K objects.
+- Enterprise has 21,819 relationships: `uses` (groups, software and campaigns →
+  techniques and software), `mitigates`, `detects`, `subtechnique-of`, `revoked-by`,
+  `attributed-to`.
+- Revoked and deprecated objects stay in the bundles with `revoked` /
+  `x_mitre_deprecated` set (149 revoked Enterprise techniques).
+
+The loader resolves the versions in `index.json` (`attack_version=latest` or a pinned
+version) and stops if the fetch log already has them. Otherwise it downloads the
+bundles, keeps one object per STIX id, stages one JSON line per object on the Volume,
+and `MERGE`s into `attack_raw` on `stix_id`: update when `modified` advanced, insert
+new objects, soft-delete objects that are no longer in the bundles.
+
+Notes:
+
+- Because updates are gated by `modified`, pinning an older version does not roll
+  rows back; drop the tables (and the `attack_checkpoints` directory) to reload one.
+  Removing a domain from `domains` soft-deletes its objects.
+- Filter `NOT revoked AND NOT deprecated` for the current matrix; a revoked object's
+  replacement is its `revoked-by` relationship.
+- `attack_techniques.technique_id` joins to `cwe_capec_attack.dst_id`. That job
+  downloads its own pinned Enterprise bundle and does not need these tables.
+
 ## Layout
 
 ```
@@ -400,7 +451,7 @@ src/common/
   merge.py                      dedupe before MERGE, last change per key from CDF
   fetch_log.py                  fetch-log rows and incremental watermarks
   silver.py                     generic raw CDF -> silver streaming MERGE
-src/<source>/                   cve_v5, ghsa, osv, kev, epss, cwe, capec
+src/<source>/                   cve_v5, ghsa, osv, kev, epss, cwe, capec, attack
   helpers.py                    pure Python / raw-table id columns
   transform.py                  raw VARIANT -> typed silver columns
   *load*.py, Load *.py          loader notebooks

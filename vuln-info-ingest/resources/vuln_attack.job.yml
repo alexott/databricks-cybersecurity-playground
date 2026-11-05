@@ -1,0 +1,32 @@
+resources:
+  jobs:
+    vuln_attack:
+      name: vuln_attack
+      description: Load the MITRE ATT&CK STIX data (Enterprise, Mobile, ICS) into attack_raw, attack_objects and attack_relationships
+      max_concurrent_runs: 1
+      schedule:
+        quartz_cron_expression: ${var.attack_schedule}
+        timezone_id: ${var.timezone}
+        pause_status: ${var.pause_status}
+      parameters:
+        - name: catalog
+          default: ${var.catalog}
+        - name: schema
+          default: ${var.schema}
+        - name: volume
+          default: ${resources.volumes.reference.name}
+        - name: index_url
+          default: https://raw.githubusercontent.com/mitre-attack/attack-stix-data/master/index.json
+        - name: domains
+          default: enterprise-attack,mobile-attack,ics-attack
+        - name: attack_version
+          default: latest
+      tasks:
+        - task_key: load
+          notebook_task:
+            notebook_path: "../src/attack/Load ATTACK.py"
+        - task_key: silver
+          depends_on:
+            - task_key: load
+          notebook_task:
+            notebook_path: "../src/attack/ATTACK Silver Transform.py"

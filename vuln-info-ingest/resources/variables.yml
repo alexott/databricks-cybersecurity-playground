@@ -27,6 +27,9 @@ variables:
   cwe_schedule:
     description: Schedule of the CWE job (the catalog is released a few times a year)
     default: "0 0 4 ? * MON"
+  attack_schedule:
+    description: Schedule of the ATT&CK job (ATT&CK is released about twice a year)
+    default: "0 30 4 ? * MON"
   timezone:
     description: Time zone of the schedules
     default: UTC

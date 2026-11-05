@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "vuln-info-ingest"
 version = "0.1.0"
-description = "Ingestion of vulnerability data (CVE v5, GHSA, OSV, CISA KEV, FIRST EPSS, MITRE CWE) into Databricks."
+description = "Ingestion of vulnerability data (CVE v5, GHSA, OSV, CISA KEV, FIRST EPSS, MITRE CWE, MITRE ATT&CK) into Databricks."
 authors = ["Alex Ott <alexott@gmail.com>"]
 package-mode = false
 

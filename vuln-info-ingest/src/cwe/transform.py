@@ -57,7 +57,7 @@ def transform_cwe(df):
         # `Reference` is repeatable elsewhere in the schema, so it is an array here too.
         "transform(COALESCE(try_variant_get(raw, '$.Observed_Examples.Observed_Example', "
         "'ARRAY<STRUCT<Reference ARRAY<STRING>, Description STRING, Link STRING>>'), array()), "
-        "x -> named_struct('reference', x.Reference[0], 'description', x.Description, 'link', x.Link)) "
+        "x -> named_struct('reference', get(x.Reference, 0), 'description', x.Description, 'link', x.Link)) "
         "as observed_examples",
         "to_date(try_variant_get(raw, '$.Content_History.Submission[0].Submission_Date', 'string')) "
         "as date_submitted",
