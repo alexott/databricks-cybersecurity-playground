@@ -4,6 +4,8 @@ resources:
       name: vuln_osv
       description: Incremental load of the OSV database into osv_raw and osv_vulnerabilities (falls back to a full load)
       max_concurrent_runs: 1
+      # Serverless STANDARD mode: slower startup, lower cost than PERFORMANCE_OPTIMIZED
+      performance_target: STANDARD
       schedule:
         quartz_cron_expression: ${var.osv_schedule}
         timezone_id: ${var.timezone}

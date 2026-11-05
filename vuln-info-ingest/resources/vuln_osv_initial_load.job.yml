@@ -4,6 +4,8 @@ resources:
       name: vuln_osv_initial_load
       description: One-time full load of the OSV database (all.zip snapshot); safe to re-run
       max_concurrent_runs: 1
+      # Serverless STANDARD mode: slower startup, lower cost than PERFORMANCE_OPTIMIZED
+      performance_target: STANDARD
       parameters:
         - name: catalog
           default: ${var.catalog}

@@ -4,6 +4,8 @@ resources:
       name: vuln_cve_v5
       description: Incremental load of CVE v5 records (cvelistV5 deltaLog) into cves_v5_raw and cves_v5 (falls back to a full load)
       max_concurrent_runs: 1
+      # Serverless STANDARD mode: slower startup, lower cost than PERFORMANCE_OPTIMIZED
+      performance_target: STANDARD
       schedule:
         quartz_cron_expression: ${var.cve_v5_schedule}
         timezone_id: ${var.timezone}
