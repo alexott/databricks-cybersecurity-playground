@@ -113,6 +113,13 @@ def test_fetch_with_retries_404_is_none(monkeypatch):
     assert fetch.fetch_with_retries("u", sleep=lambda s: None) is None
 
 
+def test_fetch_with_retries_missing_codes_and_no_strip(monkeypatch):
+    urlopen, _ = _fake_urlopen([_http_error(403), b"\x1f\x8b gz \n"])
+    monkeypatch.setattr(fetch.urllib.request, "urlopen", urlopen)
+    assert fetch.fetch_with_retries("u", missing_codes=(403, 404), sleep=lambda s: None) is None
+    assert fetch.fetch_with_retries("u", strip=False, sleep=lambda s: None) == b"\x1f\x8b gz \n"
+
+
 def test_fetch_with_retries_raises_other_and_exhausted(monkeypatch):
     urlopen, _ = _fake_urlopen([_http_error(403)])
     monkeypatch.setattr(fetch.urllib.request, "urlopen", urlopen)

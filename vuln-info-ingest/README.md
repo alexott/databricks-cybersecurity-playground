@@ -10,12 +10,15 @@ with periodic [Lakeflow Jobs](https://docs.databricks.com/aws/en/jobs/), deploye
 | [GitHub Advisory Database](https://github.com/github/advisory-database) | `github_advisories` | Package-level dependency edges (ecosystem, package, version range) |
 | [OSV](https://google.github.io/osv.dev/data/) | `osv_vulnerabilities` | Superset of GHSA: PyPI, Go, RustSec, npm malware, Linux distros, ... |
 | [CISA KEV](https://www.cisa.gov/known-exploited-vulnerabilities-catalog) | `kev_vulnerabilities` | "Actively exploited in the wild" signal |
+| [FIRST EPSS](https://www.first.org/epss/) | `epss_scores`, `epss_scores_history` | Daily probability of exploitation in the next 30 days |
 
-All silver tables carry `cve_id`, the join key between them. Every source has a
-`<source>_raw` table (one row per record with the original JSON as `VARIANT` plus
+All silver tables carry `cve_id`, the join key between them. Every source except EPSS
+has a `<source>_raw` table (one row per record with the original JSON as `VARIANT` plus
 id columns, Change Data Feed on) and a `<source>_fetch_log` table (one row per load
 run). The silver tables are kept in sync from the raw tables by streaming their
-change feed. Column comments are part of the silver `CREATE TABLE` statements.
+change feed. EPSS ships already typed CSV files, so its loader writes the typed
+`epss_scores_history` table directly (see [EPSS](#first-epss-exploit-prediction-scoring-system)).
+Column comments are part of the silver `CREATE TABLE` statements.
 
 ## Deployment
 
@@ -40,6 +43,7 @@ Bundle variables (`resources/variables.yml`):
 | `volume` | `reference` | Scratch Volume for staging files and streaming checkpoints |
 | `schedule` | `0 0 */6 * * ?` | Default Quartz cron schedule of the periodic jobs |
 | `cve_v5_schedule`, `ghsa_schedule`, `osv_schedule`, `kev_schedule` | `${var.schedule}` | Per-source schedule override |
+| `epss_schedule` | `0 0 15 * * ?` | Schedule of the EPSS job (daily, after the ~13:30 UTC publication) |
 | `timezone` | `UTC` | Time zone of the schedules |
 | `pause_status` | `UNPAUSED` | `PAUSED` or `UNPAUSED`; the `dev` target sets `PAUSED` |
 
@@ -58,6 +62,13 @@ databricks bundle run vuln_cve_v5_initial_load -t <target> --profile <profile>
 databricks bundle run vuln_osv_initial_load -t <target> --profile <profile>
 ```
 
+For the EPSS score history since 2021, run the EPSS backfill once (the periodic job
+only looks back `lookback_days`, 14 by default):
+
+```sh
+databricks bundle run vuln_epss_initial_load -t <target> --profile <profile>
+```
+
 GHSA and KEV always load a full snapshot, so their periodic jobs need no preparation.
 Full loads are idempotent `MERGE`s and safe to re-run, but don't run an initial-load
 job while the matching periodic job is running (pause the periodic job first).
@@ -72,6 +83,8 @@ job while the matching periodic job is running (pause the periodic job first).
 | `vuln_osv_initial_load` | `full_load` → `silver` | none |
 | `vuln_ghsa` | `load` → `silver` | `ghsa_schedule` |
 | `vuln_kev` | `load` → `silver` | `kev_schedule` |
+| `vuln_epss` | `load` → `current` | `epss_schedule` |
+| `vuln_epss_initial_load` | `load` → `current` | none |
 
 All settings are job parameters (no config files); defaults are in the job YAML files
 and can be changed per run. Every job has `catalog`, `schema` and `volume`; besides
@@ -81,6 +94,7 @@ those:
 - GHSA: `tarball_url`, `part_records` (20000).
 - OSV: `bucket_url`, `full_reload_threshold` (100000), `watermark_overlap_hours` (6), `fetch_threads` (32), `min_snapshot_ratio` (0.9), `part_records` (20000).
 - KEV: `catalog_url`.
+- EPSS: `base_url`, `lookback_days` (14; 3000 in the initial-load job), `batch_days` (90), `fetch_threads` (8), `min_snapshot_ratio` (0.9).
 
 The incremental loaders set the task value `needs_full_load`. When it is `true`
 (too many changes, or for CVE v5 also no watermark yet or a gap in `deltaLog.json`),
@@ -238,6 +252,57 @@ Notes:
 - `LEFT JOIN kev_vulnerabilities` onto any CVE-keyed table on `cve_id` and treat a
   non-NULL match (with `date_removed IS NULL`) as "known-exploited".
 
+## FIRST EPSS (Exploit Prediction Scoring System)
+
+[EPSS](https://www.first.org/epss/) estimates, for every published CVE, the
+probability that it is exploited in the wild in the next 30 days. KEV says "is being
+exploited"; EPSS says "how likely it is to be", for all CVEs, recomputed daily.
+
+- `epss_scores_history` — one row per CVE per day since 2021-04-14: `cve_id`,
+  `score_date`, `epss`, `percentile`, `model_version`. Clustered by `(score_date, cve_id)`.
+- `epss_scores` — the newest day only, one row per scored CVE. Change Data Feed on.
+- `epss_fetch_log` — one row per load run (dates missing/loaded, model version, rows).
+
+Data facts (checked 2026-11-04):
+
+- One gzip CSV per day, `epss_scores-YYYY-MM-DD.csv.gz` (~2.8 MB, ~400K CVEs today),
+  published around 13:30 UTC on `https://epss.empiricalsecurity.com` (S3 behind
+  CloudFront; `epss_scores-current.csv.gz` redirects to the newest file). The same
+  files, history included, are in the GitHub repository
+  [empiricalsec/epss_scores](https://github.com/empiricalsec/epss_scores); the loader
+  uses the CDN to stay clear of GitHub's rate limits for unauthenticated downloads.
+- Three formats: `cve,epss` (until 2021-08), `cve,epss,percentile` (from 2021-09), and
+  since 2022-02-04 a first line `#model_version:<v>,score_date:<ts>`. From 2022-02-04
+  to 2025-03-16 that line is a separate gzip member (a multi-member gzip file).
+- A date that is not published yet answers HTTP 403 (S3 for a missing key).
+- Scores shift sharply on model changes: v2 (`v2022.01.01`) from 2022-02-04, v3
+  (`v2023.03.01`) from 2023-03-07, v4 (`v2025.03.14`) from 2025-03-17; the current model is
+  `v2026.06.15`. The repository's `beta_scores/` (EPSS v5 beta) is not loaded.
+- Every CVE can change score every day, so most rows change daily; there is no
+  per-record modified time.
+
+**Load** (`load` task) lists the dates in the last `lookback_days` (not before
+2021-04-14) that are missing from `epss_scores_history`, downloads their files in
+parallel to the Volume, `batch_days` dates at a time, and writes each batch with
+`replaceWhere score_date IN (<dates>)`. A date that is not published yet is skipped and
+loaded by a later run, so gaps fill themselves. The initial-load job is the same
+notebook with `lookback_days=3000`; if it fails midway, a re-run loads only the dates
+still missing. The column layout of every file is validated before loading.
+
+**Current** (`current` task) `MERGE`s the newest score date of the history into
+`epss_scores` on `cve_id` and deletes CVEs no longer scored (mostly REJECTED CVEs; the
+history keeps them). It refuses to merge a day with fewer than `min_snapshot_ratio` of
+the current rows.
+
+Notes:
+
+- `percentile` is NULL before 2021-09 and `model_version` is NULL before 2022-02-04
+  (EPSS v1 files had no version line).
+- Compare scores across `model_version` changes with care; for trends, compare days
+  with the same `model_version`.
+- `LEFT JOIN epss_scores` on `cve_id` to rank CVE, package or product findings, e.g.
+  `epss >= 0.1` or `percentile >= 0.95`, and combine with `kev_vulnerabilities`.
+
 ## Layout
 
 ```
@@ -252,11 +317,12 @@ src/common/
   merge.py                      dedupe before MERGE, last change per key from CDF
   fetch_log.py                  fetch-log rows and incremental watermarks
   silver.py                     generic raw CDF -> silver streaming MERGE
-src/<source>/                   cve_v5, ghsa, osv, kev
+src/<source>/                   cve_v5, ghsa, osv, kev, epss
   helpers.py                    pure Python / raw-table id columns
   transform.py                  raw VARIANT -> typed silver columns
   *load*.py, Load *.py          loader notebooks
-  * Silver Transform.py         silver notebook (CREATE TABLE with comments + sync)
+  * Silver Transform.py         silver notebook (CREATE TABLE with comments + sync);
+                                EPSS: EPSS Current Scores.py (newest day of the history)
 tests/                          pytest + pytest-spark unit tests and sample records
 ```
 

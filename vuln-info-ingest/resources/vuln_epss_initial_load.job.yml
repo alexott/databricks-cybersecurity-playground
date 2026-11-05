@@ -1,0 +1,32 @@
+resources:
+  jobs:
+    vuln_epss_initial_load:
+      name: vuln_epss_initial_load
+      description: One-time backfill of the FIRST EPSS daily scores since 2021-04-14; resumes from missing dates, safe to re-run
+      max_concurrent_runs: 1
+      parameters:
+        - name: catalog
+          default: ${var.catalog}
+        - name: schema
+          default: ${var.schema}
+        - name: volume
+          default: ${resources.volumes.reference.name}
+        - name: base_url
+          default: https://epss.empiricalsecurity.com
+        - name: lookback_days
+          default: "3000"
+        - name: batch_days
+          default: "90"
+        - name: fetch_threads
+          default: "8"
+        - name: min_snapshot_ratio
+          default: "0.9"
+      tasks:
+        - task_key: load
+          notebook_task:
+            notebook_path: "../src/epss/Load scores.py"
+        - task_key: current
+          depends_on:
+            - task_key: load
+          notebook_task:
+            notebook_path: "../src/epss/EPSS Current Scores.py"

@@ -21,6 +21,9 @@ variables:
   kev_schedule:
     description: Schedule of the KEV job
     default: ${var.schedule}
+  epss_schedule:
+    description: Schedule of the EPSS job (scores are published daily around 13:30 UTC)
+    default: "0 0 15 * * ?"
   timezone:
     description: Time zone of the schedules
     default: UTC

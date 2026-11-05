@@ -1,0 +1,36 @@
+resources:
+  jobs:
+    vuln_epss:
+      name: vuln_epss
+      description: Load the daily FIRST EPSS scores into epss_scores_history and epss_scores
+      max_concurrent_runs: 1
+      schedule:
+        quartz_cron_expression: ${var.epss_schedule}
+        timezone_id: ${var.timezone}
+        pause_status: ${var.pause_status}
+      parameters:
+        - name: catalog
+          default: ${var.catalog}
+        - name: schema
+          default: ${var.schema}
+        - name: volume
+          default: ${resources.volumes.reference.name}
+        - name: base_url
+          default: https://epss.empiricalsecurity.com
+        - name: lookback_days
+          default: "14"
+        - name: batch_days
+          default: "90"
+        - name: fetch_threads
+          default: "8"
+        - name: min_snapshot_ratio
+          default: "0.9"
+      tasks:
+        - task_key: load
+          notebook_task:
+            notebook_path: "../src/epss/Load scores.py"
+        - task_key: current
+          depends_on:
+            - task_key: load
+          notebook_task:
+            notebook_path: "../src/epss/EPSS Current Scores.py"
