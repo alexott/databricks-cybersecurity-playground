@@ -10,12 +10,19 @@ with periodic [Lakeflow Jobs](https://docs.databricks.com/aws/en/jobs/), deploye
 | [GitHub Advisory Database](https://github.com/github/advisory-database) | `github_advisories` | Package-level dependency edges (ecosystem, package, version range) |
 | [OSV](https://google.github.io/osv.dev/data/) | `osv_vulnerabilities` | Superset of GHSA: PyPI, Go, RustSec, npm malware, Linux distros, ... |
 | [CISA KEV](https://www.cisa.gov/known-exploited-vulnerabilities-catalog) | `kev_vulnerabilities` | "Actively exploited in the wild" signal |
+| [FIRST EPSS](https://www.first.org/epss/) | `epss_scores`, `epss_scores_history` | Daily probability of exploitation in the next 30 days |
+| [MITRE CWE](https://cwe.mitre.org/) | `cwe_entries` | Weakness names, hierarchy, CAPEC attack patterns for the CWE ids of the other tables |
+| [CAPEC](https://capec.mitre.org/) + [ATT&CK](https://attack.mitre.org/) | `cwe_capec_attack` | CWE → CAPEC → ATT&CK technique edges (one-time build) |
+| [MITRE ATT&CK](https://attack.mitre.org/) | `attack_objects`, `attack_relationships` (+ views) | Techniques, tactics, groups, software, mitigations and how they relate |
+| [MITRE ATLAS](https://atlas.mitre.org/) | `atlas_objects`, `atlas_relationships` (+ views) | ATT&CK-style matrix of attacks on AI systems, with case studies |
 
-All silver tables carry `cve_id`, the join key between them. Every source has a
-`<source>_raw` table (one row per record with the original JSON as `VARIANT` plus
+All silver tables carry `cve_id`, the join key between them. Every source except EPSS
+has a `<source>_raw` table (one row per record with the original JSON as `VARIANT` plus
 id columns, Change Data Feed on) and a `<source>_fetch_log` table (one row per load
 run). The silver tables are kept in sync from the raw tables by streaming their
-change feed. Column comments are part of the silver `CREATE TABLE` statements.
+change feed. EPSS ships already typed CSV files, so its loader writes the typed
+`epss_scores_history` table directly (see [EPSS](#first-epss-exploit-prediction-scoring-system)).
+Column comments are part of the silver `CREATE TABLE` statements.
 
 ## Deployment
 
@@ -40,6 +47,12 @@ Bundle variables (`resources/variables.yml`):
 | `volume` | `reference` | Scratch Volume for staging files and streaming checkpoints |
 | `schedule` | `0 0 */6 * * ?` | Default Quartz cron schedule of the periodic jobs |
 | `cve_v5_schedule`, `ghsa_schedule`, `osv_schedule`, `kev_schedule` | `${var.schedule}` | Per-source schedule override |
+| `epss_schedule` | `0 0 15 * * ?` | Schedule of the EPSS job (daily, after the ~13:30 UTC publication) |
+| `cwe_schedule` | `0 0 4 ? * MON` | Schedule of the CWE job (weekly; the catalog is released a few times a year) |
+| `attack_version` | `latest` | ATT&CK version of the ATT&CK and `cwe_capec_attack` jobs, e.g. `19.1` to pin |
+| `atlas_version` | `latest` | ATLAS release of the ATLAS job, e.g. `2026.10` to pin |
+| `atlas_schedule` | `0 0 5 ? * MON` | Schedule of the ATLAS job (weekly; ATLAS is released about monthly) |
+| `attack_schedule` | `0 30 4 ? * MON` | Schedule of the ATT&CK job (weekly; ATT&CK is released about twice a year) |
 | `timezone` | `UTC` | Time zone of the schedules |
 | `pause_status` | `UNPAUSED` | `PAUSED` or `UNPAUSED`; the `dev` target sets `PAUSED` |
 
@@ -58,7 +71,20 @@ databricks bundle run vuln_cve_v5_initial_load -t <target> --profile <profile>
 databricks bundle run vuln_osv_initial_load -t <target> --profile <profile>
 ```
 
-GHSA and KEV always load a full snapshot, so their periodic jobs need no preparation.
+To build the `cwe_capec_attack` edge table, run its one-time job:
+
+```sh
+databricks bundle run vuln_cwe_capec_attack -t <target> --profile <profile>
+```
+
+For the EPSS score history since 2021, run the EPSS backfill once (the periodic job
+only looks back `lookback_days`, 14 by default):
+
+```sh
+databricks bundle run vuln_epss_initial_load -t <target> --profile <profile>
+```
+
+GHSA, KEV, CWE, ATT&CK and ATLAS always load a full snapshot, so their periodic jobs need no preparation.
 Full loads are idempotent `MERGE`s and safe to re-run, but don't run an initial-load
 job while the matching periodic job is running (pause the periodic job first).
 
@@ -72,6 +98,12 @@ job while the matching periodic job is running (pause the periodic job first).
 | `vuln_osv_initial_load` | `full_load` → `silver` | none |
 | `vuln_ghsa` | `load` → `silver` | `ghsa_schedule` |
 | `vuln_kev` | `load` → `silver` | `kev_schedule` |
+| `vuln_epss` | `load` → `current` | `epss_schedule` |
+| `vuln_epss_initial_load` | `load` → `current` | none |
+| `vuln_cwe` | `load` → `silver` | `cwe_schedule` |
+| `vuln_cwe_capec_attack` | `build` | none |
+| `vuln_attack` | `load` → `silver` | `attack_schedule` |
+| `vuln_atlas` | `load` → `silver` | `atlas_schedule` |
 
 All settings are job parameters (no config files); defaults are in the job YAML files
 and can be changed per run. Every job has `catalog`, `schema` and `volume`; besides
@@ -81,6 +113,11 @@ those:
 - GHSA: `tarball_url`, `part_records` (20000).
 - OSV: `bucket_url`, `full_reload_threshold` (100000), `watermark_overlap_hours` (6), `fetch_threads` (32), `min_snapshot_ratio` (0.9), `part_records` (20000).
 - KEV: `catalog_url`.
+- CWE: `catalog_url`.
+- ATT&CK: `index_url`, `domains` (`enterprise-attack,mobile-attack,ics-attack`), `attack_version` (`${var.attack_version}`).
+- ATLAS: `manifest_url`, `atlas_version` (`${var.atlas_version}`).
+- CWE → CAPEC → ATT&CK: `capec_url`, `index_url`, `attack_version` (`${var.attack_version}`); no `volume`.
+- EPSS: `base_url`, `lookback_days` (14; 3000 in the initial-load job), `batch_days` (90), `fetch_threads` (8), `min_snapshot_ratio` (0.9).
 
 The incremental loaders set the task value `needs_full_load`. When it is `true`
 (too many changes, or for CVE v5 also no watermark yet or a gap in `deltaLog.json`),
@@ -238,6 +275,225 @@ Notes:
 - `LEFT JOIN kev_vulnerabilities` onto any CVE-keyed table on `cve_id` and treat a
   non-NULL match (with `date_removed IS NULL`) as "known-exploited".
 
+## FIRST EPSS (Exploit Prediction Scoring System)
+
+[EPSS](https://www.first.org/epss/) estimates, for every published CVE, the
+probability that it is exploited in the wild in the next 30 days. KEV says "is being
+exploited"; EPSS says "how likely it is to be", for all CVEs, recomputed daily.
+
+- `epss_scores_history` — one row per CVE per day since 2021-04-14: `cve_id`,
+  `score_date`, `epss`, `percentile`, `model_version`. Clustered by `(score_date, cve_id)`.
+- `epss_scores` — the newest day only, one row per scored CVE. Change Data Feed on.
+- `epss_fetch_log` — one row per load run (dates missing/loaded, model version, rows).
+
+Data facts (checked 2026-11-04):
+
+- One gzip CSV per day, `epss_scores-YYYY-MM-DD.csv.gz` (~2.8 MB, ~400K CVEs today),
+  published around 13:30 UTC on `https://epss.empiricalsecurity.com` (S3 behind
+  CloudFront; `epss_scores-current.csv.gz` redirects to the newest file). The same
+  files, history included, are in the GitHub repository
+  [empiricalsec/epss_scores](https://github.com/empiricalsec/epss_scores); the loader
+  uses the CDN to stay clear of GitHub's rate limits for unauthenticated downloads.
+- Three formats: `cve,epss` (until 2021-08), `cve,epss,percentile` (from 2021-09), and
+  since 2022-02-04 a first line `#model_version:<v>,score_date:<ts>`. From 2022-02-04
+  to 2025-03-16 that line is a separate gzip member (a multi-member gzip file).
+- A date that is not published yet answers HTTP 403 (S3 for a missing key).
+- Scores shift sharply on model changes: v2 (`v2022.01.01`) from 2022-02-04, v3
+  (`v2023.03.01`) from 2023-03-07, v4 (`v2025.03.14`) from 2025-03-17; the current model is
+  `v2026.06.15`. The repository's `beta_scores/` (EPSS v5 beta) is not loaded.
+- Every CVE can change score every day, so most rows change daily; there is no
+  per-record modified time.
+
+**Load** (`load` task) lists the dates in the last `lookback_days` (not before
+2021-04-14) that are missing from `epss_scores_history`, downloads their files in
+parallel to the Volume, `batch_days` dates at a time, and writes each batch with
+`replaceWhere score_date IN (<dates>)`. A date that is not published yet is skipped and
+loaded by a later run, so gaps fill themselves. The initial-load job is the same
+notebook with `lookback_days=3000`; if it fails midway, a re-run loads only the dates
+still missing. The column layout of every file is validated before loading.
+
+**Current** (`current` task) `MERGE`s the newest score date of the history into
+`epss_scores` on `cve_id` and deletes CVEs no longer scored (mostly REJECTED CVEs; the
+history keeps them). It refuses to merge a day with fewer than `min_snapshot_ratio` of
+the current rows.
+
+Notes:
+
+- `percentile` is NULL before 2021-09 and `model_version` is NULL before 2022-02-04
+  (EPSS v1 files had no version line).
+- Compare scores across `model_version` changes with care; for trends, compare days
+  with the same `model_version`.
+- `LEFT JOIN epss_scores` on `cve_id` to rank CVE, package or product findings, e.g.
+  `epss >= 0.1` or `percentile >= 0.95`, and combine with `kev_vulnerabilities`.
+
+## MITRE CWE (Common Weakness Enumeration)
+
+[CWE](https://cwe.mitre.org/) is the catalog behind the `cwe_ids` / `cwes` columns of
+the other tables. `cwe_entries` gives them names, descriptions, the weakness hierarchy,
+MITRE's mapping guidance and the CAPEC attack patterns that exploit them.
+
+- `cwe_raw` — one row per CWE id: `raw` VARIANT (JSON rendering of the XML entry) +
+  `cwe_id`, `entry_type`, `catalog_version`, `catalog_date`, and the soft-delete
+  marker `date_removed`. Change Data Feed on.
+- `cwe_entries` — typed silver, kept in sync from `cwe_raw`.
+- `cwe_fetch_log` — one row per load run (catalog version and date, counts).
+
+Data facts (checked 2026-11-05):
+
+- The catalog is one zipped XML file, `cwec_latest.xml.zip` (~2 MB, ~19 MB unzipped).
+  CWE 5.0 (2026-10-28) uses schema v8, which renamed Categories to **Groupings**.
+- 1,477 entries: 984 weaknesses, 431 groupings, 62 views. CWE ids are unique across
+  the three kinds, and ids are not removed: obsolete entries stay with status
+  `Deprecated` or `Obsolete`.
+- In `cves_v5` (2026-11), 99.4% of the CWE references are weaknesses, 0.6% are
+  groupings, and a handful are views — so all three kinds are loaded.
+- New releases come a few times a year; entries have no reliable per-record modified
+  time.
+
+The loader downloads the zip to memory and converts every entry to JSON: attributes
+and child elements become object keys, elements the CWE schema allows to repeat are
+always arrays (so every VARIANT path has one type), and XHTML text (paragraphs, lists,
+code) is rendered to plain text. It stages one JSON line per entry on the Volume and
+`MERGE`s into `cwe_raw` on `cwe_id`, KEV-style: the catalog version is the freshness
+token, and ids absent from the snapshot are soft-deleted with `date_removed`.
+
+Notes:
+
+- Filter `status NOT IN ('Deprecated', 'Obsolete')` for current entries;
+  `mapping_usage` says whether CVEs should be mapped to the entry (`Allowed`,
+  `Allowed-with-Review`, `Discouraged`, `Prohibited` — groupings and views are
+  `Prohibited`).
+- `related_weaknesses` holds the CWE graph; `view_id = 'CWE-1000'` with
+  `nature = 'ChildOf'` is the research hierarchy, `ordinal = 'Primary'` the main parent.
+- `related_capec_ids` links weaknesses to CAPEC attack patterns; `observed_examples`
+  references real CVEs.
+- `raw` keeps the fields not flattened (mitigations, detection methods, demonstrative
+  examples, taxonomy mappings, references). The order between different tags is not
+  kept, e.g. the interleaved `Body_Text` / `Example_Code` of a demonstrative example.
+
+### CWE → CAPEC → ATT&CK edges
+
+`cwe_capec_attack` links weaknesses to attacker behavior. Each row is one edge
+(`src_type`, `src_id`, `rel`, `dst_type`, `dst_id`, `dst_name`, `source_version`):
+
+- `CWE` → `related_attack_pattern` → `CAPEC`: the CAPEC attack patterns that exploit a
+  weakness (`Related_Weaknesses` of each CAPEC attack pattern; 1,212 edges).
+- `CAPEC` → `maps_to_technique` → `technique`: the ATT&CK techniques of an attack
+  pattern (its `ATTACK` taxonomy mappings; 270 edges), named from the Enterprise
+  ATT&CK STIX bundle of the `attack_version` bundle variable (the same as the ATT&CK job).
+
+The `vuln_cwe_capec_attack` job downloads both files and rebuilds the table with
+`CREATE OR REPLACE`. It has no schedule: CAPEC has not been released since 3.9
+(2023-01-24). Re-run it after a CAPEC release or to move to another ATT&CK version
+(ATT&CK 19.1 and 20.0 give the same edges today). With `attack_version=latest` a
+later rebuild can pick up renamed techniques; `source_version` records the versions used.
+
+Notes:
+
+- Mappings to techniques that are not in Enterprise ATT&CK are dropped (CAPEC-648 →
+  T1513, a Mobile technique); duplicate edges in CAPEC are dropped.
+- CAPEC 3.9 maps to 14 technique ids that ATT&CK has since revoked (e.g. `T1562.002`);
+  they are kept with their ATT&CK name.
+- From a CVE to techniques: explode `cves_v5.cwe_ids`, join `src_id` of the CWE edges,
+  then join their `dst_id` to `src_id` of the CAPEC edges.
+
+## MITRE ATT&CK
+
+[ATT&CK](https://attack.mitre.org/) describes adversary behavior: tactics, techniques,
+the groups and software that use them, and mitigations. It is loaded from MITRE's
+[attack-stix-data](https://github.com/mitre-attack/attack-stix-data) (STIX 2.1).
+
+- `attack_raw` — one row per STIX object: `raw` VARIANT + `stix_id`, `type`,
+  `attack_id` (T1059, G0016, S0154, ...), `modified`, `attack_version`, and the
+  soft-delete marker `date_removed`. Change Data Feed on.
+- `attack_objects` — typed silver for every object except relationships, kept in sync
+  from `attack_raw`.
+- `attack_relationships` — typed silver for the relationship objects, from the same
+  change feed.
+- Views over the silver tables: `attack_techniques`, `attack_tactics`, `attack_groups`,
+  `attack_software`, `attack_mitigations`, `attack_campaigns`, and
+  `attack_relationships_resolved` (source and target as ATT&CK ids and names).
+- `attack_fetch_log` — one row per load run (domains, versions, counts).
+
+Data facts (checked 2026-11-05, ATT&CK 20.0, released 2026-10-13):
+
+- One STIX bundle per domain: Enterprise (~55 MB, 26,690 objects), Mobile (~6 MB,
+  2,684), ICS (~5 MB, 2,566). `index.json` lists every version of each domain.
+- Groups, software, data sources and some relationships are in several domains with
+  the same STIX id and identical content; they are one row, `domains` lists the
+  domains. All domains together are ~31.7K objects.
+- Enterprise has 21,819 relationships: `uses` (groups, software and campaigns →
+  techniques and software), `mitigates`, `detects`, `subtechnique-of`, `revoked-by`,
+  `attributed-to`.
+- Revoked and deprecated objects stay in the bundles with `revoked` /
+  `x_mitre_deprecated` set (149 revoked Enterprise techniques).
+
+The loader resolves the versions in `index.json` (`attack_version=latest` or a pinned
+version) and stops if the fetch log already has them. Otherwise it downloads the
+bundles, keeps one object per STIX id, stages one JSON line per object on the Volume,
+and `MERGE`s into `attack_raw` on `stix_id`: update when `modified` advanced, insert
+new objects, soft-delete objects that are no longer in the bundles.
+
+Notes:
+
+- Because updates are gated by `modified`, pinning an older version does not roll
+  rows back; drop the tables (and the `attack_checkpoints` directory) to reload one.
+  Removing a domain from `domains` soft-deletes its objects.
+- Filter `NOT revoked AND NOT deprecated` for the current matrix; a revoked object's
+  replacement is its `revoked-by` relationship.
+- `attack_techniques.technique_id` joins to `cwe_capec_attack.dst_id`. That job
+  downloads the Enterprise bundle itself (the same `attack_version`) and does not need
+  these tables.
+- The `attack_version` bundle variable sets the version of both jobs, e.g.
+  `--var attack_version=19.1` to pin.
+
+## MITRE ATLAS
+
+[ATLAS](https://atlas.mitre.org/) (Adversarial Threat Landscape for AI Systems) is an
+ATT&CK-style knowledge base of attacks on AI and ML systems, with case studies of
+real incidents and exercises. It is loaded from MITRE's
+[atlas-data](https://github.com/mitre-atlas/atlas-data) releases.
+
+- `atlas_raw` — one row per object and per relationship: `raw` VARIANT + `atlas_id`,
+  `object_type`, `modified`, `content_hash`, `atlas_release`, and the soft-delete
+  marker `date_removed`. Change Data Feed on.
+- `atlas_objects` — typed silver for tactics, techniques, mitigations, case studies,
+  entities, software and the matrix, kept in sync from `atlas_raw`.
+- `atlas_relationships` — typed silver for the relationships, from the same change feed.
+- Views: `atlas_techniques` (with parent and tactics), `atlas_tactics` (in matrix
+  order), `atlas_mitigations`, `atlas_case_studies`, `atlas_software`,
+  `atlas_entities`, `atlas_relationships_resolved`.
+- `atlas_fetch_log` — one row per load run (release, release date, counts).
+
+Data facts (checked 2026-11-05, release 2026.10 of 2026-10-28):
+
+- Releases are about monthly. `dist/manifest.yaml` lists every release with its
+  file; the current format is 6 (`dist/v6/ATLAS-<release>.yaml`, ~1.1 MB, format
+  6.1.0 since 2026.10).
+- 2026.10 has 16 tactics, 221 techniques (incl. sub-techniques), 44 mitigations,
+  77 case studies, 44 entities, 37 software and 1,750 relationships.
+- Objects are keyed by ATLAS id (`AML.T0000`, `AML.T0000.003`, `AML.CS0002`, ...) and
+  have created / modified dates. Relationships have neither an id nor a date; their
+  key is `<source>|<type>|<target>|<step-id>` and changes are detected with a content
+  hash. Technique tactics and parents are relationships (`achieves`, `specializes`).
+- The STIX bundle in `atlas-navigator-data` and the format-5 `dist/ATLAS.yaml` lag
+  behind (170 techniques), so the loader reads the format-6 YAML.
+
+The loader resolves the release in the manifest (`atlas_version=latest` or pinned)
+and stops if the fetch log already has it. Otherwise it downloads the release YAML,
+flattens it into one record per object and relationship, stages them on the Volume,
+and `MERGE`s into `atlas_raw` on `atlas_id`: update when the content hash changed,
+insert new records, soft-delete records that are no longer in the release.
+
+Notes:
+
+- `attack_id` is the corresponding ATT&CK object (`attack-reference`), e.g. `T1596`
+  for `AML.T0000`; join it to `attack_objects.attack_id` / `attack_techniques`.
+- Case-study procedures are `employs` relationships, one row per step (`step_id`,
+  `tactic_id`, `leads_to`).
+- Pinning an older release overwrites changed rows with the older content (changes
+  are detected by hash, not date).
+
 ## Layout
 
 ```
@@ -252,11 +508,12 @@ src/common/
   merge.py                      dedupe before MERGE, last change per key from CDF
   fetch_log.py                  fetch-log rows and incremental watermarks
   silver.py                     generic raw CDF -> silver streaming MERGE
-src/<source>/                   cve_v5, ghsa, osv, kev
+src/<source>/                   cve_v5, ghsa, osv, kev, epss, cwe, capec, attack, atlas
   helpers.py                    pure Python / raw-table id columns
   transform.py                  raw VARIANT -> typed silver columns
   *load*.py, Load *.py          loader notebooks
-  * Silver Transform.py         silver notebook (CREATE TABLE with comments + sync)
+  * Silver Transform.py         silver notebook (CREATE TABLE with comments + sync);
+                                EPSS: EPSS Current Scores.py (newest day of the history)
 tests/                          pytest + pytest-spark unit tests and sample records
 ```
 

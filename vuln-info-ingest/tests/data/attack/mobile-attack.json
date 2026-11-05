@@ -1,0 +1,121 @@
+{
+ "type": "bundle",
+ "id": "bundle--mobile-attack",
+ "objects": [
+  {
+   "type": "x-mitre-collection",
+   "id": "x-mitre-collection--dac0d2d7-8653-445c-9bff-82f934c1e858",
+   "spec_version": "2.1",
+   "name": "Mobile ATT&CK",
+   "x_mitre_version": "20.0",
+   "created": "2026-08-04T20:31:11.297Z",
+   "modified": "2026-10-13T17:54:40.393Z"
+  },
+  {
+   "type": "intrusion-set",
+   "spec_version": "2.1",
+   "id": "intrusion-set--0ec2f388-bf0f-4b5c-97b1-fc736d26c25f",
+   "created": "2019-08-26T15:03:02.577Z",
+   "created_by_ref": "identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5",
+   "revoked": false,
+   "external_references": [
+    {
+     "source_name": "mitre-attack",
+     "url": "https://attack.mitre.org/groups/G0094",
+     "external_id": "G0094"
+    },
+    {
+     "source_name": "Cloudflare 2026 Threat Report New Threat Actors March 2026",
+     "description": " Cloudflare. (2026, March 3). Introducing the 2026 Cloudflare Threat Report. Retrieved April 18, 2026.",
+     "url": "https://blog.cloudflare.com/2026-threat-report/"
+    }
+   ],
+   "object_marking_refs": [
+    "marking-definition--fa42a846-8d90-4e51-bc29-71d5b4802168"
+   ],
+   "modified": "2026-07-31T20:48:24.117Z",
+   "name": "Kimsuky",
+   "description": "[Kimsuky](https://attack.mitre.org/groups/G0094) is a Democratic People's Republic of Korea (DPRK)-based cyber espionage group that has been active since at lea",
+   "aliases": [
+    "Kimsuky",
+    "Black Banshee",
+    "Velvet Chollima",
+    "Emerald Sleet",
+    "THALLIUM",
+    "APT43",
+    "TA427",
+    "Springtail",
+    "Earth Kumiho",
+    "PatheticSlug"
+   ],
+   "x_mitre_modified_by_ref": "identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5",
+   "x_mitre_deprecated": false,
+   "x_mitre_domains": [
+    "enterprise-attack",
+    "mobile-attack"
+   ],
+   "x_mitre_version": "5.2",
+   "x_mitre_attack_spec_version": "3.3.0",
+   "x_mitre_contributors": [
+    "Dongwook Kim, KISA",
+    "Jaesang Oh, KC7 Foundation",
+    "Taewoo Lee, KISA",
+    "Wai Linn Oo, Kernellix Co.,Ltd."
+   ]
+  },
+  {
+   "type": "attack-pattern",
+   "spec_version": "2.1",
+   "id": "attack-pattern--00290ac5-551e-44aa-bbd8-c4b913488a6d",
+   "created": "2020-11-04T16:43:31.619Z",
+   "created_by_ref": "identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5",
+   "revoked": false,
+   "external_references": [
+    {
+     "source_name": "mitre-attack",
+     "url": "https://attack.mitre.org/techniques/T1603",
+     "external_id": "T1603"
+    },
+    {
+     "source_name": "Apple NSBackgroundActivityScheduler",
+     "description": "Apple. (n.d.). NSBackgroundActivityScheduler. Retrieved November 4, 2020.",
+     "url": "https://developer.apple.com/documentation/foundation/nsbackgroundactivityscheduler"
+    }
+   ],
+   "object_marking_refs": [
+    "marking-definition--fa42a846-8d90-4e51-bc29-71d5b4802168"
+   ],
+   "modified": "2025-10-24T17:48:18.936Z",
+   "name": "Scheduled Task/Job",
+   "description": "Adversaries may abuse task scheduling functionality to facilitate initial or recurring execution of malicious code. On Android and iOS, APIs and libraries exist",
+   "kill_chain_phases": [
+    {
+     "kill_chain_name": "mitre-mobile-attack",
+     "phase_name": "execution"
+    },
+    {
+     "kill_chain_name": "mitre-mobile-attack",
+     "phase_name": "persistence"
+    }
+   ],
+   "x_mitre_attack_spec_version": "3.3.0",
+   "x_mitre_contributors": [
+    "Lorin Wu, Trend Micro"
+   ],
+   "x_mitre_deprecated": false,
+   "x_mitre_domains": [
+    "mobile-attack"
+   ],
+   "x_mitre_is_subtechnique": false,
+   "x_mitre_modified_by_ref": "identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5",
+   "x_mitre_platforms": [
+    "Android",
+    "iOS"
+   ],
+   "x_mitre_version": "1.0",
+   "x_mitre_tactic_type": [
+    "Post-Adversary Device Access"
+   ]
+  }
+ ]
+}

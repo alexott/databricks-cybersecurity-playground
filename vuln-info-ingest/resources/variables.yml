@@ -21,6 +21,24 @@ variables:
   kev_schedule:
     description: Schedule of the KEV job
     default: ${var.schedule}
+  epss_schedule:
+    description: Schedule of the EPSS job (scores are published daily around 13:30 UTC)
+    default: "0 0 15 * * ?"
+  cwe_schedule:
+    description: Schedule of the CWE job (the catalog is released a few times a year)
+    default: "0 0 4 ? * MON"
+  attack_version:
+    description: ATT&CK version of the ATT&CK and cwe_capec_attack jobs, 'latest' or e.g. '19.1'
+    default: latest
+  attack_schedule:
+    description: Schedule of the ATT&CK job (ATT&CK is released about twice a year)
+    default: "0 30 4 ? * MON"
+  atlas_version:
+    description: ATLAS release of the ATLAS job, 'latest' or e.g. '2026.10'
+    default: latest
+  atlas_schedule:
+    description: Schedule of the ATLAS job (ATLAS is released about monthly)
+    default: "0 0 5 ? * MON"
   timezone:
     description: Time zone of the schedules
     default: UTC

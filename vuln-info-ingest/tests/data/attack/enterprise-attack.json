@@ -1,0 +1,560 @@
+{
+ "type": "bundle",
+ "id": "bundle--enterprise-attack",
+ "objects": [
+  {
+   "type": "x-mitre-collection",
+   "id": "x-mitre-collection--1f5f1533-f617-4ca8-9ab4-6a02367fa019",
+   "spec_version": "2.1",
+   "name": "Enterprise ATT&CK",
+   "x_mitre_version": "20.0",
+   "created": "2026-08-04T20:31:11.132Z",
+   "modified": "2026-10-13T17:53:10.145Z"
+  },
+  {
+   "type": "attack-pattern",
+   "spec_version": "2.1",
+   "id": "attack-pattern--7385dfaf-6886-4229-9ecd-6fd678040830",
+   "created": "2017-05-31T21:30:49.546Z",
+   "created_by_ref": "identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5",
+   "revoked": false,
+   "external_references": [
+    {
+     "source_name": "mitre-attack",
+     "url": "https://attack.mitre.org/techniques/T1059",
+     "external_id": "T1059"
+    },
+    {
+     "source_name": "Remote Shell Execution in Python",
+     "description": "Abdou Rockikz. (2020, July). How to Execute Shell Commands in a Remote Machine in Python. Retrieved July 26, 2021.",
+     "url": "https://www.thepythoncode.com/article/executing-bash-commands-remotely-in-python"
+    }
+   ],
+   "object_marking_refs": [
+    "marking-definition--fa42a846-8d90-4e51-bc29-71d5b4802168"
+   ],
+   "modified": "2026-05-12T15:12:00.641Z",
+   "name": "Command and Scripting Interpreter",
+   "description": "Adversaries may abuse command and script interpreters to execute commands, scripts, or binaries. These interfaces and languages provide ways of interacting with",
+   "kill_chain_phases": [
+    {
+     "kill_chain_name": "mitre-attack",
+     "phase_name": "execution"
+    }
+   ],
+   "x_mitre_attack_spec_version": "3.3.0",
+   "x_mitre_deprecated": false,
+   "x_mitre_domains": [
+    "enterprise-attack"
+   ],
+   "x_mitre_is_subtechnique": false,
+   "x_mitre_modified_by_ref": "identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5",
+   "x_mitre_platforms": [
+    "Containers",
+    "ESXi",
+    "IaaS",
+    "Identity Provider",
+    "Linux",
+    "macOS",
+    "Network Devices",
+    "Office Suite",
+    "SaaS",
+    "Windows"
+   ],
+   "x_mitre_version": "2.7",
+   "x_mitre_remote_support": false
+  },
+  {
+   "type": "attack-pattern",
+   "spec_version": "2.1",
+   "id": "attack-pattern--970a3432-3237-47ad-bcca-7d8cbb217736",
+   "created": "2020-03-09T13:48:55.078Z",
+   "created_by_ref": "identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5",
+   "revoked": false,
+   "external_references": [
+    {
+     "source_name": "mitre-attack",
+     "url": "https://attack.mitre.org/techniques/T1059/001",
+     "external_id": "T1059.001"
+    },
+    {
+     "source_name": "Microsoft PSfromCsharp APR 2014",
+     "description": "Babinec, K. (2014, April 28). Executing PowerShell scripts from C#. Retrieved April 22, 2019.",
+     "url": "https://blogs.msdn.microsoft.com/kebab/2014/04/28/executing-powershell-scripts-from-c/"
+    }
+   ],
+   "object_marking_refs": [
+    "marking-definition--fa42a846-8d90-4e51-bc29-71d5b4802168"
+   ],
+   "modified": "2026-09-18T13:23:14.419Z",
+   "name": "PowerShell",
+   "description": "Adversaries may abuse PowerShell commands and scripts for execution. PowerShell is a powerful interactive command-line interface and scripting environment inclu",
+   "kill_chain_phases": [
+    {
+     "kill_chain_name": "mitre-attack",
+     "phase_name": "execution"
+    }
+   ],
+   "x_mitre_attack_spec_version": "3.3.0",
+   "x_mitre_contributors": [
+    "Mayuresh Dani, Qualys",
+    "Praetorian",
+    "Ross Brittain",
+    "Stephan H. Wenderlich, Gray-Hat IT-Security Consulting"
+   ],
+   "x_mitre_deprecated": false,
+   "x_mitre_domains": [
+    "enterprise-attack"
+   ],
+   "x_mitre_is_subtechnique": true,
+   "x_mitre_modified_by_ref": "identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5",
+   "x_mitre_platforms": [
+    "Windows",
+    "Linux",
+    "macOS"
+   ],
+   "x_mitre_version": "1.6",
+   "x_mitre_remote_support": false
+  },
+  {
+   "type": "attack-pattern",
+   "spec_version": "2.1",
+   "id": "attack-pattern--4eb28bed-d11a-4641-9863-c2ac017d910a",
+   "created": "2020-02-21T20:46:36.688Z",
+   "created_by_ref": "identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5",
+   "revoked": true,
+   "external_references": [
+    {
+     "source_name": "mitre-attack",
+     "url": "https://attack.mitre.org/techniques/T1562/002",
+     "external_id": "T1562.002"
+    },
+    {
+     "source_name": "Disable_Win_Event_Logging",
+     "description": " dmcxblue. (n.d.). Disable Windows Event Logging. Retrieved September 10, 2021.",
+     "url": "https://dmcxblue.gitbook.io/red-team-notes-2-0/red-team-techniques/defense-evasion/t1562-impair-defenses/disable-windows-event-logging"
+    }
+   ],
+   "object_marking_refs": [
+    "marking-definition--fa42a846-8d90-4e51-bc29-71d5b4802168"
+   ],
+   "modified": "2026-04-14T22:54:40.108Z",
+   "name": "Disable Windows Event Logging",
+   "description": "Adversaries may disable Windows event logging to limit data that can be leveraged for detections and audits. Windows event logs record user and system activity ",
+   "kill_chain_phases": [
+    {
+     "kill_chain_name": "mitre-attack",
+     "phase_name": "stealth"
+    }
+   ],
+   "x_mitre_attack_spec_version": "3.2.0",
+   "x_mitre_contributors": [
+    "Prasanth Sadanala, Cigna Information Protection (CIP) - Threat Response Engineering Team",
+    "Lucas Heiligenstein"
+   ],
+   "x_mitre_deprecated": false,
+   "x_mitre_domains": [
+    "enterprise-attack"
+   ],
+   "x_mitre_is_subtechnique": true,
+   "x_mitre_modified_by_ref": "identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5",
+   "x_mitre_platforms": [
+    "Windows"
+   ],
+   "x_mitre_version": "1.4"
+  },
+  {
+   "type": "x-mitre-tactic",
+   "spec_version": "2.1",
+   "id": "x-mitre-tactic--4ca45d45-df4d-4613-8980-bac22d278fa5",
+   "created": "2018-10-17T00:14:20.652Z",
+   "created_by_ref": "identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5",
+   "revoked": false,
+   "external_references": [
+    {
+     "source_name": "mitre-attack",
+     "url": "https://attack.mitre.org/tactics/TA0002",
+     "external_id": "TA0002"
+    }
+   ],
+   "object_marking_refs": [
+    "marking-definition--fa42a846-8d90-4e51-bc29-71d5b4802168"
+   ],
+   "modified": "2026-09-22T00:15:39.144Z",
+   "name": "Execution",
+   "description": "The adversary is trying to run malicious code or instructions on a system.\n\nExecution consists of techniques that result in adversary-controlled code running on",
+   "x_mitre_modified_by_ref": "identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5",
+   "x_mitre_deprecated": false,
+   "x_mitre_domains": [
+    "enterprise-attack"
+   ],
+   "x_mitre_version": "1.1",
+   "x_mitre_attack_spec_version": "3.3.0",
+   "x_mitre_shortname": "execution"
+  },
+  {
+   "type": "intrusion-set",
+   "spec_version": "2.1",
+   "id": "intrusion-set--899ce53f-13a0-479b-a0e4-67d46e241542",
+   "created": "2017-05-31T21:31:52.748Z",
+   "created_by_ref": "identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5",
+   "revoked": false,
+   "external_references": [
+    {
+     "source_name": "mitre-attack",
+     "url": "https://attack.mitre.org/groups/G0016",
+     "external_id": "G0016"
+    },
+    {
+     "source_name": "CozyDuke",
+     "description": "(Citation: Crowdstrike DNC June 2016)"
+    }
+   ],
+   "object_marking_refs": [
+    "marking-definition--fa42a846-8d90-4e51-bc29-71d5b4802168"
+   ],
+   "modified": "2026-07-31T18:48:06.517Z",
+   "name": "APT29",
+   "description": "[APT29](https://attack.mitre.org/groups/G0016) is threat group that has been attributed to Russia's Foreign Intelligence Service (SVR).(Citation: White House Im",
+   "aliases": [
+    "APT29",
+    "IRON RITUAL",
+    "IRON HEMLOCK",
+    "NobleBaron",
+    "Dark Halo",
+    "NOBELIUM",
+    "UNC2452",
+    "YTTRIUM",
+    "The Dukes",
+    "Cozy Bear",
+    "CozyDuke",
+    "SolarStorm",
+    "Blue Kitsune",
+    "UNC3524",
+    "Midnight Blizzard"
+   ],
+   "x_mitre_modified_by_ref": "identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5",
+   "x_mitre_deprecated": false,
+   "x_mitre_domains": [
+    "enterprise-attack"
+   ],
+   "x_mitre_version": "6.2",
+   "x_mitre_attack_spec_version": "3.3.0",
+   "x_mitre_contributors": [
+    "Daniyal Naeem, BT Security",
+    "Matt Brenton, Zurich Insurance Group",
+    "Katie Nickels, Red Canary",
+    "Joe Gumke, U.S. Bank",
+    "Liran Ravich, CardinalOps",
+    "Vicky Ray, RayvenX"
+   ]
+  },
+  {
+   "type": "malware",
+   "spec_version": "2.1",
+   "id": "malware--a7881f21-e978-4fe4-af56-92c9416a2616",
+   "created": "2017-12-14T16:46:06.044Z",
+   "created_by_ref": "identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5",
+   "revoked": false,
+   "external_references": [
+    {
+     "source_name": "mitre-attack",
+     "url": "https://attack.mitre.org/software/S0154",
+     "external_id": "S0154"
+    },
+    {
+     "source_name": "cobaltstrike manual",
+     "description": "Strategic Cyber LLC. (2017, March 14). Cobalt Strike Manual. Retrieved May 24, 2017.",
+     "url": "https://web.archive.org/web/20210825130434/https://cobaltstrike.com/downloads/csmanual38.pdf"
+    }
+   ],
+   "object_marking_refs": [
+    "marking-definition--fa42a846-8d90-4e51-bc29-71d5b4802168"
+   ],
+   "modified": "2026-04-23T21:14:18.712Z",
+   "name": "Cobalt Strike",
+   "description": "[Cobalt Strike](https://attack.mitre.org/software/S0154) is a commercial, full-featured, remote access tool that bills itself as \u201cadversary simulation software ",
+   "is_family": true,
+   "x_mitre_modified_by_ref": "identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5",
+   "x_mitre_platforms": [
+    "Linux",
+    "macOS",
+    "Windows"
+   ],
+   "x_mitre_deprecated": false,
+   "x_mitre_domains": [
+    "enterprise-attack"
+   ],
+   "x_mitre_version": "1.14",
+   "x_mitre_attack_spec_version": "3.3.0",
+   "x_mitre_contributors": [
+    "Josh Abraham",
+    "Martin Sohn Christensen, Improsec"
+   ],
+   "x_mitre_aliases": [
+    "Cobalt Strike"
+   ]
+  },
+  {
+   "type": "course-of-action",
+   "spec_version": "2.1",
+   "id": "course-of-action--47e0e9fe-96ce-4f65-8bb1-8be1feacb5db",
+   "created": "2019-06-11T16:35:25.488Z",
+   "created_by_ref": "identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5",
+   "revoked": false,
+   "external_references": [
+    {
+     "source_name": "mitre-attack",
+     "url": "https://attack.mitre.org/mitigations/M1038",
+     "external_id": "M1038"
+    }
+   ],
+   "object_marking_refs": [
+    "marking-definition--fa42a846-8d90-4e51-bc29-71d5b4802168"
+   ],
+   "modified": "2026-05-12T15:12:00.730Z",
+   "name": "Execution Prevention",
+   "description": "Prevent the execution of unauthorized or malicious code on systems by implementing application control, script blocking, and other execution prevention mechanis",
+   "x_mitre_modified_by_ref": "identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5",
+   "x_mitre_deprecated": false,
+   "x_mitre_domains": [
+    "enterprise-attack"
+   ],
+   "x_mitre_version": "1.3",
+   "x_mitre_attack_spec_version": "3.3.0"
+  },
+  {
+   "type": "campaign",
+   "spec_version": "2.1",
+   "id": "campaign--808d6b30-df4e-4341-8248-724da4bac650",
+   "created": "2023-03-24T14:59:26.744Z",
+   "created_by_ref": "identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5",
+   "revoked": false,
+   "external_references": [
+    {
+     "source_name": "mitre-attack",
+     "url": "https://attack.mitre.org/campaigns/C0024",
+     "external_id": "C0024"
+    },
+    {
+     "source_name": "Volexity SolarWinds",
+     "description": "Cash, D. et al. (2020, December 14). Dark Halo Leverages SolarWinds Compromise to Breach Organizations. Retrieved December 29, 2020.",
+     "url": "https://www.volexity.com/blog/2020/12/14/dark-halo-leverages-solarwinds-compromise-to-breach-organizations/"
+    }
+   ],
+   "object_marking_refs": [
+    "marking-definition--fa42a846-8d90-4e51-bc29-71d5b4802168"
+   ],
+   "modified": "2026-07-31T18:47:25.784Z",
+   "name": "SolarWinds Compromise",
+   "description": "The [SolarWinds Compromise](https://attack.mitre.org/campaigns/C0024) was a sophisticated supply chain cyber operation conducted by [APT29](https://attack.mitre",
+   "aliases": [
+    "SolarWinds Compromise"
+   ],
+   "first_seen": "2019-08-01T05:00:00.000Z",
+   "last_seen": "2021-01-01T06:00:00.000Z",
+   "x_mitre_first_seen_citation": "(Citation: Unit 42 SolarStorm December 2020)",
+   "x_mitre_last_seen_citation": "(Citation: MSTIC NOBELIUM May 2021)",
+   "x_mitre_modified_by_ref": "identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5",
+   "x_mitre_deprecated": false,
+   "x_mitre_domains": [
+    "enterprise-attack"
+   ],
+   "x_mitre_version": "1.1",
+   "x_mitre_attack_spec_version": "3.3.0"
+  },
+  {
+   "type": "attack-pattern",
+   "spec_version": "2.1",
+   "id": "attack-pattern--1411e6b8-80a6-4465-9909-54eaa9c67ce0",
+   "created": "2026-04-14T22:54:01.982Z",
+   "created_by_ref": "identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5",
+   "revoked": false,
+   "external_references": [
+    {
+     "source_name": "mitre-attack",
+     "url": "https://attack.mitre.org/techniques/T1685/001",
+     "external_id": "T1685.001"
+    },
+    {
+     "source_name": "Disable_Win_Event_Logging",
+     "description": " dmcxblue. (n.d.). Disable Windows Event Logging. Retrieved September 10, 2021.",
+     "url": "https://dmcxblue.gitbook.io/red-team-notes-2-0/red-team-techniques/defense-evasion/t1562-impair-defenses/disable-windows-event-logging"
+    }
+   ],
+   "object_marking_refs": [
+    "marking-definition--fa42a846-8d90-4e51-bc29-71d5b4802168"
+   ],
+   "modified": "2026-05-12T15:12:00.621Z",
+   "name": "Disable or Modify Windows Event Log",
+   "description": "Adversaries may disable or modify the Windows Event Log to limit data that can be leveraged for detections and audits. Windows Event Log records user and system",
+   "kill_chain_phases": [
+    {
+     "kill_chain_name": "mitre-attack",
+     "phase_name": "defense-impairment"
+    }
+   ],
+   "x_mitre_attack_spec_version": "3.3.0",
+   "x_mitre_contributors": [
+    "Lucas Heiligenstein",
+    "Prasanth Sadanala, Cigna Information Protection (CIP) - Threat Response Engineering Team"
+   ],
+   "x_mitre_deprecated": false,
+   "x_mitre_domains": [
+    "enterprise-attack"
+   ],
+   "x_mitre_is_subtechnique": true,
+   "x_mitre_modified_by_ref": "identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5",
+   "x_mitre_platforms": [
+    "Windows"
+   ],
+   "x_mitre_version": "1.0"
+  },
+  {
+   "type": "relationship",
+   "spec_version": "2.1",
+   "id": "relationship--b7dc0db4-b1fb-4235-8b49-0792e7019377",
+   "created": "2020-03-09T13:48:55.816Z",
+   "created_by_ref": "identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5",
+   "revoked": false,
+   "object_marking_refs": [
+    "marking-definition--fa42a846-8d90-4e51-bc29-71d5b4802168"
+   ],
+   "modified": "2026-04-29T14:23:06.176Z",
+   "relationship_type": "subtechnique-of",
+   "source_ref": "attack-pattern--970a3432-3237-47ad-bcca-7d8cbb217736",
+   "target_ref": "attack-pattern--7385dfaf-6886-4229-9ecd-6fd678040830",
+   "x_mitre_modified_by_ref": "identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5",
+   "x_mitre_deprecated": false,
+   "x_mitre_attack_spec_version": "3.3.0",
+   "external_references": []
+  },
+  {
+   "type": "relationship",
+   "spec_version": "2.1",
+   "id": "relationship--ff572252-3fac-45c9-a07b-f7846e590f26",
+   "created": "2026-04-14T22:54:40.115Z",
+   "created_by_ref": "identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5",
+   "revoked": false,
+   "object_marking_refs": [
+    "marking-definition--fa42a846-8d90-4e51-bc29-71d5b4802168"
+   ],
+   "modified": "2026-04-14T22:54:40.115Z",
+   "relationship_type": "revoked-by",
+   "source_ref": "attack-pattern--4eb28bed-d11a-4641-9863-c2ac017d910a",
+   "target_ref": "attack-pattern--1411e6b8-80a6-4465-9909-54eaa9c67ce0",
+   "x_mitre_modified_by_ref": "identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5",
+   "x_mitre_attack_spec_version": "3.3.0",
+   "external_references": []
+  },
+  {
+   "type": "relationship",
+   "spec_version": "2.1",
+   "id": "relationship--d9beae20-bd32-4141-95ff-053cf46e8210",
+   "created": "2020-11-06T18:40:38.501Z",
+   "created_by_ref": "identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5",
+   "revoked": false,
+   "external_references": [
+    {
+     "source_name": "ESET T3 Threat Report 2021",
+     "description": "ESET. (2022, February). THREAT REPORT T3 2021. Retrieved February 10, 2022.",
+     "url": "https://www.welivesecurity.com/wp-content/uploads/2022/02/eset_threat_report_t32021.pdf"
+    },
+    {
+     "source_name": "FireEye SUNBURST Backdoor December 2020",
+     "description": "FireEye. (2020, December 13). Highly Evasive Attacker Leverages SolarWinds Supply Chain to Compromise Multiple Global Victims With SUNBURST Backdoor. Retrieved January 4, 2021.",
+     "url": "https://www.fireeye.com/blog/threat-research/2020/12/evasive-attacker-leverages-solarwinds-supply-chain-compromises-with-sunburst-backdoor.html"
+    }
+   ],
+   "object_marking_refs": [
+    "marking-definition--fa42a846-8d90-4e51-bc29-71d5b4802168"
+   ],
+   "modified": "2026-07-31T18:48:09.072Z",
+   "description": "(Citation: FireEye SUNBURST Backdoor December 2020)(Citation: Cybersecurity Advisory SVR TTP May 2021)(Citation: MSTIC NOBELIUM May 2021)(Citation: MSTIC Nobeli",
+   "relationship_type": "uses",
+   "source_ref": "intrusion-set--899ce53f-13a0-479b-a0e4-67d46e241542",
+   "target_ref": "malware--a7881f21-e978-4fe4-af56-92c9416a2616",
+   "x_mitre_modified_by_ref": "identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5",
+   "x_mitre_deprecated": false,
+   "x_mitre_attack_spec_version": "3.3.0"
+  },
+  {
+   "type": "relationship",
+   "spec_version": "2.1",
+   "id": "relationship--87fd0088-41da-47ac-bd69-a8ac151a0d39",
+   "created": "2019-06-24T18:00:41.676Z",
+   "created_by_ref": "identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5",
+   "revoked": false,
+   "external_references": [
+    {
+     "source_name": "Microsoft PowerShell CLM",
+     "description": "PowerShell Team. (2017, November 2). PowerShell Constrained Language Mode. Retrieved March 27, 2023.",
+     "url": "https://devblogs.microsoft.com/powershell/powershell-constrained-language-mode/"
+    }
+   ],
+   "object_marking_refs": [
+    "marking-definition--fa42a846-8d90-4e51-bc29-71d5b4802168"
+   ],
+   "modified": "2026-04-29T14:23:06.111Z",
+   "description": "Use application control where appropriate. For example, PowerShell Constrained Language mode can be used to restrict access to sensitive or otherwise dangerous ",
+   "relationship_type": "mitigates",
+   "source_ref": "course-of-action--47e0e9fe-96ce-4f65-8bb1-8be1feacb5db",
+   "target_ref": "attack-pattern--7385dfaf-6886-4229-9ecd-6fd678040830",
+   "x_mitre_modified_by_ref": "identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5",
+   "x_mitre_deprecated": false,
+   "x_mitre_attack_spec_version": "3.3.0"
+  },
+  {
+   "type": "intrusion-set",
+   "spec_version": "2.1",
+   "id": "intrusion-set--0ec2f388-bf0f-4b5c-97b1-fc736d26c25f",
+   "created": "2019-08-26T15:03:02.577Z",
+   "created_by_ref": "identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5",
+   "revoked": false,
+   "external_references": [
+    {
+     "source_name": "mitre-attack",
+     "url": "https://attack.mitre.org/groups/G0094",
+     "external_id": "G0094"
+    },
+    {
+     "source_name": "Cloudflare 2026 Threat Report New Threat Actors March 2026",
+     "description": " Cloudflare. (2026, March 3). Introducing the 2026 Cloudflare Threat Report. Retrieved April 18, 2026.",
+     "url": "https://blog.cloudflare.com/2026-threat-report/"
+    }
+   ],
+   "object_marking_refs": [
+    "marking-definition--fa42a846-8d90-4e51-bc29-71d5b4802168"
+   ],
+   "modified": "2026-07-31T20:48:24.117Z",
+   "name": "Kimsuky",
+   "description": "[Kimsuky](https://attack.mitre.org/groups/G0094) is a Democratic People's Republic of Korea (DPRK)-based cyber espionage group that has been active since at lea",
+   "aliases": [
+    "Kimsuky",
+    "Black Banshee",
+    "Velvet Chollima",
+    "Emerald Sleet",
+    "THALLIUM",
+    "APT43",
+    "TA427",
+    "Springtail",
+    "Earth Kumiho",
+    "PatheticSlug"
+   ],
+   "x_mitre_modified_by_ref": "identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5",
+   "x_mitre_deprecated": false,
+   "x_mitre_domains": [
+    "enterprise-attack",
+    "mobile-attack"
+   ],
+   "x_mitre_version": "5.2",
+   "x_mitre_attack_spec_version": "3.3.0",
+   "x_mitre_contributors": [
+    "Dongwook Kim, KISA",
+    "Jaesang Oh, KC7 Foundation",
+    "Taewoo Lee, KISA",
+    "Wai Linn Oo, Kernellix Co.,Ltd."
+   ]
+  }
+ ]
+}

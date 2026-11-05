@@ -1,0 +1,30 @@
+resources:
+  jobs:
+    vuln_atlas:
+      name: vuln_atlas
+      description: Load the MITRE ATLAS release into atlas_raw, atlas_objects and atlas_relationships
+      max_concurrent_runs: 1
+      schedule:
+        quartz_cron_expression: ${var.atlas_schedule}
+        timezone_id: ${var.timezone}
+        pause_status: ${var.pause_status}
+      parameters:
+        - name: catalog
+          default: ${var.catalog}
+        - name: schema
+          default: ${var.schema}
+        - name: volume
+          default: ${resources.volumes.reference.name}
+        - name: manifest_url
+          default: https://raw.githubusercontent.com/mitre-atlas/atlas-data/main/dist/manifest.yaml
+        - name: atlas_version
+          default: ${var.atlas_version}
+      tasks:
+        - task_key: load
+          notebook_task:
+            notebook_path: "../src/atlas/Load ATLAS.py"
+        - task_key: silver
+          depends_on:
+            - task_key: load
+          notebook_task:
+            notebook_path: "../src/atlas/ATLAS Silver Transform.py"

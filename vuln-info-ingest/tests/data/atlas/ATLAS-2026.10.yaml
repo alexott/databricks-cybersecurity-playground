@@ -1,0 +1,318 @@
+format-version: 6.1.0
+collection:
+  name: ATLAS
+  description: Adversarial Threat Landscape for AI Systems
+  references: []
+  created-date: '2020-10-23'
+  modified-date: '2026-10-28'
+  version: '2026.10'
+  id: ATLAS-collection
+  uuid: 7a735cfc-0469-5d8b-b11f-d014be33394e
+  object-type: collection
+matrix:
+  name: ATLAS
+  description: Adversarial Threat Landscape for AI Systems
+  references: []
+  created-date: '2020-10-23'
+  modified-date: '2026-10-28'
+  id: ATLAS-matrix
+  uuid: 967c63ff-22bd-5ff8-aa59-1e1fca8dec78
+  object-type: matrix
+tactics:
+  AML.TA0002:
+    name: Reconnaissance
+    description: 'The adversary is trying to gather information about the AI system
+      they can use to plan future operations.
+
+
+      Reconnaissance consists of techniques that involve adversaries actively or passively
+      gatherin'
+    references: []
+    created-date: '2022-01-24'
+    modified-date: '2025-04-09'
+    attack-reference:
+      id: TA0043
+      url: https://attack.mitre.org/tactics/TA0043/
+    id: AML.TA0002
+    uuid: 8d151547-7423-5bac-bc2d-a6fd02afba29
+    object-type: tactic
+  AML.TA0003:
+    name: Resource Development
+    description: 'The adversary is trying to establish resources they can use to support
+      operations.
+
+
+      Resource Development consists of techniques that involve adversaries creating,
+
+      purchasing, or compromising/stealing '
+    references: []
+    created-date: '2022-01-24'
+    modified-date: '2025-04-09'
+    attack-reference:
+      id: TA0042
+      url: https://attack.mitre.org/tactics/TA0042/
+    id: AML.TA0003
+    uuid: 39099d7c-9fb7-5836-8e8a-9f6b594bf01b
+    object-type: tactic
+techniques:
+  AML.T0000:
+    name: Search Open Technical Databases
+    description: Adversaries may search for publicly available research and technical
+      documentation to learn how and where AI is used within a victim organization.
+      The adversary can use this information to identify ta
+    references: []
+    created-date: '2021-05-13'
+    modified-date: '2026-09-15'
+    platforms:
+    - Enterprise
+    attack-reference:
+      id: T1596
+      url: https://attack.mitre.org/techniques/T1596/
+    id: AML.T0000
+    maturity: Realized
+    uuid: c02f812d-59cc-5366-b1aa-7eb05154b772
+    object-type: technique
+  AML.T0000.003:
+    name: Scan Databases
+    description: 'Adversaries may search public internet-scan services to identify
+      a victim''s exposed AI infrastructure. These services, such as Shodan and Censys,
+      continuously scan the internet and publish the active '
+    references: []
+    created-date: '2026-09-15'
+    modified-date: '2026-09-15'
+    platforms:
+    - Enterprise
+    attack-reference:
+      id: T1596.005
+      url: https://attack.mitre.org/techniques/T1596/005/
+    id: AML.T0000.003
+    maturity: Realized
+    uuid: d4e7d62e-97f5-54f5-b2a5-3fd8633ece96
+    object-type: technique
+  AML.T0016:
+    name: Obtain Capabilities
+    description: 'Adversaries may search for and obtain software capabilities for
+      use in their operations.
+
+      Capabilities may be specific to AI-based attacks [Adversarial AI Attack Implementations](/techniques/AML.T0016.'
+    references: []
+    created-date: '2021-05-13'
+    modified-date: '2026-05-27'
+    platforms:
+    - Predictive AI
+    - Generative AI
+    - Agentic AI
+    - Enterprise
+    attack-reference:
+      id: T1588
+      url: https://attack.mitre.org/techniques/T1588/
+    id: AML.T0016
+    maturity: Realized
+    uuid: 94e1836d-1749-5d64-8f2f-de06a218ded7
+    object-type: technique
+  AML.T0016.000:
+    name: Adversarial AI Attack Implementations
+    description: 'Adversaries may search for existing open source implementations
+      of AI attacks. The research community often publishes their code for reproducibility
+      and to further future research. Libraries intended '
+    references: []
+    created-date: '2021-05-13'
+    modified-date: '2026-05-27'
+    platforms:
+    - Predictive AI
+    - Generative AI
+    - Agentic AI
+    id: AML.T0016.000
+    maturity: Realized
+    uuid: e249e479-eb89-5082-a51e-e862d705ec1d
+    object-type: technique
+mitigations:
+  AML.M0011:
+    name: Restrict Library Loading
+    description: Prevent abuse of library loading mechanisms in the operating system
+      and software to load untrusted code by configuring appropriate library loading
+      mechanisms and investigating potential vulnerable sof
+    references: []
+    created-date: '2023-04-12'
+    modified-date: '2026-07-31'
+    attack-reference:
+      id: M1044
+      url: https://attack.mitre.org/mitigations/M1044/
+    lifecycle-phases:
+    - Deployment
+    categories:
+    - Technical - Cyber
+    id: AML.M0011
+    uuid: 94cf1dc2-512c-5d81-b073-891d7113c194
+    object-type: mitigation
+  AML.M0000:
+    name: Limit Public Release of Information
+    description: Limit the public release of technical information about the AI stack
+      used in an organization's products or services. Technical knowledge of how AI
+      is used can be leveraged by adversaries to perform ta
+    references: []
+    created-date: '2023-04-12'
+    modified-date: '2026-07-31'
+    lifecycle-phases:
+    - Business and Data Understanding
+    categories:
+    - Policy
+    id: AML.M0000
+    uuid: c35b59f9-60f8-5bd1-ad76-9cbb549a97ce
+    object-type: mitigation
+case-studies:
+  AML.CS0002:
+    name: VirusTotal Poisoning
+    description: 'McAfee Advanced Threat Research noticed an increase in reports of
+      a certain ransomware family that was out of the ordinary. Case investigation
+      revealed that many samples of that particular ransomware '
+    references: []
+    created-date: '2020-12-03'
+    modified-date: '2025-03-14'
+    type: Incident
+    actor: Unknown
+    target: VirusTotal
+    reporter: McAfee Advanced Threat Research
+    start-date: '2020-01-01'
+    start-date-granularity: Year
+    end-date: '2020-01-01'
+    end-date-granularity: Year
+    id: AML.CS0002
+    uuid: 88bc2bb6-e36e-5786-be9a-90b67a096adb
+    object-type: case-study
+  AML.CS0003:
+    name: Bypassing Cylance's AI Malware Detection
+    description: Researchers at Skylight were able to create a universal bypass string
+      that evades detection by Cylance's AI Malware detector when appended to a malicious
+      file.
+    references:
+    - id: ref-1
+      title: Skylight Cyber Blog Post, "Cylance, I Kill You!"
+      url: https://skylightcyber.com/2019/07/18/cylance-i-kill-you/
+    created-date: '2020-12-03'
+    modified-date: '2026-03-31'
+    type: Exercise
+    target: CylancePROTECT, Cylance Smart Antivirus
+    start-date: '2019-09-07'
+    start-date-granularity: Day
+    end-date: '2019-09-07'
+    end-date-granularity: Day
+    id: AML.CS0003
+    uuid: 418cc7f8-76cf-542e-8859-0430c73cf972
+    object-type: case-study
+entities:
+  AML.E0005:
+    name: Skylight Cyber
+    description: '[Skylight Cyber](/entities/AML.E0005) is a cybersecurity consultancy
+      providing red-team and purple-team exercises, penetration testing, AI security
+      assessments, and security advisory services. Their w'
+    references:
+    - id: group-profile
+      title: About Skylight Cyber
+      url: https://skylightcyber.com/about-us
+    created-date: '2026-10-28'
+    modified-date: '2026-10-28'
+    entity-type: Organization
+    associated-entities: []
+    id: AML.E0005
+    uuid: 6362d8b6-0b35-543c-9549-0ecb068b2c03
+    object-type: entity
+software:
+  AML.S0030:
+    name: Shodan
+    description: '[Shodan](/software/AML.S0030) is a search service for internet-connected
+      devices and services. It collects and indexes service banners and associated
+      metadata, including IP addresses, hostnames, open '
+    references:
+    - id: shodan-api
+      title: Shodan API documentation
+      url: https://developer.shodan.io/api
+    created-date: '2026-10-28'
+    modified-date: '2026-10-28'
+    software-type: Tool
+    software-categories:
+    - service
+    aliases: []
+    id: AML.S0030
+    uuid: 62c4d393-2553-58de-b9e0-48ca29647787
+    object-type: software
+relationships:
+  AML.CS0002:
+    employs:
+    - source: AML.CS0002
+      target: AML.T0016.000
+      relationship-type: employs
+      description: The actor obtained [metame](https://github.com/a0rtega/metame),
+        a simple metamorphic code engine for arbitrary executabl
+      tactic: AML.TA0003
+      step-id: S00
+      leads-to:
+      - S01
+  AML.CS0003:
+    attributed-to:
+    - source: AML.CS0003
+      target: AML.E0005
+      relationship-type: attributed-to
+      activity-purpose: Security Evaluation
+    employs:
+    - source: AML.CS0003
+      target: AML.T0000
+      relationship-type: employs
+      description: 'The researchers read publicly available information about Cylance''s
+        AI Malware detector. They gathered this information '
+      tactic: AML.TA0002
+      step-id: S00
+      leads-to:
+      - S01
+  AML.M0000:
+    mitigates:
+    - source: AML.M0000
+      target: AML.T0000
+      relationship-type: mitigates
+      description: Limit the connection between publicly disclosed approaches and
+        the data, models, and algorithms used in production.
+  AML.S0030:
+    implements:
+    - source: AML.S0030
+      target: AML.T0000.003
+      relationship-type: implements
+      description: '[Shodan](/software/AML.S0030) provides searchable internet-scan
+        results containing service banners, HTTP titles, softwar'
+  AML.T0000:
+    achieves:
+    - source: AML.T0000
+      target: AML.TA0002
+      relationship-type: achieves
+  AML.T0000.003:
+    achieves:
+    - source: AML.T0000.003
+      target: AML.TA0002
+      relationship-type: achieves
+    specializes:
+    - source: AML.T0000.003
+      target: AML.T0000
+      relationship-type: specializes
+  AML.T0016:
+    achieves:
+    - source: AML.T0016
+      target: AML.TA0003
+      relationship-type: achieves
+  AML.T0016.000:
+    achieves:
+    - source: AML.T0016.000
+      target: AML.TA0003
+      relationship-type: achieves
+    specializes:
+    - source: AML.T0016.000
+      target: AML.T0016
+      relationship-type: specializes
+  ATLAS-matrix:
+    sequences:
+    - source: ATLAS-matrix
+      target: AML.TA0002
+      relationship-type: sequences
+      position: 1
+    - source: ATLAS-matrix
+      target: AML.TA0003
+      relationship-type: sequences
+      position: 2

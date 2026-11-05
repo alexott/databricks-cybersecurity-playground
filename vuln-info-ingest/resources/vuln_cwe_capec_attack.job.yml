@@ -1,0 +1,21 @@
+resources:
+  jobs:
+    vuln_cwe_capec_attack:
+      name: vuln_cwe_capec_attack
+      description: One-time build of the cwe_capec_attack edge table (CWE -> CAPEC -> ATT&CK); safe to re-run
+      max_concurrent_runs: 1
+      parameters:
+        - name: catalog
+          default: ${var.catalog}
+        - name: schema
+          default: ${var.schema}
+        - name: capec_url
+          default: https://capec.mitre.org/data/xml/capec_latest.xml
+        - name: index_url
+          default: https://raw.githubusercontent.com/mitre-attack/attack-stix-data/master/index.json
+        - name: attack_version
+          default: ${var.attack_version}
+      tasks:
+        - task_key: build
+          notebook_task:
+            notebook_path: "../src/capec/Build cwe_capec_attack.py"

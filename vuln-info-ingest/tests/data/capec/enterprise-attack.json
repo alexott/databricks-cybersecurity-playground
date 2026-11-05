@@ -1,0 +1,286 @@
+{
+ "type": "bundle",
+ "id": "bundle--fc207382-c9d1-4ece-bce2-6ef555c62d0a",
+ "objects": [
+  {
+   "type": "x-mitre-collection",
+   "id": "x-mitre-collection--1f5f1533-f617-4ca8-9ab4-6a02367fa019",
+   "name": "Enterprise ATT&CK",
+   "x_mitre_version": "20.0"
+  },
+  {
+   "type": "malware",
+   "id": "malware--007b44b6-e4c5-480b-b5b9-56f2081b1b7b",
+   "name": "HDoor"
+  },
+  {
+   "type": "malware",
+   "id": "malware--00806466-754d-44ea-ad6f-0caf59cb8556",
+   "name": "TrickBot"
+  },
+  {
+   "type": "malware",
+   "id": "malware--00936d7a-451d-4a9c-88fc-05b141aa2d3f",
+   "name": "cd00r"
+  },
+  {
+   "type": "malware",
+   "id": "malware--00c3bfcb-99bd-4767-8c03-b08f585f5c8a",
+   "name": "PowerDuke"
+  },
+  {
+   "type": "malware",
+   "id": "malware--00e7d565-9883-4ee5-b642-8fd17fd6a3f5",
+   "name": "EKANS"
+  },
+  {
+   "type": "malware",
+   "id": "malware--01dbc71d-0ee8-420d-abb4-3dfb6a4bf725",
+   "name": "BLINDINGCAN"
+  },
+  {
+   "type": "malware",
+   "id": "malware--023254de-caaf-4a05-b2c7-e4e2f283f7a5",
+   "name": "Ninja"
+  },
+  {
+   "type": "attack-pattern",
+   "id": "attack-pattern--4eb28bed-d11a-4641-9863-c2ac017d910a",
+   "name": "Disable Windows Event Logging",
+   "external_references": [
+    {
+     "source_name": "mitre-attack",
+     "url": "https://attack.mitre.org/techniques/T1562/002",
+     "external_id": "T1562.002"
+    },
+    {
+     "source_name": "Disable_Win_Event_Logging",
+     "description": " dmcxblue. (n.d.). Disable Windows Event Logging. Retrieved September 10, 2021.",
+     "url": "https://dmcxblue.gitbook.io/red-team-notes-2-0/red-team-techniques/defense-evasion/t1562-impair-defenses/disable-windows-event-logging"
+    },
+    {
+     "source_name": "def_ev_win_event_logging",
+     "description": "Chandel, R. (2021, April 22). Defense Evasion: Windows Event Logging (T1562.002). Retrieved September 14, 2021.",
+     "url": "https://www.hackingarticles.in/defense-evasion-windows-event-logging-t1562-002/"
+    },
+    {
+     "source_name": "EventLog_Core_Technologies",
+     "description": "Core Technologies. (2021, May 24). Essential Windows Services: EventLog / Windows Event Log. Retrieved September 14, 2021.",
+     "url": "https://www.coretechnologies.com/blog/windows-services/eventlog/"
+    },
+    {
+     "source_name": "Audit_Policy_Microsoft",
+     "description": "Daniel Simpson. (2017, April 19). Audit Policy. Retrieved September 13, 2021.",
+     "url": "https://docs.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/audit-policy"
+    },
+    {
+     "source_name": "Windows Log Events",
+     "description": "Franklin Smith. (n.d.). Windows Security Log Events. Retrieved February 21, 2020.",
+     "url": "https://www.ultimatewindowssecurity.com/securitylog/encyclopedia/"
+    },
+    {
+     "source_name": "disable_win_evt_logging",
+     "description": "Heiligenstein, L. (n.d.). REP-25: Disable Windows Event Logging. Retrieved April 7, 2022.",
+     "url": "https://ptylu.github.io/content/report/report.html?report=25"
+    },
+    {
+     "source_name": "auditpol",
+     "description": "Jason Gerend, et al. (2017, October 16). auditpol. Retrieved September 1, 2021.",
+     "url": "https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/auditpol"
+    },
+    {
+     "source_name": "winser19_file_overwrite_bug_twitter",
+     "description": "Naceri, A. (2021, November 7). Windows Server 2019 file overwrite bug. Retrieved April 7, 2022.",
+     "url": "https://web.archive.org/web/20211107115646/https://twitter.com/klinix5/status/1457316029114327040"
+    },
+    {
+     "source_name": "T1562.002_redcanaryco",
+     "description": "redcanaryco. (2021, September 3). T1562.002 - Disable Windows Event Logging. Retrieved September 13, 2021.",
+     "url": "https://github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1562.002/T1562.002.md"
+    },
+    {
+     "source_name": "Advanced_sec_audit_policy_settings",
+     "description": "Simpson, D. et al. (2017, April 19). Advanced security audit policy settings. Retrieved September 14, 2021.",
+     "url": "https://docs.microsoft.com/en-us/windows/security/threat-protection/auditing/advanced-security-audit-policy-settings"
+    },
+    {
+     "source_name": "auditpol.exe_STRONTIC",
+     "description": "STRONTIC. (n.d.). auditpol.exe. Retrieved September 9, 2021.",
+     "url": "https://strontic.github.io/xcyclopedia/library/auditpol.exe-214E0EA1F7F7C27C82D23F183F9D23F1.html"
+    },
+    {
+     "source_name": "evt_log_tampering",
+     "description": "svch0st. (2020, September 30). Event Log Tampering Part 1: Disrupting the EventLog Service. Retrieved September 14, 2021.",
+     "url": "https://svch0st.medium.com/event-log-tampering-part-1-disrupting-the-eventlog-service-8d4b7d67335c"
+    }
+   ],
+   "revoked": true,
+   "x_mitre_deprecated": false
+  },
+  {
+   "type": "attack-pattern",
+   "id": "attack-pattern--7385dfaf-6886-4229-9ecd-6fd678040830",
+   "name": "Command and Scripting Interpreter",
+   "external_references": [
+    {
+     "source_name": "mitre-attack",
+     "url": "https://attack.mitre.org/techniques/T1059",
+     "external_id": "T1059"
+    },
+    {
+     "source_name": "Remote Shell Execution in Python",
+     "description": "Abdou Rockikz. (2020, July). How to Execute Shell Commands in a Remote Machine in Python. Retrieved July 26, 2021.",
+     "url": "https://www.thepythoncode.com/article/executing-bash-commands-remotely-in-python"
+    },
+    {
+     "source_name": "Cisco IOS Software Integrity Assurance - Command History",
+     "description": "Cisco. (n.d.). Cisco IOS Software Integrity Assurance - Command History. Retrieved October 21, 2020.",
+     "url": "https://tools.cisco.com/security/center/resources/integrity_assurance.html#23"
+    },
+    {
+     "source_name": "Powershell Remote Commands",
+     "description": "Microsoft. (2020, August 21). Running Remote Commands. Retrieved July 26, 2021.",
+     "url": "https://docs.microsoft.com/en-us/powershell/scripting/learn/remoting/running-remote-commands?view=powershell-7.1"
+    }
+   ],
+   "revoked": false,
+   "x_mitre_deprecated": false
+  },
+  {
+   "type": "attack-pattern",
+   "id": "attack-pattern--74d2a63f-3c7b-4852-92da-02d8fbab16da",
+   "name": "Indicator Blocking",
+   "external_references": [
+    {
+     "source_name": "mitre-attack",
+     "url": "https://attack.mitre.org/techniques/T1562/006",
+     "external_id": "T1562.006"
+    },
+    {
+     "source_name": "Google Cloud Threat Intelligence ESXi VIBs 2022",
+     "description": "Alexander Marvi, Jeremy Koppen, Tufail Ahmed, and Jonathan Lepore. (2022, September 29). Bad VIB(E)s Part One: Investigating Novel Malware Persistence Within ESXi Hypervisors. Retrieved March 26, 2025.",
+     "url": "https://cloud.google.com/blog/topics/threat-intelligence/esxi-hypervisors-malware-persistence"
+    },
+    {
+     "source_name": "Broadcom Configuring syslog on ESXi",
+     "description": "Broadcom. (n.d.). Configuring syslog on ESXi. Retrieved March 27, 2025.",
+     "url": "https://knowledge.broadcom.com/external/article/318939/configuring-syslog-on-esxi.html"
+    },
+    {
+     "source_name": "disable_win_evt_logging",
+     "description": "Heiligenstein, L. (n.d.). REP-25: Disable Windows Event Logging. Retrieved April 7, 2022.",
+     "url": "https://ptylu.github.io/content/report/report.html?report=25"
+    },
+    {
+     "source_name": "LemonDuck",
+     "description": "Manoj Ahuje. (2022, April 21). LemonDuck Targets Docker for Cryptomining Operations. Retrieved June 30, 2022.",
+     "url": "https://www.crowdstrike.com/blog/lemonduck-botnet-targets-docker-for-cryptomining-operations/"
+    },
+    {
+     "source_name": "Microsoft Lamin Sept 2017",
+     "description": "Microsoft. (2009, May 17). Backdoor:Win32/Lamin.A. Retrieved September 6, 2018.",
+     "url": "https://www.microsoft.com/en-us/wdsi/threats/malware-encyclopedia-description?name=Backdoor:Win32/Lamin.A"
+    },
+    {
+     "source_name": "Microsoft About Event Tracing 2018",
+     "description": "Microsoft. (2018, May 30). About Event Tracing. Retrieved June 7, 2019.",
+     "url": "https://docs.microsoft.com/en-us/windows/desktop/etw/consuming-events"
+    },
+    {
+     "source_name": "Medium Event Tracing Tampering 2018",
+     "description": "Palantir. (2018, December 24). Tampering with Windows Event Tracing: Background, Offense, and Defense. Retrieved June 7, 2019.",
+     "url": "https://medium.com/palantir/tampering-with-windows-event-tracing-background-offense-and-defense-4be7ac62ac63"
+    }
+   ],
+   "revoked": true,
+   "x_mitre_deprecated": false
+  },
+  {
+   "type": "attack-pattern",
+   "id": "attack-pattern--9e8b28c9-35fe-48ac-a14d-e6cc032dcbcd",
+   "name": "Services File Permissions Weakness",
+   "external_references": [
+    {
+     "source_name": "mitre-attack",
+     "url": "https://attack.mitre.org/techniques/T1574/010",
+     "external_id": "T1574.010"
+    }
+   ],
+   "revoked": false,
+   "x_mitre_deprecated": false
+  },
+  {
+   "type": "attack-pattern",
+   "id": "attack-pattern--cacc40da-4c9e-462c-80d5-fd70a178b12d",
+   "name": "Disable or Modify Cloud Logs",
+   "external_references": [
+    {
+     "source_name": "mitre-attack",
+     "url": "https://attack.mitre.org/techniques/T1562/008",
+     "external_id": "T1562.008"
+    },
+    {
+     "source_name": "Stopping CloudTrail from Sending Events to CloudWatch Logs",
+     "description": "Amazon Web Services. (n.d.). Stopping CloudTrail from Sending Events to CloudWatch Logs. Retrieved October 16, 2020.",
+     "url": "https://docs.aws.amazon.com/awscloudtrail/latest/userguide/stop-cloudtrail-from-sending-events-to-cloudwatch-logs.html"
+    },
+    {
+     "source_name": "AWS Update Trail",
+     "description": "AWS. (n.d.). update-trail. Retrieved August 4, 2023.",
+     "url": "https://awscli.amazonaws.com/v2/documentation/api/latest/reference/cloudtrail/update-trail.html"
+    },
+    {
+     "source_name": "Following the CloudTrail: Generating strong AWS security signals with Sumo Logic",
+     "description": "Dan Whalen. (2019, September 10). Following the CloudTrail: Generating strong AWS security signals with Sumo Logic. Retrieved October 16, 2020.",
+     "url": "https://expel.io/blog/following-cloudtrail-generating-aws-security-signals-sumo-logic/"
+    },
+    {
+     "source_name": "Configuring Data Access audit logs",
+     "description": "Google. (n.d.). Configuring Data Access audit logs. Retrieved October 16, 2020.",
+     "url": "https://cloud.google.com/logging/docs/audit/configure-data-access"
+    },
+    {
+     "source_name": "Dark Reading Microsoft 365 Attacks 2021",
+     "description": "Kelly Sheridan. (2021, August 5). Incident Responders Explore Microsoft 365 Attacks in the Wild. Retrieved March 17, 2023.",
+     "url": "https://www.darkreading.com/threat-intelligence/incident-responders-explore-microsoft-365-attacks-in-the-wild/d/d-id/1341591"
+    },
+    {
+     "source_name": "az monitor diagnostic-settings",
+     "description": "Microsoft. (n.d.). az monitor diagnostic-settings. Retrieved October 16, 2020.",
+     "url": "https://docs.microsoft.com/en-us/cli/azure/monitor/diagnostic-settings?view=azure-cli-latest#az_monitor_diagnostic_settings_delete"
+    },
+    {
+     "source_name": "Pacu Detection Disruption Module",
+     "description": "Rhino Security Labs. (2021, April 29). Pacu Detection Disruption Module. Retrieved August 4, 2023.",
+     "url": "https://github.com/RhinoSecurityLabs/pacu/blob/master/pacu/modules/detection__disruption/main.py"
+    }
+   ],
+   "revoked": true,
+   "x_mitre_deprecated": false
+  },
+  {
+   "type": "attack-pattern",
+   "id": "attack-pattern--0259baeb-9f63-4c69-bf10-eb038c390688",
+   "name": "Screen Capture",
+   "external_references": [
+    {
+     "source_name": "mitre-attack",
+     "url": "https://attack.mitre.org/techniques/T1113",
+     "external_id": "T1113"
+    },
+    {
+     "source_name": "CopyFromScreen .NET",
+     "description": "Microsoft. (n.d.). Graphics.CopyFromScreen Method. Retrieved March 24, 2020.",
+     "url": "https://docs.microsoft.com/en-us/dotnet/api/system.drawing.graphics.copyfromscreen?view=netframework-4.8"
+    },
+    {
+     "source_name": "Antiquated Mac Malware",
+     "description": "Thomas Reed. (2017, January 18). New Mac backdoor using antiquated code. Retrieved July 5, 2017.",
+     "url": "https://blog.malwarebytes.com/threat-analysis/2017/01/new-mac-backdoor-using-antiquated-code/"
+    }
+   ],
+   "revoked": false,
+   "x_mitre_deprecated": false
+  }
+ ]
+}
