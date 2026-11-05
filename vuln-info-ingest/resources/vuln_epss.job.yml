@@ -4,6 +4,8 @@ resources:
       name: vuln_epss
       description: Load the daily FIRST EPSS scores into epss_scores_history and epss_scores
       max_concurrent_runs: 1
+      # Serverless STANDARD mode: slower startup, lower cost than PERFORMANCE_OPTIMIZED
+      performance_target: STANDARD
       schedule:
         quartz_cron_expression: ${var.epss_schedule}
         timezone_id: ${var.timezone}

@@ -4,6 +4,8 @@ resources:
       name: vuln_cve_v5_initial_load
       description: One-time full load of CVE v5 records (cvelistV5 tarball); safe to re-run
       max_concurrent_runs: 1
+      # Serverless STANDARD mode: slower startup, lower cost than PERFORMANCE_OPTIMIZED
+      performance_target: STANDARD
       parameters:
         - name: catalog
           default: ${var.catalog}

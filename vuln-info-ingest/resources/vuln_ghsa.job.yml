@@ -4,6 +4,8 @@ resources:
       name: vuln_ghsa
       description: Load the GitHub Advisory Database into ghsa_raw and github_advisories
       max_concurrent_runs: 1
+      # Serverless STANDARD mode: slower startup, lower cost than PERFORMANCE_OPTIMIZED
+      performance_target: STANDARD
       schedule:
         quartz_cron_expression: ${var.ghsa_schedule}
         timezone_id: ${var.timezone}

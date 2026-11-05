@@ -4,6 +4,8 @@ resources:
       name: vuln_epss_initial_load
       description: One-time backfill of the FIRST EPSS daily scores since 2021-04-14; resumes from missing dates, safe to re-run
       max_concurrent_runs: 1
+      # Serverless STANDARD mode: slower startup, lower cost than PERFORMANCE_OPTIMIZED
+      performance_target: STANDARD
       parameters:
         - name: catalog
           default: ${var.catalog}

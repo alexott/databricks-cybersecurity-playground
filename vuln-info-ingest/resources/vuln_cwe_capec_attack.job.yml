@@ -4,6 +4,8 @@ resources:
       name: vuln_cwe_capec_attack
       description: One-time build of the cwe_capec_attack edge table (CWE -> CAPEC -> ATT&CK); safe to re-run
       max_concurrent_runs: 1
+      # Serverless STANDARD mode: slower startup, lower cost than PERFORMANCE_OPTIMIZED
+      performance_target: STANDARD
       parameters:
         - name: catalog
           default: ${var.catalog}

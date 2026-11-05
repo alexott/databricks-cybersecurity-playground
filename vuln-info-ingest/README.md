@@ -38,6 +38,11 @@ databricks bundle validate -t dev --profile <profile>
 databricks bundle deploy -t dev --profile <profile>
 ```
 
+All jobs run on serverless compute in the `STANDARD` performance mode
+(`performance_target` in the job YAML): startup is slower than
+`PERFORMANCE_OPTIMIZED`, but runs cost less, and none of these jobs is latency
+critical.
+
 Bundle variables (`resources/variables.yml`):
 
 | Variable | Default | Description |
