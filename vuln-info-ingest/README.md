@@ -11,6 +11,7 @@ with periodic [Lakeflow Jobs](https://docs.databricks.com/aws/en/jobs/), deploye
 | [OSV](https://google.github.io/osv.dev/data/) | `osv_vulnerabilities` | Superset of GHSA: PyPI, Go, RustSec, npm malware, Linux distros, ... |
 | [CISA KEV](https://www.cisa.gov/known-exploited-vulnerabilities-catalog) | `kev_vulnerabilities` | "Actively exploited in the wild" signal |
 | [FIRST EPSS](https://www.first.org/epss/) | `epss_scores`, `epss_scores_history` | Daily probability of exploitation in the next 30 days |
+| [MITRE CWE](https://cwe.mitre.org/) | `cwe_entries` | Weakness names, hierarchy, CAPEC attack patterns for the CWE ids of the other tables |
 
 All silver tables carry `cve_id`, the join key between them. Every source except EPSS
 has a `<source>_raw` table (one row per record with the original JSON as `VARIANT` plus
@@ -44,6 +45,7 @@ Bundle variables (`resources/variables.yml`):
 | `schedule` | `0 0 */6 * * ?` | Default Quartz cron schedule of the periodic jobs |
 | `cve_v5_schedule`, `ghsa_schedule`, `osv_schedule`, `kev_schedule` | `${var.schedule}` | Per-source schedule override |
 | `epss_schedule` | `0 0 15 * * ?` | Schedule of the EPSS job (daily, after the ~13:30 UTC publication) |
+| `cwe_schedule` | `0 0 4 ? * MON` | Schedule of the CWE job (weekly; the catalog is released a few times a year) |
 | `timezone` | `UTC` | Time zone of the schedules |
 | `pause_status` | `UNPAUSED` | `PAUSED` or `UNPAUSED`; the `dev` target sets `PAUSED` |
 
@@ -69,7 +71,7 @@ only looks back `lookback_days`, 14 by default):
 databricks bundle run vuln_epss_initial_load -t <target> --profile <profile>
 ```
 
-GHSA and KEV always load a full snapshot, so their periodic jobs need no preparation.
+GHSA, KEV and CWE always load a full snapshot, so their periodic jobs need no preparation.
 Full loads are idempotent `MERGE`s and safe to re-run, but don't run an initial-load
 job while the matching periodic job is running (pause the periodic job first).
 
@@ -85,6 +87,7 @@ job while the matching periodic job is running (pause the periodic job first).
 | `vuln_kev` | `load` → `silver` | `kev_schedule` |
 | `vuln_epss` | `load` → `current` | `epss_schedule` |
 | `vuln_epss_initial_load` | `load` → `current` | none |
+| `vuln_cwe` | `load` → `silver` | `cwe_schedule` |
 
 All settings are job parameters (no config files); defaults are in the job YAML files
 and can be changed per run. Every job has `catalog`, `schema` and `volume`; besides
@@ -94,6 +97,7 @@ those:
 - GHSA: `tarball_url`, `part_records` (20000).
 - OSV: `bucket_url`, `full_reload_threshold` (100000), `watermark_overlap_hours` (6), `fetch_threads` (32), `min_snapshot_ratio` (0.9), `part_records` (20000).
 - KEV: `catalog_url`.
+- CWE: `catalog_url`.
 - EPSS: `base_url`, `lookback_days` (14; 3000 in the initial-load job), `batch_days` (90), `fetch_threads` (8), `min_snapshot_ratio` (0.9).
 
 The incremental loaders set the task value `needs_full_load`. When it is `true`
@@ -303,6 +307,51 @@ Notes:
 - `LEFT JOIN epss_scores` on `cve_id` to rank CVE, package or product findings, e.g.
   `epss >= 0.1` or `percentile >= 0.95`, and combine with `kev_vulnerabilities`.
 
+## MITRE CWE (Common Weakness Enumeration)
+
+[CWE](https://cwe.mitre.org/) is the catalog behind the `cwe_ids` / `cwes` columns of
+the other tables. `cwe_entries` gives them names, descriptions, the weakness hierarchy,
+MITRE's mapping guidance and the CAPEC attack patterns that exploit them.
+
+- `cwe_raw` — one row per CWE id: `raw` VARIANT (JSON rendering of the XML entry) +
+  `cwe_id`, `entry_type`, `catalog_version`, `catalog_date`, and the soft-delete
+  marker `date_removed`. Change Data Feed on.
+- `cwe_entries` — typed silver, kept in sync from `cwe_raw`.
+- `cwe_fetch_log` — one row per load run (catalog version and date, counts).
+
+Data facts (checked 2026-11-05):
+
+- The catalog is one zipped XML file, `cwec_latest.xml.zip` (~2 MB, ~19 MB unzipped).
+  CWE 5.0 (2026-10-28) uses schema v8, which renamed Categories to **Groupings**.
+- 1,477 entries: 984 weaknesses, 431 groupings, 62 views. CWE ids are unique across
+  the three kinds, and ids are not removed: obsolete entries stay with status
+  `Deprecated` or `Obsolete`.
+- In `cves_v5` (2026-11), 99.4% of the CWE references are weaknesses, 0.6% are
+  groupings, and a handful are views — so all three kinds are loaded.
+- New releases come a few times a year; entries have no reliable per-record modified
+  time.
+
+The loader downloads the zip to memory and converts every entry to JSON: attributes
+and child elements become object keys, elements the CWE schema allows to repeat are
+always arrays (so every VARIANT path has one type), and XHTML text (paragraphs, lists,
+code) is rendered to plain text. It stages one JSON line per entry on the Volume and
+`MERGE`s into `cwe_raw` on `cwe_id`, KEV-style: the catalog version is the freshness
+token, and ids absent from the snapshot are soft-deleted with `date_removed`.
+
+Notes:
+
+- Filter `status NOT IN ('Deprecated', 'Obsolete')` for current entries;
+  `mapping_usage` says whether CVEs should be mapped to the entry (`Allowed`,
+  `Allowed-with-Review`, `Discouraged`, `Prohibited` — groupings and views are
+  `Prohibited`).
+- `related_weaknesses` holds the CWE graph; `view_id = 'CWE-1000'` with
+  `nature = 'ChildOf'` is the research hierarchy, `ordinal = 'Primary'` the main parent.
+- `related_capec_ids` links weaknesses to CAPEC attack patterns; `observed_examples`
+  references real CVEs.
+- `raw` keeps the fields not flattened (mitigations, detection methods, demonstrative
+  examples, taxonomy mappings, references). The order between different tags is not
+  kept, e.g. the interleaved `Body_Text` / `Example_Code` of a demonstrative example.
+
 ## Layout
 
 ```
@@ -317,7 +366,7 @@ src/common/
   merge.py                      dedupe before MERGE, last change per key from CDF
   fetch_log.py                  fetch-log rows and incremental watermarks
   silver.py                     generic raw CDF -> silver streaming MERGE
-src/<source>/                   cve_v5, ghsa, osv, kev, epss
+src/<source>/                   cve_v5, ghsa, osv, kev, epss, cwe
   helpers.py                    pure Python / raw-table id columns
   transform.py                  raw VARIANT -> typed silver columns
   *load*.py, Load *.py          loader notebooks

@@ -1,0 +1,28 @@
+resources:
+  jobs:
+    vuln_cwe:
+      name: vuln_cwe
+      description: Load the MITRE CWE catalog into cwe_raw and cwe_entries
+      max_concurrent_runs: 1
+      schedule:
+        quartz_cron_expression: ${var.cwe_schedule}
+        timezone_id: ${var.timezone}
+        pause_status: ${var.pause_status}
+      parameters:
+        - name: catalog
+          default: ${var.catalog}
+        - name: schema
+          default: ${var.schema}
+        - name: volume
+          default: ${resources.volumes.reference.name}
+        - name: catalog_url
+          default: https://cwe.mitre.org/data/xml/cwec_latest.xml.zip
+      tasks:
+        - task_key: load
+          notebook_task:
+            notebook_path: "../src/cwe/Load CWE.py"
+        - task_key: silver
+          depends_on:
+            - task_key: load
+          notebook_task:
+            notebook_path: "../src/cwe/CWE Silver Transform.py"

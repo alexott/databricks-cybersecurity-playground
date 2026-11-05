@@ -24,6 +24,9 @@ variables:
   epss_schedule:
     description: Schedule of the EPSS job (scores are published daily around 13:30 UTC)
     default: "0 0 15 * * ?"
+  cwe_schedule:
+    description: Schedule of the CWE job (the catalog is released a few times a year)
+    default: "0 0 4 ? * MON"
   timezone:
     description: Time zone of the schedules
     default: UTC

