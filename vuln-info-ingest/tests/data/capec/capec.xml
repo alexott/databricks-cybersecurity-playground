@@ -1,0 +1,68 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Attack_Pattern_Catalog xmlns="http://capec.mitre.org/capec-3" xmlns:xhtml="http://www.w3.org/1999/xhtml" Name="CAPEC" Version="3.9" Date="2023-01-24"><Attack_Patterns><Attack_Pattern ID="1" Name="Accessing Functionality Not Properly Constrained by ACLs" Abstraction="Standard" Status="Draft">
+         <Description>In applications, particularly web applications, access to functionality is mitigated by an authorization framework. This framework maps Access Control Lists (ACLs) to elements of the application's functionality; particularly URL's for web apps. In the case that the administrator failed to specify an ACL for a particular element, an attacker may be able to access it with impunity. An attacker with the ability to access functionality not properly constrained by ACLs can obtain sensitive information and possibly compromise the entire application. Such an attacker can access resources that must be available only to users at a higher privilege level, can access management sections of the application, or can run queries for data that they otherwise not supposed to.</Description>
+         <Related_Weaknesses>
+            <Related_Weakness CWE_ID="276" />
+            <Related_Weakness CWE_ID="285" />
+            <Related_Weakness CWE_ID="434" />
+            <Related_Weakness CWE_ID="693" />
+            <Related_Weakness CWE_ID="732" />
+            <Related_Weakness CWE_ID="1191" />
+            <Related_Weakness CWE_ID="1193" />
+            <Related_Weakness CWE_ID="1220" />
+            <Related_Weakness CWE_ID="1297" />
+            <Related_Weakness CWE_ID="1311" />
+            <Related_Weakness CWE_ID="1314" />
+            <Related_Weakness CWE_ID="1315" />
+            <Related_Weakness CWE_ID="1318" />
+            <Related_Weakness CWE_ID="1320" />
+            <Related_Weakness CWE_ID="1321" />
+            <Related_Weakness CWE_ID="1327" />
+         </Related_Weaknesses>
+         <Taxonomy_Mappings>
+            <Taxonomy_Mapping Taxonomy_Name="ATTACK">
+               <Entry_ID>1574.010</Entry_ID>
+               <Entry_Name>Hijack Execution Flow: ServicesFile Permissions Weakness</Entry_Name>
+            </Taxonomy_Mapping>
+         </Taxonomy_Mappings>
+         </Attack_Pattern>
+      <Attack_Pattern ID="571" Name="Block Logging to Central Repository" Abstraction="Standard" Status="Draft">
+         <Description>
+            <xhtml:p>An adversary prevents host-generated logs being delivered to a central location in an attempt to hide indicators of compromise.</xhtml:p>
+         </Description>
+         <Taxonomy_Mappings>
+            <Taxonomy_Mapping Taxonomy_Name="ATTACK">
+               <Entry_ID>1562.002</Entry_ID>
+               <Entry_Name>Impair Defenses: Disable Windows Event Logging</Entry_Name>
+            </Taxonomy_Mapping>
+            <Taxonomy_Mapping Taxonomy_Name="ATTACK">
+               <Entry_ID>1562.002</Entry_ID>
+               <Entry_Name>Impair Defenses: Impair Command History Logging</Entry_Name>
+            </Taxonomy_Mapping>
+            <Taxonomy_Mapping Taxonomy_Name="ATTACK">
+               <Entry_ID>1562.006</Entry_ID>
+               <Entry_Name>Impair Defenses: Indicator Blocking</Entry_Name>
+            </Taxonomy_Mapping>
+            <Taxonomy_Mapping Taxonomy_Name="ATTACK">
+               <Entry_ID>1562.008</Entry_ID>
+               <Entry_Name>Impair Defenses: Disable Cloud Logs</Entry_Name>
+            </Taxonomy_Mapping>
+         </Taxonomy_Mappings>
+         </Attack_Pattern>
+      <Attack_Pattern ID="648" Name="Collect Data from Screen Capture" Abstraction="Detailed" Status="Draft">
+         <Description>An adversary gathers sensitive information by exploiting the system's screen capture functionality. Through screenshots, the adversary aims to see what happens on the screen over the course of an operation. The adversary can leverage information gathered in order to carry out further attacks.</Description>
+         <Related_Weaknesses>
+            <Related_Weakness CWE_ID="267" />
+         </Related_Weaknesses>
+         <Taxonomy_Mappings>
+            <Taxonomy_Mapping Taxonomy_Name="ATTACK">
+               <Entry_ID>1113</Entry_ID>
+               <Entry_Name>Screen Capture</Entry_Name>
+            </Taxonomy_Mapping>
+            <Taxonomy_Mapping Taxonomy_Name="ATTACK">
+               <Entry_ID>1513</Entry_ID>
+               <Entry_Name>Screen Capture</Entry_Name>
+            </Taxonomy_Mapping>
+         </Taxonomy_Mappings>
+         </Attack_Pattern>
+      </Attack_Patterns></Attack_Pattern_Catalog>

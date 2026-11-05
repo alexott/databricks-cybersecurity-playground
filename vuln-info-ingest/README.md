@@ -12,6 +12,7 @@ with periodic [Lakeflow Jobs](https://docs.databricks.com/aws/en/jobs/), deploye
 | [CISA KEV](https://www.cisa.gov/known-exploited-vulnerabilities-catalog) | `kev_vulnerabilities` | "Actively exploited in the wild" signal |
 | [FIRST EPSS](https://www.first.org/epss/) | `epss_scores`, `epss_scores_history` | Daily probability of exploitation in the next 30 days |
 | [MITRE CWE](https://cwe.mitre.org/) | `cwe_entries` | Weakness names, hierarchy, CAPEC attack patterns for the CWE ids of the other tables |
+| [CAPEC](https://capec.mitre.org/) + [ATT&CK](https://attack.mitre.org/) | `cwe_capec_attack` | CWE → CAPEC → ATT&CK technique edges (one-time build) |
 
 All silver tables carry `cve_id`, the join key between them. Every source except EPSS
 has a `<source>_raw` table (one row per record with the original JSON as `VARIANT` plus
@@ -64,6 +65,12 @@ databricks bundle run vuln_cve_v5_initial_load -t <target> --profile <profile>
 databricks bundle run vuln_osv_initial_load -t <target> --profile <profile>
 ```
 
+To build the `cwe_capec_attack` edge table, run its one-time job:
+
+```sh
+databricks bundle run vuln_cwe_capec_attack -t <target> --profile <profile>
+```
+
 For the EPSS score history since 2021, run the EPSS backfill once (the periodic job
 only looks back `lookback_days`, 14 by default):
 
@@ -88,6 +95,7 @@ job while the matching periodic job is running (pause the periodic job first).
 | `vuln_epss` | `load` → `current` | `epss_schedule` |
 | `vuln_epss_initial_load` | `load` → `current` | none |
 | `vuln_cwe` | `load` → `silver` | `cwe_schedule` |
+| `vuln_cwe_capec_attack` | `build` | none |
 
 All settings are job parameters (no config files); defaults are in the job YAML files
 and can be changed per run. Every job has `catalog`, `schema` and `volume`; besides
@@ -98,6 +106,7 @@ those:
 - OSV: `bucket_url`, `full_reload_threshold` (100000), `watermark_overlap_hours` (6), `fetch_threads` (32), `min_snapshot_ratio` (0.9), `part_records` (20000).
 - KEV: `catalog_url`.
 - CWE: `catalog_url`.
+- CWE → CAPEC → ATT&CK: `capec_url`, `attack_url` (Enterprise ATT&CK STIX bundle, pinned to 19.1); no `volume`.
 - EPSS: `base_url`, `lookback_days` (14; 3000 in the initial-load job), `batch_days` (90), `fetch_threads` (8), `min_snapshot_ratio` (0.9).
 
 The incremental loaders set the task value `needs_full_load`. When it is `true`
@@ -352,6 +361,31 @@ Notes:
   examples, taxonomy mappings, references). The order between different tags is not
   kept, e.g. the interleaved `Body_Text` / `Example_Code` of a demonstrative example.
 
+### CWE → CAPEC → ATT&CK edges
+
+`cwe_capec_attack` links weaknesses to attacker behavior. Each row is one edge
+(`src_type`, `src_id`, `rel`, `dst_type`, `dst_id`, `dst_name`, `source_version`):
+
+- `CWE` → `related_attack_pattern` → `CAPEC`: the CAPEC attack patterns that exploit a
+  weakness (`Related_Weaknesses` of each CAPEC attack pattern; 1,212 edges).
+- `CAPEC` → `maps_to_technique` → `technique`: the ATT&CK techniques of an attack
+  pattern (its `ATTACK` taxonomy mappings; 270 edges), named from the Enterprise
+  ATT&CK STIX bundle given by `attack_url`.
+
+The `vuln_cwe_capec_attack` job downloads both files and rebuilds the table with
+`CREATE OR REPLACE`. It has no schedule: CAPEC has not been released since 3.9
+(2023-01-24). Re-run it after a CAPEC release or to move to another ATT&CK version
+(ATT&CK 19.1 and 20.0 give the same edges today).
+
+Notes:
+
+- Mappings to techniques that are not in Enterprise ATT&CK are dropped (CAPEC-648 →
+  T1513, a Mobile technique); duplicate edges in CAPEC are dropped.
+- CAPEC 3.9 maps to 14 technique ids that ATT&CK has since revoked (e.g. `T1562.002`);
+  they are kept with their ATT&CK name.
+- From a CVE to techniques: explode `cves_v5.cwe_ids`, join `src_id` of the CWE edges,
+  then join their `dst_id` to `src_id` of the CAPEC edges.
+
 ## Layout
 
 ```
@@ -366,7 +400,7 @@ src/common/
   merge.py                      dedupe before MERGE, last change per key from CDF
   fetch_log.py                  fetch-log rows and incremental watermarks
   silver.py                     generic raw CDF -> silver streaming MERGE
-src/<source>/                   cve_v5, ghsa, osv, kev, epss, cwe
+src/<source>/                   cve_v5, ghsa, osv, kev, epss, cwe, capec
   helpers.py                    pure Python / raw-table id columns
   transform.py                  raw VARIANT -> typed silver columns
   *load*.py, Load *.py          loader notebooks
