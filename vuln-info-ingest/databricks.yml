@@ -2,6 +2,16 @@
 # See README.md for deployment instructions.
 bundle:
   name: vuln_info_ingest
+  engine: direct
+
+python:
+  venv_path: .venv
+  resources:
+    # The Genie space, only with --var genie=true.
+    - 'resources_py:load_resources'
+  mutators:
+    # The Genie space file uses the lw-field table names; this rewrites them with genie_table_mapping.
+    - 'genie_agent_retarget:retarget_genie_spaces'
 
 include:
   - resources/*.yml
@@ -10,6 +20,9 @@ sync:
   exclude:
     - tests/**
     - .venv/**
+    - genie/**
+    - resources_py/**
+    - "**/__pycache__/**"
 
 targets:
   dev:

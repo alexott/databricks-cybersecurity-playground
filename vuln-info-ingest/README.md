@@ -33,7 +33,11 @@ with `databricks bundle deployment bind reference <catalog>.<schema>.<volume> -t
 Note that `bundle destroy` deletes the Volume, including the silver streaming
 checkpoints in it.
 
+The bundle has Python code (the Genie space, see [Genie space](#genie-space)), so install the
+`bundle` dependency group into the project's `.venv` first:
+
 ```sh
+poetry install --with bundle
 databricks bundle validate -t dev --profile <profile>
 databricks bundle deploy -t dev --profile <profile>
 ```
@@ -60,6 +64,10 @@ Bundle variables (`resources/variables.yml`):
 | `attack_schedule` | `0 30 4 ? * MON` | Schedule of the ATT&CK job (weekly; ATT&CK is released about twice a year) |
 | `timezone` | `UTC` | Time zone of the schedules |
 | `pause_status` | `UNPAUSED` | `PAUSED` or `UNPAUSED`; the `dev` target sets `PAUSED` |
+| `genie` | `false` | `true` adds the Genie space (after the jobs loaded the tables) |
+| `warehouse_id` | `""` | SQL warehouse of the Genie space (needed when `genie` is `true`) |
+| `genie_parent_path` | `/Workspace/Users/<current user>` | Workspace folder of the Genie space |
+| `genie_table_mapping` | `fe_lakewatch_catalog.lakewatch_field: ${var.catalog}.${var.schema}` | Table name rewrite rules for the Genie space |
 
 Override them in `targets.<target>.variables` of `databricks.yml`, or on the command
 line, e.g. `--var schedule="0 0 */3 * * ?"` for all sources or
@@ -92,6 +100,40 @@ databricks bundle run vuln_epss_initial_load -t <target> --profile <profile>
 GHSA, KEV, CWE, ATT&CK and ATLAS always load a full snapshot, so their periodic jobs need no preparation.
 Full loads are idempotent `MERGE`s and safe to re-run, but don't run an initial-load
 job while the matching periodic job is running (pause the periodic job first).
+
+## Genie space
+
+The bundle also deploys the Genie space (Genie Agent) "Analysis of Vulnerabilities" for
+natural-language questions over `cves_v5`, `kev_vulnerabilities`, `epss_scores`,
+`epss_scores_history`, `github_advisories`, `osv_vulnerabilities`, `cwe_entries` and
+`cwe_capec_attack`: example SQL, join specs, filters and measures, and 12 benchmark
+questions.
+
+| Part | Where |
+|---|---|
+| Resource | `resources_py/genie.py`, added by `resources_py:load_resources` only with `--var genie=true` |
+| Definition | `genie/analysis_of_vulnerabilities.geniespace.json` (written against `fe_lakewatch_catalog.lakewatch_field`) |
+| Retargeting | the `genie_agent_retarget` mutator of [pydabs-genie-agent-retarget](https://github.com/alexott/pydabs-genie-agent-retarget) rewrites the table names (in the table list, all SQL and the instructions) with `genie_table_mapping`, by default to `${var.catalog}.${var.schema}` |
+
+Genie checks the tables when the space is created, so the space isn't deployed by
+default (`genie` is `false`). Run the jobs of [First run](#first-run) and the periodic jobs
+once, then deploy again with the space:
+
+```sh
+databricks bundle deploy -t <target> --profile <profile> --var genie=true --var warehouse_id=<warehouse-id>
+```
+
+Keep passing `--var genie=true` (or set `genie` and `warehouse_id` in
+`targets.<target>.variables`): a deploy without it deletes the space. Users of the space
+need `CAN_USE` on the warehouse and `SELECT` on the tables.
+
+To edit the space in the UI and keep Git in sync, edit it on a workspace that uses the
+names of the file (`fe_lakewatch_catalog.lakewatch_field`), then write it back:
+
+```sh
+databricks genie get-space <space-id> --include-serialized-space -o json --profile <profile> \
+  | jq -r .serialized_space | jq . > genie/analysis_of_vulnerabilities.geniespace.json
+```
 
 ## Jobs
 
@@ -506,6 +548,8 @@ databricks.yml                  bundle definition and targets
 resources/variables.yml         bundle variables
 resources/vuln_*.job.yml        one file per job
 resources/reference.volume.yml  the scratch Volume
+resources_py/                   the Genie space (Python resource, with --var genie=true)
+genie/                          serialized Genie space definitions
 src/common/
   params.py                     job parameters (widgets), table/Volume names
   staging.py                    gzip JSON-line staging parts on the Volume

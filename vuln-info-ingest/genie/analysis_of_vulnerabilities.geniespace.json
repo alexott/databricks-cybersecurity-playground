@@ -1,0 +1,1428 @@
+{
+  "version": 2,
+  "config": {
+    "sample_questions": [
+      {
+        "id": "01f174841ac71b79ac93be6e5aaa0617",
+        "question": [
+          "How many CVEs have active exploitation according to SSVC?"
+        ]
+      },
+      {
+        "id": "01f174841aec1ff1a4e6551a78591b10",
+        "question": [
+          "What is the most common CWE among critical-severity CVEs?"
+        ]
+      },
+      {
+        "id": "01f174841b0b1563a48a913e4fcc7704",
+        "question": [
+          "List the 10 vendors with the most published CVEs of all time."
+        ]
+      },
+      {
+        "id": "01f174841b2a1ae5b44172f6970b920d",
+        "question": [
+          "What is the highest CVSS base score among CVEs published in the last 30 days?"
+        ]
+      }
+    ]
+  },
+  "data_sources": {
+    "tables": [
+      {
+        "identifier": "fe_lakewatch_catalog.lakewatch_field.cves_v5",
+        "description": [
+          "CVE v5 records from MITRE / NVD, covering vulnerabilities from 1999 through the present (~350k records). Each row is one CVE with metadata, CVSS scoring, CWE classification, and SSVC (Stakeholder-Specific Vulnerability Categorization). Use for: vulnerability triage and patch prioritization (filter `cvss_severity = 'CRITICAL'` + `ssvc_exploitation = 'active'`), vendor/product exposure assessment (LATERAL VIEW EXPLODE on `affected_products`), CVE trend analysis over time (`cve_year`, `date_published`), and CWE-pattern research."
+        ],
+        "column_configs": [
+          {
+            "column_name": "affected_products"
+          },
+          {
+            "column_name": "assigner_org_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "assigner_short_name",
+            "synonyms": [
+              "assigner",
+              "CNA",
+              "CVE Numbering Authority",
+              "reporter",
+              "issuer",
+              "organization",
+              "assigning org"
+            ],
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "cve_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "cve_year",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "cvss_base_score",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "cvss_severity",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "cvss_source",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "cvss_vector",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "cvss_version",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "cwe_description",
+            "description": [
+              "Free-text CWE description as written by the CNA; the same CWE appears with many spellings and formats. Never group or count by this column: group by cwe_id and take the canonical weakness name from cwe_entries.name."
+            ],
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "cwe_id",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "date_published",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "date_reserved",
+            "description": [
+              "Timestamp when the CVE ID was reserved by a CNA before publication details were available. This is a pre-publication administrative timestamp — use `date_published` for recency filtering and trend analysis."
+            ],
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "date_updated",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "description",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "raw",
+            "exclude": true
+          },
+          {
+            "column_name": "references"
+          },
+          {
+            "column_name": "ssvc_automatable",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "ssvc_exploitation",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "ssvc_technical_impact",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "state",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "title",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          }
+        ]
+      },
+      {
+        "identifier": "fe_lakewatch_catalog.lakewatch_field.cwe_capec_attack",
+        "column_configs": [
+          {
+            "column_name": "dst_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "dst_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "dst_type",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "rel",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "source_version",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "src_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "src_type",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          }
+        ]
+      },
+      {
+        "identifier": "fe_lakewatch_catalog.lakewatch_field.cwe_entries",
+        "column_configs": [
+          {
+            "column_name": "abstraction",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "applicable_platforms"
+          },
+          {
+            "column_name": "catalog_date",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "catalog_version",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "common_consequences"
+          },
+          {
+            "column_name": "cwe_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "date_modified",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "date_removed",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "date_submitted",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "description",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "entry_type",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "extended_description",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "likelihood_of_exploit",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "mapping_usage",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "members"
+          },
+          {
+            "column_name": "name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "observed_examples"
+          },
+          {
+            "column_name": "raw",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "related_capec_ids"
+          },
+          {
+            "column_name": "related_weaknesses"
+          },
+          {
+            "column_name": "status",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "structure",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          }
+        ]
+      },
+      {
+        "identifier": "fe_lakewatch_catalog.lakewatch_field.epss_scores",
+        "column_configs": [
+          {
+            "column_name": "cve_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "epss",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "model_version",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "percentile",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "score_date",
+            "enable_format_assistance": true
+          }
+        ]
+      },
+      {
+        "identifier": "fe_lakewatch_catalog.lakewatch_field.epss_scores_history",
+        "column_configs": [
+          {
+            "column_name": "cve_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "epss",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "model_version",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "percentile",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "score_date",
+            "enable_format_assistance": true
+          }
+        ]
+      },
+      {
+        "identifier": "fe_lakewatch_catalog.lakewatch_field.github_advisories",
+        "column_configs": [
+          {
+            "column_name": "affected_packages"
+          },
+          {
+            "column_name": "aliases"
+          },
+          {
+            "column_name": "cve_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "cvss_vector",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "cvss_version",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "cwe_ids"
+          },
+          {
+            "column_name": "date_modified",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "date_published",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "date_withdrawn",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "details",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "ecosystems"
+          },
+          {
+            "column_name": "ghsa_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "github_reviewed",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "raw",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "references"
+          },
+          {
+            "column_name": "related"
+          },
+          {
+            "column_name": "schema_version",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "severity_label",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "summary",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          }
+        ]
+      },
+      {
+        "identifier": "fe_lakewatch_catalog.lakewatch_field.kev_vulnerabilities",
+        "column_configs": [
+          {
+            "column_name": "catalog_version",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "cve_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "cwes"
+          },
+          {
+            "column_name": "date_added",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "date_released",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "date_removed",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "due_date",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "forensic_triage",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "known_ransomware_campaign_use",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "notes",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "product",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "raw",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "required_action",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "short_description",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "vendor_project",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "vulnerability_name",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          }
+        ]
+      },
+      {
+        "identifier": "fe_lakewatch_catalog.lakewatch_field.osv_vulnerabilities",
+        "column_configs": [
+          {
+            "column_name": "affected_packages"
+          },
+          {
+            "column_name": "aliases"
+          },
+          {
+            "column_name": "cve_id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "cvss_vector",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "cvss_version",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "cwe_ids"
+          },
+          {
+            "column_name": "date_modified",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "date_published",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "date_withdrawn",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "details",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "ecosystems"
+          },
+          {
+            "column_name": "id",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "id_prefix",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "raw",
+            "enable_format_assistance": true
+          },
+          {
+            "column_name": "references"
+          },
+          {
+            "column_name": "related"
+          },
+          {
+            "column_name": "schema_version",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "severity"
+          },
+          {
+            "column_name": "summary",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "upstream"
+          }
+        ]
+      }
+    ]
+  },
+  "instructions": {
+    "text_instructions": [
+      {
+        "id": "dc68659ea32d4cc189fc0e77e4c08b65",
+        "content": [
+          "This space combines vulnerability intelligence sources for triage and patch prioritization:\n",
+          "* **cves_v5**: the master CVE list (MITRE / CNAs, 1999 to present). Start here for CVE counts, severity, vendors/products, and trends.\n",
+          "* **kev_vulnerabilities**: CISA Known Exploited Vulnerabilities, CVEs confirmed as exploited in the wild, with required actions, due dates and ransomware use.\n",
+          "* **epss_scores / epss_scores_history**: FIRST EPSS probability of exploitation in the next 30 days. Use the latest table for ranking and the history table only for trends.\n",
+          "* **github_advisories / osv_vulnerabilities**: package-level open-source advisories (ecosystem, package, fixed versions).\n",
+          "* **cwe_entries / cwe_capec_attack**: weakness catalog and the CWE to CAPEC to ATT&CK technique mapping.\n",
+          "\n",
+          "## Choosing the right source\n",
+          "* \"Known exploited\", \"exploited in the wild\", \"KEV\" or \"CISA\" questions: use kev_vulnerabilities with the \"Current KEV entries only\" filter. SSVC exploitation in cves_v5 is a CNA-provided signal and covers fewer CVEs; mention it only when the user asks about SSVC.\n",
+          "* \"Ransomware\" questions: use the \"Ransomware-associated KEV entries\" filter.\n",
+          "* \"Likely to be exploited\", \"exploit probability\" or \"EPSS\" questions: use epss_scores. EPSS and percentile are decimals from 0 to 1; present them as percentages rounded to two decimals. When the user says \"high EPSS\" without a threshold, apply the \"High EPSS (top 1% percentile)\" filter and state the threshold used.\n",
+          "* Open-source package, library or ecosystem questions (npm, PyPI, Maven, Go, etc.): prefer github_advisories with the \"Active GitHub advisories only\" filter; add \"GitHub-reviewed advisories\" when the user asks for reviewed or curated advisories. Use osv_vulnerabilities only for Linux distribution advisories or when OSV is named, with the \"Active OSV records only\" filter.\n",
+          "* Commercial vendor/product questions: use the affected_products array in cves_v5 rather than keyword searches on the description; KEV vendor_project and product are fine for KEV-only questions.\n",
+          "* Weakness (CWE) counts: by default count every CWE listed on a CVE (the cwe_ids array in cves_v5, the cwes array in KEV, the cwe_ids array in advisories), so a CVE counts once toward each of its weaknesses; use only the primary cwe_id when the user asks for the primary weakness. Group by CWE ID and take the weakness name from cwe_entries (with the \"Current CWE entries only\" filter when listing catalog entries). The CVE table's CWE description is inconsistent free text and must not be used for grouping. ATT&CK techniques reached through cwe_capec_attack are associations based on weakness type; describe them as \"associated with\", never as observed attacker use.\n",
+          "\n",
+          "## Counting rules\n",
+          "* github_advisories and osv_vulnerabilities have several rows per CVE (OSV especially), and EPSS history has one row per CVE per day. Always count distinct CVE or advisory IDs after joining them.\n",
+          "* Always apply the \"Published CVEs only\" filter when cves_v5 is used.\n",
+          "\n",
+          "## Answer shape\n",
+          "* For singular \"which X has the most...\" or \"what is the most common...\" ranking questions, return the top 3 rows: state the first-ranked item clearly as the answer and present the other two as runners-up for context.\n",
+          "* When the user asks for a specific number of results (\"top 5\", \"10 vendors\"), return exactly that many rows.\n",
+          "\n",
+          "## Triage priority (SSVC values in cves_v5)\n",
+          "* Use the \"Active in-the-wild exploitation\" filter for active exploitation, the \"Highest mass-exploitation risk\" filter when automatable exploitation matters, and the \"Full-system-compromise impact\" filter for total technical impact. A proof-of-concept value is the second priority after active exploitation.\n",
+          "* For \"critical\" or \"high-severity\" CVEs, use the qualitative CVSS severity rather than a score threshold, unless the user explicitly gives a score.\n",
+          "\n",
+          "## Best practices\n",
+          "* **Time window defaults:** \"Recent\" means the last 90 days by publication date (date_added for KEV). \"Trends over time\" means aggregation by year or month. Use date_reserved only for reservation questions.\n",
+          "* For assigner/CNA questions, output the readable assigner short name rather than the organization UUID.\n",
+          "* For prioritized lists, show CVE ID, vendor/product, CVSS severity or score, KEV status and EPSS together where available.\n",
+          "* Round percentage metrics to two decimal places when summarizing."
+        ]
+      }
+    ],
+    "example_question_sqls": [
+      {
+        "id": "01f1dc1b1a011fc1a185004dec09798d",
+        "question": [
+          "Which critical CVEs in the CISA KEV catalog have the highest EPSS exploit probability?"
+        ],
+        "sql": [
+          "SELECT\n",
+          "  c.cve_id,\n",
+          "  k.vendor_project,\n",
+          "  k.product,\n",
+          "  c.cvss_base_score,\n",
+          "  e.epss,\n",
+          "  e.percentile,\n",
+          "  k.known_ransomware_campaign_use,\n",
+          "  k.date_added,\n",
+          "  k.due_date\n",
+          "FROM fe_lakewatch_catalog.lakewatch_field.cves_v5 c\n",
+          "JOIN fe_lakewatch_catalog.lakewatch_field.kev_vulnerabilities k\n",
+          "  ON c.cve_id = k.cve_id\n",
+          "LEFT JOIN fe_lakewatch_catalog.lakewatch_field.epss_scores e\n",
+          "  ON c.cve_id = e.cve_id\n",
+          "WHERE c.state = 'PUBLISHED'\n",
+          "  AND c.cvss_severity = 'CRITICAL'\n",
+          "  AND k.date_removed IS NULL\n",
+          "ORDER BY e.epss DESC NULLS LAST\n",
+          "LIMIT 25"
+        ]
+      },
+      {
+        "id": "01f1dc1b1a0214e094ad6a1b008bcaad",
+        "question": [
+          "Which ATT&CK techniques are most associated with known-exploited (KEV) vulnerabilities via their CWEs?"
+        ],
+        "sql": [
+          "WITH kev_cwes AS (\n",
+          "  SELECT DISTINCT k.cve_id, cwe AS cwe_id\n",
+          "  FROM fe_lakewatch_catalog.lakewatch_field.kev_vulnerabilities k\n",
+          "  LATERAL VIEW EXPLODE(k.cwes) AS cwe\n",
+          "  WHERE k.date_removed IS NULL\n",
+          ")\n",
+          "SELECT\n",
+          "  t.dst_id AS technique_id,\n",
+          "  t.dst_name AS technique_name,\n",
+          "  COUNT(DISTINCT kc.cve_id) AS kev_cve_count\n",
+          "FROM kev_cwes kc\n",
+          "JOIN fe_lakewatch_catalog.lakewatch_field.cwe_capec_attack p\n",
+          "  ON p.src_type = 'CWE' AND p.src_id = kc.cwe_id\n",
+          "JOIN fe_lakewatch_catalog.lakewatch_field.cwe_capec_attack t\n",
+          "  ON t.src_type = 'CAPEC' AND t.rel = 'maps_to_technique' AND t.src_id = p.dst_id\n",
+          "GROUP BY t.dst_id, t.dst_name\n",
+          "ORDER BY kev_cve_count DESC\n",
+          "LIMIT 20"
+        ]
+      },
+      {
+        "id": "01f1dc1b1a0219368ccb598709598c46",
+        "question": [
+          "Which open-source packages had the most critical GitHub-reviewed advisories in the last year?"
+        ],
+        "sql": [
+          "SELECT\n",
+          "  pkg.ecosystem,\n",
+          "  pkg.package,\n",
+          "  COUNT(DISTINCT g.ghsa_id) AS critical_advisories\n",
+          "FROM fe_lakewatch_catalog.lakewatch_field.github_advisories g\n",
+          "LATERAL VIEW EXPLODE(g.affected_packages) AS pkg\n",
+          "WHERE g.github_reviewed = true\n",
+          "  AND g.date_withdrawn IS NULL\n",
+          "  AND g.severity_label = 'CRITICAL'\n",
+          "  AND g.date_published >= current_timestamp() - INTERVAL 365 DAYS\n",
+          "GROUP BY pkg.ecosystem, pkg.package\n",
+          "ORDER BY critical_advisories DESC\n",
+          "LIMIT 25"
+        ]
+      },
+      {
+        "id": "01f1dc1b1a021d8c8a7f9a94bdc4baa0",
+        "question": [
+          "Which CVEs are in the top 1% of EPSS scores but not yet in the CISA KEV catalog?"
+        ],
+        "sql": [
+          "SELECT\n",
+          "  c.cve_id,\n",
+          "  c.cvss_severity,\n",
+          "  c.cvss_base_score,\n",
+          "  e.epss,\n",
+          "  e.percentile,\n",
+          "  c.date_published,\n",
+          "  c.title\n",
+          "FROM fe_lakewatch_catalog.lakewatch_field.epss_scores e\n",
+          "JOIN fe_lakewatch_catalog.lakewatch_field.cves_v5 c\n",
+          "  ON c.cve_id = e.cve_id\n",
+          "LEFT JOIN fe_lakewatch_catalog.lakewatch_field.kev_vulnerabilities k\n",
+          "  ON k.cve_id = e.cve_id AND k.date_removed IS NULL\n",
+          "WHERE c.state = 'PUBLISHED'\n",
+          "  AND e.percentile >= 0.99\n",
+          "  AND k.cve_id IS NULL\n",
+          "ORDER BY e.epss DESC\n",
+          "LIMIT 50"
+        ]
+      },
+      {
+        "id": "01f1dc1b1a0311c094a55f95b4e1959f",
+        "question": [
+          "How has the EPSS score for CVE-2021-44228 changed month by month?"
+        ],
+        "sql": [
+          "SELECT\n",
+          "  date_trunc('month', score_date) AS month,\n",
+          "  ROUND(AVG(epss), 4) AS avg_epss,\n",
+          "  ROUND(MAX(percentile), 4) AS max_percentile\n",
+          "FROM fe_lakewatch_catalog.lakewatch_field.epss_scores_history\n",
+          "WHERE cve_id = 'CVE-2021-44228'\n",
+          "GROUP BY date_trunc('month', score_date)\n",
+          "ORDER BY month"
+        ]
+      },
+      {
+        "id": "01f1dc1b1a03159590e843944fab4f53",
+        "question": [
+          "How many ransomware-associated KEV entries were added in the last 90 days, by vendor?"
+        ],
+        "sql": [
+          "SELECT\n",
+          "  vendor_project,\n",
+          "  COUNT(*) AS kev_entries,\n",
+          "  MIN(due_date) AS earliest_due_date\n",
+          "FROM fe_lakewatch_catalog.lakewatch_field.kev_vulnerabilities\n",
+          "WHERE date_removed IS NULL\n",
+          "  AND known_ransomware_campaign_use = 'Known'\n",
+          "  AND date_added >= current_date() - INTERVAL 90 DAYS\n",
+          "GROUP BY vendor_project\n",
+          "ORDER BY kev_entries DESC"
+        ]
+      },
+      {
+        "id": "01f1dc1cbf3714c78e7e9ea2dccfd400",
+        "question": [
+          "Which CNA assigned the most CVEs in the last year?"
+        ],
+        "sql": [
+          "SELECT\n",
+          "  assigner_short_name,\n",
+          "  COUNT(*) AS cve_count\n",
+          "FROM fe_lakewatch_catalog.lakewatch_field.cves_v5\n",
+          "WHERE state = 'PUBLISHED'\n",
+          "  AND date_published >= current_timestamp() - INTERVAL 365 DAYS\n",
+          "GROUP BY assigner_short_name\n",
+          "ORDER BY cve_count DESC\n",
+          "LIMIT 3"
+        ]
+      },
+      {
+        "id": "2de1106c21f249cfbe1e11fea06ec340",
+        "question": [
+          "Recent critical or high-severity CVEs affecting Microsoft."
+        ],
+        "sql": [
+          "SELECT\n",
+          "  c.cve_id,\n",
+          "  c.date_published,\n",
+          "  c.cvss_severity,\n",
+          "  c.cvss_base_score,\n",
+          "  c.ssvc_exploitation,\n",
+          "  c.title\n",
+          "FROM fe_lakewatch_catalog.lakewatch_field.cves_v5 c\n",
+          "LATERAL VIEW EXPLODE(c.affected_products) AS prod\n",
+          "WHERE c.state = 'PUBLISHED'\n",
+          "  AND c.cvss_severity IN ('CRITICAL', 'HIGH')\n",
+          "  AND lower(prod.vendor) = 'microsoft'\n",
+          "  AND c.date_published >= current_timestamp() - INTERVAL 180 DAYS\n",
+          "GROUP BY c.cve_id, c.date_published, c.cvss_severity, c.cvss_base_score, c.ssvc_exploitation, c.title\n",
+          "ORDER BY c.date_published DESC\n",
+          "LIMIT 50"
+        ]
+      },
+      {
+        "id": "4a70869ce6bf47e698c887f2f499be17",
+        "question": [
+          "Top 25 vendors by CVE count published in the last year."
+        ],
+        "sql": [
+          "SELECT\n",
+          "  prod.vendor AS vendor,\n",
+          "  COUNT(DISTINCT cve_id) AS cve_count\n",
+          "FROM fe_lakewatch_catalog.lakewatch_field.cves_v5\n",
+          "LATERAL VIEW EXPLODE(affected_products) AS prod\n",
+          "WHERE state = 'PUBLISHED'\n",
+          "  AND date_published >= current_timestamp() - INTERVAL 365 DAYS\n",
+          "  AND prod.vendor IS NOT NULL\n",
+          "GROUP BY prod.vendor\n",
+          "ORDER BY cve_count DESC\n",
+          "LIMIT 25"
+        ]
+      },
+      {
+        "id": "627d23bd9ebc4daf84ee92ddacdfb2c7",
+        "question": [
+          "How many CVEs were published in the last 30 days, broken down by severity?"
+        ],
+        "sql": [
+          "SELECT\n",
+          "  cvss_severity,\n",
+          "  COUNT(*) AS cve_count\n",
+          "FROM fe_lakewatch_catalog.lakewatch_field.cves_v5\n",
+          "WHERE state = 'PUBLISHED'\n",
+          "  AND date_published >= current_timestamp() - INTERVAL 30 DAYS\n",
+          "GROUP BY cvss_severity\n",
+          "ORDER BY cve_count DESC"
+        ]
+      },
+      {
+        "id": "68ac71e8768745b0b370b850c77bdb3e",
+        "question": [
+          "Distribution of CVE counts per year for the last 10 years."
+        ],
+        "sql": [
+          "SELECT\n",
+          "  cve_year,\n",
+          "  COUNT(*) AS cve_count,\n",
+          "  COUNT_IF(cvss_severity = 'CRITICAL') AS critical_count,\n",
+          "  COUNT_IF(ssvc_exploitation = 'active') AS active_exploited_count\n",
+          "FROM fe_lakewatch_catalog.lakewatch_field.cves_v5\n",
+          "WHERE state = 'PUBLISHED'\n",
+          "  AND cve_year >= YEAR(current_date()) - 10\n",
+          "GROUP BY cve_year\n",
+          "ORDER BY cve_year DESC"
+        ]
+      },
+      {
+        "id": "dd4746f0d26b4d7091e46844c0002913",
+        "question": [
+          "Show critical CVEs with active exploitation published in the last 90 days."
+        ],
+        "sql": [
+          "SELECT\n",
+          "  cve_id,\n",
+          "  date_published,\n",
+          "  cvss_base_score,\n",
+          "  ssvc_exploitation,\n",
+          "  ssvc_automatable,\n",
+          "  title\n",
+          "FROM fe_lakewatch_catalog.lakewatch_field.cves_v5\n",
+          "WHERE state = 'PUBLISHED'\n",
+          "  AND cvss_severity = 'CRITICAL'\n",
+          "  AND ssvc_exploitation = 'active'\n",
+          "  AND date_published >= current_timestamp() - INTERVAL 90 DAYS\n",
+          "ORDER BY date_published DESC\n",
+          "LIMIT 50"
+        ]
+      },
+      {
+        "id": "e5f8f1a991c1401498bfcddb19262a12",
+        "question": [
+          "Most common CWE classifications among CVEs published this year."
+        ],
+        "sql": [
+          "SELECT x.cwe_id, w.name AS cwe_name, COUNT(DISTINCT x.cve_id) AS cve_count\n",
+          "FROM (\n",
+          "  SELECT c.cve_id, t.cwe AS cwe_id\n",
+          "  FROM fe_lakewatch_catalog.lakewatch_field.cves_v5 c\n",
+          "  LATERAL VIEW EXPLODE(c.cwe_ids) t AS cwe\n",
+          "  WHERE c.state = 'PUBLISHED'\n",
+          "    AND c.cve_year = YEAR(current_date())\n",
+          ") x\n",
+          "LEFT JOIN fe_lakewatch_catalog.lakewatch_field.cwe_entries w\n",
+          "  ON w.cwe_id = x.cwe_id\n",
+          "GROUP BY x.cwe_id, w.name\n",
+          "ORDER BY cve_count DESC\n",
+          "LIMIT 25"
+        ]
+      }
+    ],
+    "join_specs": [
+      {
+        "id": "01f1dc1b0d3c1dcf84695e4374876886",
+        "left": {
+          "identifier": "fe_lakewatch_catalog.lakewatch_field.cves_v5"
+        },
+        "right": {
+          "identifier": "fe_lakewatch_catalog.lakewatch_field.kev_vulnerabilities"
+        },
+        "sql": [
+          "cves_v5.cve_id = kev_vulnerabilities.cve_id",
+          "--rt=FROM_RELATIONSHIP_TYPE_ONE_TO_ONE--"
+        ],
+        "comment": [
+          "CVE to CISA KEV entry"
+        ],
+        "instruction": [
+          "Use an INNER JOIN when the question is limited to known-exploited / KEV CVEs; use a LEFT JOIN to flag whether a CVE is in KEV (kev_vulnerabilities.cve_id IS NOT NULL). KEV is the authoritative source for confirmed in-the-wild exploitation, ransomware use, and CISA remediation due dates."
+        ]
+      },
+      {
+        "id": "01f1dc1b0d3d1249aeb51cfcd063e9fd",
+        "left": {
+          "identifier": "fe_lakewatch_catalog.lakewatch_field.cves_v5"
+        },
+        "right": {
+          "identifier": "fe_lakewatch_catalog.lakewatch_field.epss_scores"
+        },
+        "sql": [
+          "cves_v5.cve_id = epss_scores.cve_id",
+          "--rt=FROM_RELATIONSHIP_TYPE_ONE_TO_ONE--"
+        ],
+        "comment": [
+          "CVE to latest EPSS score"
+        ],
+        "instruction": [
+          "Use a LEFT JOIN: not every CVE has an EPSS score. Use this table for current exploit-probability ranking; use epss_scores_history only for trends over time."
+        ]
+      },
+      {
+        "id": "01f1dc1b0d3d16f2bd8f4e6d2443590b",
+        "left": {
+          "identifier": "fe_lakewatch_catalog.lakewatch_field.cves_v5"
+        },
+        "right": {
+          "identifier": "fe_lakewatch_catalog.lakewatch_field.epss_scores_history"
+        },
+        "sql": [
+          "cves_v5.cve_id = epss_scores_history.cve_id",
+          "--rt=FROM_RELATIONSHIP_TYPE_ONE_TO_MANY--"
+        ],
+        "comment": [
+          "CVE to EPSS score history"
+        ],
+        "instruction": [
+          "One row per CVE per day. Only use for EPSS trends over time; filter on score_date and never sum or count rows across days as if they were CVEs."
+        ]
+      },
+      {
+        "id": "01f1dc1b0d3d1a85bfd5d8f511e83016",
+        "left": {
+          "identifier": "fe_lakewatch_catalog.lakewatch_field.kev_vulnerabilities"
+        },
+        "right": {
+          "identifier": "fe_lakewatch_catalog.lakewatch_field.epss_scores"
+        },
+        "sql": [
+          "kev_vulnerabilities.cve_id = epss_scores.cve_id",
+          "--rt=FROM_RELATIONSHIP_TYPE_ONE_TO_ONE--"
+        ],
+        "comment": [
+          "KEV entry to latest EPSS score"
+        ],
+        "instruction": [
+          "Use a LEFT JOIN to rank KEV entries by exploit probability without going through cves_v5."
+        ]
+      },
+      {
+        "id": "01f1dc1b0d3d1e43bfc9daec772ea48f",
+        "left": {
+          "identifier": "fe_lakewatch_catalog.lakewatch_field.cves_v5"
+        },
+        "right": {
+          "identifier": "fe_lakewatch_catalog.lakewatch_field.github_advisories"
+        },
+        "sql": [
+          "cves_v5.cve_id = github_advisories.cve_id",
+          "--rt=FROM_RELATIONSHIP_TYPE_ONE_TO_MANY--"
+        ],
+        "comment": [
+          "CVE to GitHub Security Advisories"
+        ],
+        "instruction": [
+          "Use to get package-level (ecosystem / package / fixed version) detail for a CVE. A CVE can have several advisories and some advisories have no CVE, so count DISTINCT cve_id or ghsa_id after joining."
+        ]
+      },
+      {
+        "id": "01f1dc1b0d3e1442af3a0c23f622792e",
+        "left": {
+          "identifier": "fe_lakewatch_catalog.lakewatch_field.github_advisories"
+        },
+        "right": {
+          "identifier": "fe_lakewatch_catalog.lakewatch_field.epss_scores"
+        },
+        "sql": [
+          "github_advisories.cve_id = epss_scores.cve_id",
+          "--rt=FROM_RELATIONSHIP_TYPE_MANY_TO_ONE--"
+        ],
+        "comment": [
+          "GitHub advisory to latest EPSS score"
+        ],
+        "instruction": [
+          "Use a LEFT JOIN to prioritize open-source package advisories by exploit probability."
+        ]
+      },
+      {
+        "id": "01f1dc1b0d3e185eabc6af8193cd0149",
+        "left": {
+          "identifier": "fe_lakewatch_catalog.lakewatch_field.cves_v5"
+        },
+        "right": {
+          "identifier": "fe_lakewatch_catalog.lakewatch_field.osv_vulnerabilities"
+        },
+        "sql": [
+          "cves_v5.cve_id = osv_vulnerabilities.cve_id",
+          "--rt=FROM_RELATIONSHIP_TYPE_ONE_TO_MANY--"
+        ],
+        "comment": [
+          "CVE to OSV vulnerability records"
+        ],
+        "instruction": [
+          "Heavy fan-out: one CVE maps to many OSV records from different distributions and ecosystems (Debian, Ubuntu, Alpine, PyPI, Go, ...). Always aggregate with COUNT(DISTINCT ...) and prefer github_advisories for open-source package questions unless the user asks about Linux distributions or OSV specifically."
+        ]
+      },
+      {
+        "id": "01f1dc1b0d3e1d08afc85ad4c21929a1",
+        "left": {
+          "identifier": "fe_lakewatch_catalog.lakewatch_field.cves_v5"
+        },
+        "right": {
+          "identifier": "fe_lakewatch_catalog.lakewatch_field.cwe_entries"
+        },
+        "sql": [
+          "cves_v5.cwe_id = cwe_entries.cwe_id",
+          "--rt=FROM_RELATIONSHIP_TYPE_MANY_TO_ONE--"
+        ],
+        "comment": [
+          "CVE primary CWE to CWE catalog entry"
+        ],
+        "instruction": [
+          "Use to name or classify a CVE's primary weakness (abstraction, likelihood of exploit, consequences). To cover all CWEs of a CVE, explode cves_v5.cwe_ids instead of using cwe_id."
+        ]
+      },
+      {
+        "id": "01f1dc1b0d3f10e0b6645e416575c622",
+        "left": {
+          "identifier": "fe_lakewatch_catalog.lakewatch_field.cves_v5"
+        },
+        "right": {
+          "identifier": "fe_lakewatch_catalog.lakewatch_field.cwe_capec_attack"
+        },
+        "sql": [
+          "cves_v5.cwe_id = cwe_capec_attack.src_id",
+          "--rt=FROM_RELATIONSHIP_TYPE_ONE_TO_MANY--"
+        ],
+        "comment": [
+          "CVE primary CWE to CAPEC attack patterns"
+        ],
+        "instruction": [
+          "First hop of CWE -> CAPEC -> ATT&CK. This reaches CAPEC attack patterns (rows with src_type 'CWE'). To reach ATT&CK techniques, join cwe_capec_attack a second time on first.dst_id = second.src_id where the second hop has src_type 'CAPEC' and rel 'maps_to_technique'. These are weakness-based associations, not observed attacker use."
+        ]
+      },
+      {
+        "id": "01f1dc1b0d3f159fac4eb4c60bd915ba",
+        "left": {
+          "identifier": "fe_lakewatch_catalog.lakewatch_field.kev_vulnerabilities"
+        },
+        "right": {
+          "identifier": "fe_lakewatch_catalog.lakewatch_field.cwe_entries"
+        },
+        "sql": [
+          "array_contains(kev_vulnerabilities.cwes, cwe_entries.cwe_id)",
+          "--rt=FROM_RELATIONSHIP_TYPE_MANY_TO_MANY--"
+        ],
+        "comment": [
+          "KEV entry to CVE CWE catalog entry"
+        ],
+        "instruction": [
+          "KEV stores its CWEs as an array; use this to name weaknesses of known-exploited CVEs, counting DISTINCT kev_vulnerabilities.cve_id."
+        ]
+      }
+    ],
+    "sql_snippets": {
+      "filters": [
+        {
+          "id": "01f174841ad1147e96ba26350bb24a28",
+          "sql": [
+            "cves_v5.state = 'PUBLISHED'"
+          ],
+          "display_name": "Published CVEs only"
+        },
+        {
+          "id": "01f174841ad117539e437a06e46bfa7c",
+          "sql": [
+            "cves_v5.ssvc_exploitation = 'active'"
+          ],
+          "display_name": "Active in-the-wild exploitation"
+        },
+        {
+          "id": "01f174841ad11b799bffd34172b81b37",
+          "sql": [
+            "cves_v5.ssvc_exploitation = 'active' AND cves_v5.ssvc_automatable = 'yes'"
+          ],
+          "display_name": "Highest mass-exploitation risk"
+        },
+        {
+          "id": "01f174841ad11dc4a0685814557a8e4b",
+          "sql": [
+            "cves_v5.ssvc_technical_impact = 'total'"
+          ],
+          "display_name": "Full-system-compromise impact"
+        },
+        {
+          "id": "01f1dc1b0d451c65bdf21f6a0586f557",
+          "sql": [
+            "kev_vulnerabilities.date_removed IS NULL"
+          ],
+          "display_name": "Current KEV entries only (default for KEV questions)"
+        },
+        {
+          "id": "01f1dc1b0d46100285bb534a04181579",
+          "sql": [
+            "github_advisories.date_withdrawn IS NULL"
+          ],
+          "display_name": "Active GitHub advisories only (default for GHSA questions)"
+        },
+        {
+          "id": "01f1dc1b0d4613ec929801784b598af0",
+          "sql": [
+            "github_advisories.github_reviewed = true"
+          ],
+          "display_name": "GitHub-reviewed advisories (when the user asks for reviewed or curated advisories)"
+        },
+        {
+          "id": "01f1dc1b0d461795a1b61d422bc2bc0e",
+          "sql": [
+            "osv_vulnerabilities.date_withdrawn IS NULL"
+          ],
+          "display_name": "Active OSV records only (default for OSV questions)"
+        },
+        {
+          "id": "01f1dc1b0d461b779f3a1ba582bec3e7",
+          "sql": [
+            "cwe_entries.status <> 'Deprecated' AND cwe_entries.date_removed IS NULL"
+          ],
+          "display_name": "Current CWE entries only (default for CWE catalog questions)"
+        },
+        {
+          "id": "01f1dc1b0d461ea6984c298edc98d8fc",
+          "sql": [
+            "kev_vulnerabilities.known_ransomware_campaign_use = 'Known'"
+          ],
+          "display_name": "Ransomware-associated KEV entries"
+        },
+        {
+          "id": "01f1dc1bbc6e10f892def27c5fccbb9b",
+          "sql": [
+            "epss_scores.percentile >= 0.99"
+          ],
+          "display_name": "High EPSS (top 1% percentile) - use when the user asks for high or elevated exploit probability without giving a threshold"
+        }
+      ]
+    }
+  },
+  "benchmarks": {
+    "questions": [
+      {
+        "id": "f70bb081e3b544289560548da008a44b",
+        "question": [
+          "How many CVEs have active exploitation according to SSVC?"
+        ],
+        "answer": [
+          {
+            "format": "SQL",
+            "content": [
+              "SELECT COUNT(*) AS active_exploited_cves\n",
+              "FROM fe_lakewatch_catalog.lakewatch_field.cves_v5\n",
+              "WHERE state = 'PUBLISHED'\n",
+              "  AND ssvc_exploitation = 'active'"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "b7725a49bb7c4430ad77e6020700b754",
+        "question": [
+          "What is the most common CWE among critical-severity CVEs?"
+        ],
+        "answer": [
+          {
+            "format": "SQL",
+            "content": [
+              "SELECT x.cwe_id, w.name AS cwe_name, COUNT(DISTINCT x.cve_id) AS cve_count\n",
+              "FROM (\n",
+              "  SELECT c.cve_id, t.cwe AS cwe_id\n",
+              "  FROM fe_lakewatch_catalog.lakewatch_field.cves_v5 c\n",
+              "  LATERAL VIEW EXPLODE(c.cwe_ids) t AS cwe\n",
+              "  WHERE c.state = 'PUBLISHED'\n",
+              "    AND c.cvss_severity = 'CRITICAL'\n",
+              ") x\n",
+              "LEFT JOIN fe_lakewatch_catalog.lakewatch_field.cwe_entries w\n",
+              "  ON w.cwe_id = x.cwe_id\n",
+              "GROUP BY x.cwe_id, w.name\n",
+              "ORDER BY cve_count DESC\n",
+              "LIMIT 3"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "44c1e6a3c915417d9a0bb8d23cb1c31e",
+        "question": [
+          "List the 10 vendors with the most published CVEs of all time."
+        ],
+        "answer": [
+          {
+            "format": "SQL",
+            "content": [
+              "SELECT\n",
+              "  prod.vendor,\n",
+              "  COUNT(DISTINCT cve_id) AS cve_count\n",
+              "FROM fe_lakewatch_catalog.lakewatch_field.cves_v5\n",
+              "LATERAL VIEW EXPLODE(affected_products) AS prod\n",
+              "WHERE state = 'PUBLISHED'\n",
+              "  AND prod.vendor IS NOT NULL\n",
+              "GROUP BY prod.vendor\n",
+              "ORDER BY cve_count DESC\n",
+              "LIMIT 10"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "36f016bafc1b4038b17911707e0f62aa",
+        "question": [
+          "What is the highest CVSS base score among CVEs published in the last 30 days?"
+        ],
+        "answer": [
+          {
+            "format": "SQL",
+            "content": [
+              "SELECT MAX(cvss_base_score) AS highest_score\n",
+              "FROM fe_lakewatch_catalog.lakewatch_field.cves_v5\n",
+              "WHERE state = 'PUBLISHED'\n",
+              "  AND date_published >= current_timestamp() - INTERVAL 30 DAYS"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "01f1dc2095e718839e0c7400588d5fc0",
+        "question": [
+          "How many KEV entries added in the last 90 days are already past their CISA remediation due date?"
+        ],
+        "answer": [
+          {
+            "format": "SQL",
+            "content": [
+              "SELECT COUNT(*) AS past_due_kev_entries\n",
+              "FROM fe_lakewatch_catalog.lakewatch_field.kev_vulnerabilities\n",
+              "WHERE date_removed IS NULL\n",
+              "  AND date_added >= current_date() - INTERVAL 90 DAYS\n",
+              "  AND due_date < current_date()"
+            ]
+          }
+        ],
+        "evaluation_note": [
+          "Past due means the CISA due date has passed; the data has no remediation status, so the answer should not imply the vulnerabilities are unpatched."
+        ]
+      },
+      {
+        "id": "01f1dc2095c8197fbc46973a54f49a86",
+        "question": [
+          "How has the EPSS score for CVE-2024-3400 changed month by month?"
+        ],
+        "answer": [
+          {
+            "format": "SQL",
+            "content": [
+              "SELECT\n",
+              "  date_trunc('month', score_date) AS month,\n",
+              "  ROUND(AVG(epss), 4) AS avg_epss\n",
+              "FROM fe_lakewatch_catalog.lakewatch_field.epss_scores_history\n",
+              "WHERE cve_id = 'CVE-2024-3400'\n",
+              "GROUP BY date_trunc('month', score_date)\n",
+              "ORDER BY month"
+            ]
+          }
+        ],
+        "evaluation_note": [
+          "Monthly values may be shown as decimals or as equivalent percentages."
+        ]
+      },
+      {
+        "id": "01f1dc1bdcca15009969fa8b2edd41bd",
+        "question": [
+          "What are the 3 most common weakness types (CWE names) among known exploited vulnerabilities?"
+        ],
+        "answer": [
+          {
+            "format": "SQL",
+            "content": [
+              "SELECT kc.cwe_id, w.name, COUNT(DISTINCT kc.cve_id) AS kev_cve_count\n",
+              "FROM (\n",
+              "  SELECT k.cve_id, cwe_id\n",
+              "  FROM fe_lakewatch_catalog.lakewatch_field.kev_vulnerabilities k\n",
+              "  LATERAL VIEW EXPLODE(k.cwes) x AS cwe_id\n",
+              "  WHERE k.date_removed IS NULL\n",
+              ") kc\n",
+              "LEFT JOIN fe_lakewatch_catalog.lakewatch_field.cwe_entries w\n",
+              "  ON w.cwe_id = kc.cwe_id\n",
+              "GROUP BY kc.cwe_id, w.name\n",
+              "ORDER BY kev_cve_count DESC\n",
+              "LIMIT 3"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "01f1dc1bdcae1ca5b2cd9bf1f3b585e3",
+        "question": [
+          "Which 3 npm packages have the most GitHub security advisories?"
+        ],
+        "answer": [
+          {
+            "format": "SQL",
+            "content": [
+              "SELECT pkg.package, COUNT(DISTINCT g.ghsa_id) AS advisories\n",
+              "FROM fe_lakewatch_catalog.lakewatch_field.github_advisories g\n",
+              "LATERAL VIEW EXPLODE(g.affected_packages) AS pkg\n",
+              "WHERE g.date_withdrawn IS NULL\n",
+              "  AND pkg.ecosystem = 'npm'\n",
+              "GROUP BY pkg.package\n",
+              "ORDER BY advisories DESC\n",
+              "LIMIT 3"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "01f1dc1bdc931108bf45badf56b72c08",
+        "question": [
+          "What is the average EPSS score of vulnerabilities in the KEV catalog?"
+        ],
+        "answer": [
+          {
+            "format": "SQL",
+            "content": [
+              "SELECT ROUND(AVG(e.epss) * 100, 2) AS avg_epss_pct\n",
+              "FROM fe_lakewatch_catalog.lakewatch_field.kev_vulnerabilities k\n",
+              "JOIN fe_lakewatch_catalog.lakewatch_field.epss_scores e\n",
+              "  ON k.cve_id = e.cve_id\n",
+              "WHERE k.date_removed IS NULL"
+            ]
+          }
+        ],
+        "evaluation_note": [
+          "Accept the average expressed either as a percentage (about 51.75%) or as the equivalent 0-1 decimal."
+        ]
+      },
+      {
+        "id": "01f1dc1bdc761d28ac613b8c51e417f5",
+        "question": [
+          "How many critical-severity CVEs are in the CISA KEV catalog?"
+        ],
+        "answer": [
+          {
+            "format": "SQL",
+            "content": [
+              "SELECT COUNT(DISTINCT c.cve_id) AS critical_kev_cves\n",
+              "FROM fe_lakewatch_catalog.lakewatch_field.cves_v5 c\n",
+              "JOIN fe_lakewatch_catalog.lakewatch_field.kev_vulnerabilities k\n",
+              "  ON c.cve_id = k.cve_id\n",
+              "WHERE c.state = 'PUBLISHED'\n",
+              "  AND c.cvss_severity = 'CRITICAL'\n",
+              "  AND k.date_removed IS NULL"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "01f1dc1bdc5a1c219b5b5e89ed050cda",
+        "question": [
+          "Which vendor has the most known exploited vulnerabilities in KEV?"
+        ],
+        "answer": [
+          {
+            "format": "SQL",
+            "content": [
+              "SELECT vendor_project, COUNT(DISTINCT cve_id) AS kev_entries\n",
+              "FROM fe_lakewatch_catalog.lakewatch_field.kev_vulnerabilities\n",
+              "WHERE date_removed IS NULL\n",
+              "GROUP BY vendor_project\n",
+              "ORDER BY kev_entries DESC\n",
+              "LIMIT 3"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "01f1dc1bdc3e10f180dbccf9dca08f9e",
+        "question": [
+          "How many vulnerabilities in the CISA KEV catalog are known to be used in ransomware campaigns?"
+        ],
+        "answer": [
+          {
+            "format": "SQL",
+            "content": [
+              "SELECT COUNT(*) AS ransomware_kev_count\n",
+              "FROM fe_lakewatch_catalog.lakewatch_field.kev_vulnerabilities\n",
+              "WHERE date_removed IS NULL\n",
+              "  AND known_ransomware_campaign_use = 'Known'"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

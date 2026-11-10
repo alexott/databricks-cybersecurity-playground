@@ -13,3 +13,8 @@ pytest = "^9.0.3"
 pytest-spark = "^0.8.0"
 pyspark = ">=4.0.1"
 pyyaml = ">=6.0"
+
+# Python code for `databricks bundle validate/deploy` (the genie_agent_retarget mutator)
+[tool.poetry.group.bundle.dependencies]
+databricks-bundles = "1.24.0"
+pydabs-genie-agent-retarget = ">=0.1.2"

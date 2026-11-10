@@ -45,3 +45,19 @@ variables:
   pause_status:
     description: PAUSED or UNPAUSED (the dev target sets PAUSED)
     default: UNPAUSED
+  genie:
+    description: >-
+      Create the Genie space. Use true only after the jobs loaded the tables (Genie checks
+      them); also set warehouse_id.
+    default: false
+  warehouse_id:
+    description: SQL warehouse of the Genie space (needed when genie is true)
+    default: ""
+  genie_parent_path:
+    description: Workspace folder of the Genie space
+    default: /Workspace/Users/${workspace.current_user.userName}
+  genie_table_mapping:
+    description: Rewrite rules of the genie_agent_retarget mutator (keys are the names in genie/*.geniespace.json)
+    type: complex
+    default:
+      fe_lakewatch_catalog.lakewatch_field: ${var.catalog}.${var.schema}
